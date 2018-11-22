@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DashboardDefinition, DefinitionsProxy } from '../proxies/dashboard-api';
 import { Subscription, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-browser',
@@ -16,15 +16,16 @@ export class BrowserComponent implements OnInit, OnDestroy {
   selectedDefinitionIndex: number = -1;
 
   constructor(
-    private definitionsProxy: DefinitionsProxy,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute
   ) {
     const navigationEnd$ = this.router.events.pipe(filter(evt => evt instanceof NavigationEnd)) as Observable<NavigationEnd>;
     this.navigationEndSubscription = navigationEnd$.subscribe(event => this.onUrlChanged(event.url));
   }
 
   ngOnInit() {
-    this.definitionsProxy.getAllDefinitions().subscribe(definitions => { this.definitions = definitions; });
+    // initialize with resolved definitions
+    this.definitions = this.activatedRoute.snapshot.data.definitions;
   }
 
   ngOnDestroy() {

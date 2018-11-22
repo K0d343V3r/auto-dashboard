@@ -4,6 +4,7 @@ import { WorkspaceComponent } from '../workspace/workspace.component';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { BrowserComponent } from '../browser/browser.component';
 import { ConfiguratorComponent } from '../configurator/configurator.component';
+import { DefinitionsResolverService } from '../services/definitions-resolver.service';
 
 const routes: Routes = [
   {
@@ -16,11 +17,17 @@ const routes: Routes = [
       }, {
         path: ':id',
         component: BrowserComponent,
-        outlet: 'sidenav'
+        outlet: 'sidenav',
+        resolve: {
+          definitions: DefinitionsResolverService
+        }
       }, {
         path: '',
         component: BrowserComponent,
-        outlet: 'sidenav'
+        outlet: 'sidenav',
+        resolve: {
+          definitions: DefinitionsResolverService
+        }
       }
     ]
   }, {
@@ -59,6 +66,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: true })],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [DefinitionsResolverService]
 })
 export class AppRoutingModule { }
