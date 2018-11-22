@@ -1,0 +1,14 @@
+mat-toolbar {
+  position: fixed;
+  bottom:0px;
+  height: 45px;
+  width:250px;
+}
+
+mat-nav-list {
+  margin-bottom: 45px;
+}
+
+.mat-nav-list .active {
+  background: #CFD8DC;
+}

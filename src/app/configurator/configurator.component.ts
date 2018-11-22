@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { TagsProxy, TagId } from '../proxies/data-simulator';
+import { TagsProxy, TagId } from '../proxies/data-simulator-api';
 
 export interface IViewTag {
   name: string;
