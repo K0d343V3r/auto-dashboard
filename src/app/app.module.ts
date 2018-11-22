@@ -5,11 +5,17 @@ import { MaterialModule } from "./modules/material.module";
 import { AppRoutingModule } from './modules/app-routing.module';
 import { AppComponent } from './app.component';
 import { ConfiguratorComponent } from './configurator/configurator.component';
+import { WorkspaceComponent } from './workspace/workspace.component';
+import { BrowserComponent } from './browser/browser.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ConfiguratorComponent
+    ConfiguratorComponent,
+    WorkspaceComponent,
+    BrowserComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
