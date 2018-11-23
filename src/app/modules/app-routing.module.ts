@@ -5,6 +5,7 @@ import { DashboardComponent } from '../dashboard/dashboard.component';
 import { BrowserComponent } from '../browser/browser.component';
 import { ConfiguratorComponent } from '../configurator/configurator.component';
 import { DefinitionsResolverService } from '../services/definitions-resolver.service';
+import { DefinitionResolverService } from '../services/definition-resolver.service';
 
 const routes: Routes = [
   {
@@ -13,7 +14,10 @@ const routes: Routes = [
     children: [
       {
         path: ':id',
-        component: DashboardComponent
+        component: DashboardComponent,
+        resolve: {
+          definition: DefinitionResolverService
+        }
       }, {
         path: ':id',
         component: BrowserComponent,
@@ -36,10 +40,16 @@ const routes: Routes = [
     children: [
       {
         path: ':id',
-        component: DashboardComponent
+        component: DashboardComponent,
+        resolve: {
+          definition: DefinitionResolverService
+        }
       }, {
         path: '',
-        component: DashboardComponent
+        component: DashboardComponent,
+        resolve: {
+          definition: DefinitionResolverService
+        }
       }, {
         path: ':id',
         component: ConfiguratorComponent,
@@ -67,6 +77,6 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule],
-  providers: [DefinitionsResolverService]
+  providers: [DefinitionsResolverService, DefinitionResolverService]
 })
 export class AppRoutingModule { }
