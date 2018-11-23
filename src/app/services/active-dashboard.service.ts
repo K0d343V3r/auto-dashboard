@@ -103,6 +103,7 @@ export class ActiveDashboardService {
   }
 
   getDefinition(): DashboardDefinition {
-    return this.definition;
+    // return clone to avoid changes to internal state
+    return this.definition.clone();
   }
 }
