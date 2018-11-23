@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DashboardDefinition, DefinitionsProxy } from '../proxies/dashboard-api';
-import { Subscription, Observable } from 'rxjs';
-import { filter } from 'rxjs/operators';
-import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { DashboardDefinition } from '../proxies/dashboard-api';
+import { Subscription } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ActiveDashboardService } from '../services/active-dashboard.service';
 
 @Component({
   selector: 'app-browser',
@@ -10,37 +10,38 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
   styleUrls: ['./browser.component.css']
 })
 export class BrowserComponent implements OnInit, OnDestroy {
-  private navigationEndSubscription: Subscription;
+  private definitionChangedSubscription: Subscription;
 
   definitions: DashboardDefinition[] = [];
   selectedDefinitionIndex: number = -1;
 
   constructor(
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private activeDashboardService: ActiveDashboardService
   ) {
-    const navigationEnd$ = this.router.events.pipe(filter(evt => evt instanceof NavigationEnd)) as Observable<NavigationEnd>;
-    this.navigationEndSubscription = navigationEnd$.subscribe(event => this.onUrlChanged(event.url));
   }
 
   ngOnInit() {
     // initialize with resolved definitions
     this.definitions = this.activatedRoute.snapshot.data.definitions;
+    this.changeSelectedDefinitionIndex(this.activeDashboardService.id);
+
+    this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
+      this.changeSelectedDefinitionIndex(this.activeDashboardService.id);
+    });
+  }
+
+  private changeSelectedDefinitionIndex(id: number) {
+    if (id == 0) {
+      this.selectedDefinitionIndex = -1
+    } else {
+      this.selectedDefinitionIndex = this.definitions.findIndex(d => d.id == id);
+    }
   }
 
   ngOnDestroy() {
-    this.navigationEndSubscription.unsubscribe();
-  }
-
-  private onUrlChanged(url: string) {
-    const parts: string[] = url.split("/");
-    if (parts.length == 3 && parts[1] == "viewer") {
-      // parts[2] contains definition id
-      this.selectedDefinitionIndex = this.definitions.findIndex(l => l.id == +parts[2]);
-    } else {
-      // not viewing a specific dashboard, reset selection
-      this.selectedDefinitionIndex = -1;
-    }
+    this.definitionChangedSubscription.unsubscribe();
   }
 
   addDefinition() {
