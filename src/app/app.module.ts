@@ -11,6 +11,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { API_BASE_URL_DASHBOARD } from './proxies/dashboard-api';
 import { API_BASE_URL_SIMULATOR } from './proxies/data-simulator-api';
 import { HttpClientModule } from '@angular/common/http';
+import { NoActiveDashboardComponent } from './no-active-dashboard/no-active-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { HttpClientModule } from '@angular/common/http';
     ConfiguratorComponent,
     WorkspaceComponent,
     BrowserComponent,
-    DashboardComponent
+    DashboardComponent,
+    NoActiveDashboardComponent
   ],
   imports: [
     BrowserModule,

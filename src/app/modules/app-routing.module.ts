@@ -6,6 +6,7 @@ import { BrowserComponent } from '../browser/browser.component';
 import { ConfiguratorComponent } from '../configurator/configurator.component';
 import { DefinitionsResolverService } from '../services/definitions-resolver.service';
 import { DefinitionResolverService } from '../services/definition-resolver.service';
+import { NoActiveDashboardComponent } from '../no-active-dashboard/no-active-dashboard.component';
 
 const routes: Routes = [
   {
@@ -19,11 +20,10 @@ const routes: Routes = [
           definition: DefinitionResolverService
         }
       }, {
-        path: ':id',
-        component: BrowserComponent,
-        outlet: 'sidenav',
+        path: '',
+        component: NoActiveDashboardComponent,
         resolve: {
-          definitions: DefinitionsResolverService
+          definition: DefinitionResolverService
         }
       }, {
         path: '',

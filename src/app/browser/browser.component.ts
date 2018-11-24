@@ -25,18 +25,18 @@ export class BrowserComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // initialize with resolved definitions
     this.definitions = this.activatedRoute.snapshot.data.definitions;
-    this.changeSelectedDefinitionIndex(this.activeDashboardService.id);
+    this.onDefinitionChanged();
 
     this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
-      this.changeSelectedDefinitionIndex(this.activeDashboardService.id);
+      this.onDefinitionChanged();
     });
   }
 
-  private changeSelectedDefinitionIndex(id: number) {
-    if (id == 0) {
+  private onDefinitionChanged() {
+    if (this.activeDashboardService.id == 0) {
       this.selectedDefinitionIndex = -1
     } else {
-      this.selectedDefinitionIndex = this.definitions.findIndex(d => d.id == id);
+      this.selectedDefinitionIndex = this.definitions.findIndex(d => d.id == this.activeDashboardService.id);
     }
   }
 

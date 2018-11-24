@@ -93,7 +93,7 @@ export class ActiveDashboardService {
   }
 
   load(definition: DashboardDefinition) {
-    this.definition = definition;
+    this.definition = definition.clone();
     this.definitionChangedSource.next();
   }
 
