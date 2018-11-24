@@ -62,7 +62,10 @@ const routes: Routes = [
     ]
   }, {
     path: 'dashboard/:id',
-    component: DashboardComponent
+    component: DashboardComponent,
+    resolve: {
+      definition: DefinitionResolverService
+    }
   }, {
     path: '',
     redirectTo: 'viewer',
