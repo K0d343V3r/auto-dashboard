@@ -51,10 +51,6 @@ const routes: Routes = [
           definition: DefinitionResolverService
         }
       }, {
-        path: ':id',
-        component: ConfiguratorComponent,
-        outlet: 'sidenav'
-      }, {
         path: '',
         component: ConfiguratorComponent,
         outlet: 'sidenav'
