@@ -1,12 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { TagId } from '../proxies/data-simulator-api';
+import { TagId, SimulatorTag } from '../proxies/data-simulator-api';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { MatSelectionListChange } from '@angular/material';
-
-export interface IViewTag {
-  name: string;
-  value: TagId;
-}
+import { SimulatorTagService } from '../services/simulator-tag.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-configurator',
@@ -14,29 +11,19 @@ export interface IViewTag {
   styleUrls: ['./configurator.component.css']
 })
 export class ConfiguratorComponent implements OnInit {
-  tags: IViewTag[] = [
-    { "name": "Sine Wave", "value": TagId.NumericSine },
-    { "name": "Square Wave", "value": TagId.NumericSquare },
-    { "name": "Sawtooth Wave", "value": TagId.NumericSawtooth },
-    { "name": "Triangle Wave", "value": TagId.NumericTriangle },
-    { "name": "Periodic Pulse", "value": TagId.DiscretePeriodic },
-    { "name": "Modulated Pulse", "value": TagId.DiscreteModulated },
-    { "name": "Incremental Count", "value": TagId.NumericCount },
-    { "name": "White Noise", "value": TagId.NumericWhiteNoise },
-    { "name": "Time Text", "value": TagId.Text }
-  ];
+  tags$: Observable<SimulatorTag[]>;
 
   constructor(
-    private activeDashboardService: ActiveDashboardService
-  ) {
-    this.tags.sort((a, b) => a.name.localeCompare(b.name));
-  }
+    private activeDashboardService: ActiveDashboardService,
+    private simulatorTagService: SimulatorTagService
+  ) { }
 
   ngOnInit() {
+    this.tags$ = this.simulatorTagService.getAllTags();
   }
 
-  isTagSelected(tag: IViewTag): boolean {
-    return this.activeDashboardService.hasTag(tag.value);
+  isTagSelected(tag: SimulatorTag): boolean {
+    return this.activeDashboardService.hasTag(tag.id);
   }
 
   onTagSelectionChange(event: MatSelectionListChange) {

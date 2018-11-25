@@ -1,5 +1,5 @@
 <mat-selection-list dense (selectionChange)="onTagSelectionChange($event)">
-  <mat-list-option *ngFor="let tag of tags" [value]="tag.value" [selected]="isTagSelected(tag)">
+  <mat-list-option *ngFor="let tag of tags$ | async" [value]="tag.id" [selected]="isTagSelected(tag)">
     {{tag.name}}
   </mat-list-option>
 </mat-selection-list>

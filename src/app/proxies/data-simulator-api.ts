@@ -259,8 +259,8 @@ export class DataProxy implements IDataProxy {
 }
 
 export interface ITagsProxy {
-    getAllTags(): Observable<Tag[] | null>;
-    get(id: TagId): Observable<Tag | null>;
+    getAllTags(): Observable<SimulatorTag[] | null>;
+    get(id: TagId): Observable<SimulatorTag | null>;
 }
 
 @Injectable({
@@ -276,7 +276,7 @@ export class TagsProxy implements ITagsProxy {
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
-    getAllTags(): Observable<Tag[] | null> {
+    getAllTags(): Observable<SimulatorTag[] | null> {
         let url_ = this.baseUrl + "/api/Tags";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -295,14 +295,14 @@ export class TagsProxy implements ITagsProxy {
                 try {
                     return this.processGetAllTags(<any>response_);
                 } catch (e) {
-                    return <Observable<Tag[] | null>><any>_observableThrow(e);
+                    return <Observable<SimulatorTag[] | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<Tag[] | null>><any>_observableThrow(response_);
+                return <Observable<SimulatorTag[] | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetAllTags(response: HttpResponseBase): Observable<Tag[] | null> {
+    protected processGetAllTags(response: HttpResponseBase): Observable<SimulatorTag[] | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -316,7 +316,7 @@ export class TagsProxy implements ITagsProxy {
             if (resultData200 && resultData200.constructor === Array) {
                 result200 = [];
                 for (let item of resultData200)
-                    result200.push(Tag.fromJS(item));
+                    result200.push(SimulatorTag.fromJS(item));
             }
             return _observableOf(result200);
             }));
@@ -325,10 +325,10 @@ export class TagsProxy implements ITagsProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<Tag[] | null>(<any>null);
+        return _observableOf<SimulatorTag[] | null>(<any>null);
     }
 
-    get(id: TagId): Observable<Tag | null> {
+    get(id: TagId): Observable<SimulatorTag | null> {
         let url_ = this.baseUrl + "/api/Tags/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -350,14 +350,14 @@ export class TagsProxy implements ITagsProxy {
                 try {
                     return this.processGet(<any>response_);
                 } catch (e) {
-                    return <Observable<Tag | null>><any>_observableThrow(e);
+                    return <Observable<SimulatorTag | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<Tag | null>><any>_observableThrow(response_);
+                return <Observable<SimulatorTag | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGet(response: HttpResponseBase): Observable<Tag | null> {
+    protected processGet(response: HttpResponseBase): Observable<SimulatorTag | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -368,7 +368,7 @@ export class TagsProxy implements ITagsProxy {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? Tag.fromJS(resultData200) : <any>null;
+            result200 = resultData200 ? SimulatorTag.fromJS(resultData200) : <any>null;
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -376,7 +376,7 @@ export class TagsProxy implements ITagsProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<Tag | null>(<any>null);
+        return _observableOf<SimulatorTag | null>(<any>null);
     }
 }
 
@@ -436,15 +436,15 @@ export interface ITagValues {
 }
 
 export enum TagId {
-    NumericSine = 0, 
-    NumericTriangle = 1, 
-    NumericSquare = 2, 
-    NumericSawtooth = 3, 
-    NumericWhiteNoise = 4, 
-    NumericCount = 5, 
-    DiscretePeriodic = 6, 
-    DiscreteModulated = 7, 
-    Text = 8, 
+    SineWave = 0, 
+    TriangleWave = 1, 
+    SquareWave = 2, 
+    SawtoothWave = 3, 
+    WhiteNoise = 4, 
+    IncrementalCount = 5, 
+    PeriodicPulse = 6, 
+    ModulatedPulse = 7, 
+    TimeText = 8, 
 }
 
 export class VQT implements IVQT {
@@ -822,14 +822,16 @@ export interface IValueAtTimeRequest {
     targetTime: Date;
 }
 
-export class Tag implements ITag {
+export class SimulatorTag implements ISimulatorTag {
     id!: TagId;
+    name?: string | null;
+    type!: TagType;
     scale?: NumericScale | null;
     engineeringUnits?: string | null;
     trueLabel?: string | null;
     falseLabel?: string | null;
 
-    constructor(data?: ITag) {
+    constructor(data?: ISimulatorTag) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -841,6 +843,8 @@ export class Tag implements ITag {
     init(data?: any) {
         if (data) {
             this.id = data["id"] !== undefined ? data["id"] : <any>null;
+            this.name = data["name"] !== undefined ? data["name"] : <any>null;
+            this.type = data["type"] !== undefined ? data["type"] : <any>null;
             this.scale = data["scale"] ? NumericScale.fromJS(data["scale"]) : <any>null;
             this.engineeringUnits = data["engineeringUnits"] !== undefined ? data["engineeringUnits"] : <any>null;
             this.trueLabel = data["trueLabel"] !== undefined ? data["trueLabel"] : <any>null;
@@ -848,9 +852,9 @@ export class Tag implements ITag {
         }
     }
 
-    static fromJS(data: any): Tag {
+    static fromJS(data: any): SimulatorTag {
         data = typeof data === 'object' ? data : {};
-        let result = new Tag();
+        let result = new SimulatorTag();
         result.init(data);
         return result;
     }
@@ -858,6 +862,8 @@ export class Tag implements ITag {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["type"] = this.type !== undefined ? this.type : <any>null;
         data["scale"] = this.scale ? this.scale.toJSON() : <any>null;
         data["engineeringUnits"] = this.engineeringUnits !== undefined ? this.engineeringUnits : <any>null;
         data["trueLabel"] = this.trueLabel !== undefined ? this.trueLabel : <any>null;
@@ -865,20 +871,28 @@ export class Tag implements ITag {
         return data; 
     }
 
-    clone(): Tag {
+    clone(): SimulatorTag {
         const json = this.toJSON();
-        let result = new Tag();
+        let result = new SimulatorTag();
         result.init(json);
         return result;
     }
 }
 
-export interface ITag {
+export interface ISimulatorTag {
     id: TagId;
+    name?: string | null;
+    type: TagType;
     scale?: NumericScale | null;
     engineeringUnits?: string | null;
     trueLabel?: string | null;
     falseLabel?: string | null;
+}
+
+export enum TagType {
+    Number = 0, 
+    Boolean = 1, 
+    String = 2, 
 }
 
 export class NumericScale implements INumericScale {
