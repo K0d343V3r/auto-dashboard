@@ -92,6 +92,14 @@ export class ActiveDashboardService {
     }
   }
 
+  getTags() {
+    return this.definition.tags.slice();
+  }
+
+  hasTag(tag: TagId): boolean {
+    return this.definition.tags.findIndex(t => t.id == tag) >= 0;
+  }
+
   load(definition: DashboardDefinition) {
     this.definition = definition.clone();
     this.definitionChangedSource.next();

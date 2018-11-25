@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { TagsProxy, TagId } from '../proxies/data-simulator-api';
+import { TagId } from '../proxies/data-simulator-api';
+import { ActiveDashboardService } from '../services/active-dashboard.service';
+import { MatSelectionListChange } from '@angular/material';
 
 export interface IViewTag {
   name: string;
@@ -24,11 +26,24 @@ export class ConfiguratorComponent implements OnInit {
     { "name": "Time Text", "value": TagId.Text }
   ];
 
-  constructor() {
+  constructor(
+    private activeDashboardService: ActiveDashboardService
+  ) {
     this.tags.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   ngOnInit() {
   }
 
+  isTagSelected(tag: IViewTag): boolean {
+    return this.activeDashboardService.hasTag(tag.value);
+  }
+
+  onTagSelectionChange(event: MatSelectionListChange) {
+    if (event.option.selected) {
+      this.activeDashboardService.addTag(event.option.value);
+    } else {
+      this.activeDashboardService.removeTag(event.option.value);
+    }
+  }
 }

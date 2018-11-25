@@ -6,7 +6,7 @@ import { BrowserComponent } from '../browser/browser.component';
 import { ConfiguratorComponent } from '../configurator/configurator.component';
 import { DefinitionsResolverService } from '../services/definitions-resolver.service';
 import { DefinitionResolverService } from '../services/definition-resolver.service';
-import { NoActiveDashboardComponent } from '../no-active-dashboard/no-active-dashboard.component';
+import { OverviewComponent } from '../overview/overview.component';
 
 const routes: Routes = [
   {
@@ -21,7 +21,7 @@ const routes: Routes = [
         }
       }, {
         path: '',
-        component: NoActiveDashboardComponent,
+        component: OverviewComponent,
         resolve: {
           definition: DefinitionResolverService
         }

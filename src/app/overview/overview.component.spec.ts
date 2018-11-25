@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NoActiveDashboardComponent } from './no-active-dashboard.component';
+import { OverviewComponent } from './overview.component';
 
-describe('NoActiveDashboardComponent', () => {
-  let component: NoActiveDashboardComponent;
-  let fixture: ComponentFixture<NoActiveDashboardComponent>;
+describe('OverviewComponent', () => {
+  let component: OverviewComponent;
+  let fixture: ComponentFixture<OverviewComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NoActiveDashboardComponent ]
+      declarations: [ OverviewComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(NoActiveDashboardComponent);
+    fixture = TestBed.createComponent(OverviewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
