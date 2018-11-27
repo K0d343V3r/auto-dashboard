@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { TagId, SimulatorTag } from '../proxies/data-simulator-api';
+import { SimulatorTag } from '../proxies/data-simulator-api';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { MatSelectionListChange } from '@angular/material';
 import { SimulatorTagService } from '../services/simulator-tag.service';
@@ -23,12 +23,12 @@ export class ConfiguratorComponent implements OnInit {
   }
 
   isTagSelected(tag: SimulatorTag): boolean {
-    return this.activeDashboardService.hasTag(tag.id);
+    return this.activeDashboardService.tiles.find(t => t.tagId === tag.id) != null;
   }
 
   onTagSelectionChange(event: MatSelectionListChange) {
     if (event.option.selected) {
-      this.activeDashboardService.addTag(event.option.value);
+      this.activeDashboardService.addTag(event.option.value, false);
     } else {
       this.activeDashboardService.removeTag(event.option.value);
     }

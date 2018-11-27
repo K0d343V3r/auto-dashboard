@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DashboardDefinition, DashboardTag } from '../proxies/dashboard-api';
+import { DashboardDefinition, DashboardTile } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
 
@@ -9,33 +9,20 @@ import { TagId } from '../proxies/data-simulator-api';
 export class ActiveDashboardService {
   private readonly defaultDefinition: DashboardDefinition;
   private definition: DashboardDefinition;
-
-  private nameChangedSource = new Subject<string>();
-  nameChanged$ = this.nameChangedSource.asObservable();
-
-  private titleChangedSource = new Subject<string>();
-  titleChanged$ = this.titleChangedSource.asObservable();
-
-  private positionChangedSource = new Subject<number>();
-  positionChanged$ = this.positionChangedSource.asObservable();
-
-  private tagAddedSource = new Subject<DashboardTag>();
-  tagAdded$ = this.tagAddedSource.asObservable();
-  private tagRemovedSource = new Subject<DashboardTag>();
-  tagRemoved$ = this.tagRemovedSource.asObservable();
-
   private definitionChangedSource = new Subject();
+
+  isDirty: boolean = false;
   definitionChanged$ = this.definitionChangedSource.asObservable();
 
   constructor() { 
     // initialize default definition
     this.defaultDefinition = new DashboardDefinition({
       // position = -1, appends to end of collection
-      id: 0, position: -1, name: '', title: 'New Dashboard', tags: []
+      id: 0, position: -1, name: '', title: 'New Dashboard', columns: 0, tiles: []
     });
 
     // start with default definition
-    this.definition = this.defaultDefinition.clone()
+    this.definition = this.defaultDefinition.clone();
   }
 
   get id(): number {
@@ -49,7 +36,7 @@ export class ActiveDashboardService {
   set name(value: string) {
     if (this.definition.name !== value) {
       this.definition.name = value;
-      this.nameChangedSource.next(value);
+      this.isDirty = true;
     }
   }
 
@@ -64,7 +51,7 @@ export class ActiveDashboardService {
   set title(value: string) {
     if (this.definition.title !== value) {
       this.definition.title = value;
-      this.titleChangedSource.next(value);
+      this.isDirty = true;
     }
   }
 
@@ -75,47 +62,55 @@ export class ActiveDashboardService {
   set position(value: number) {
     if (this.definition.position !== value) {
       this.definition.position = value;
-      this.positionChangedSource.next(value);
+      this.isDirty = true;
     }
   }
 
-  addTag(tag: TagId) {
-    if (this.definition.tags.find(t => t.id == tag) == null) {
-      const dashboardTag = new DashboardTag();
-      dashboardTag.tag = tag;
-      this.definition.tags.push(dashboardTag);
-      this.tagAddedSource.next(dashboardTag);
+  get columns(): number {
+    return this.definition.columns;
+  }
+
+  get tiles(): DashboardTile[] {
+    return this.definition.tiles;
+  }
+
+  addTag(tagId: TagId, important: boolean) {
+    if (this.definition.tiles.find(t => t.tagId == tagId) == null) {
+      const dashboardTile = new DashboardTile();
+      dashboardTile.tagId = tagId;
+      dashboardTile.important = important;
+      this.definition.tiles.push(dashboardTile);
+      this.isDirty = true;
+      this.relayout();
     }
   }
 
-  removeTag(tag: TagId) {
-    const index = this.definition.tags.findIndex(t => t.id == tag);
+  private relayout() {
+    // TODO
+  }
+
+  removeTag(tagId: TagId) {
+    const index = this.definition.tiles.findIndex(t => t.tagId == tagId);
     if (index >= 0) {
-      const dashboardTags = this.definition.tags.splice(index, 1);
-      this.tagRemovedSource.next(dashboardTags[0]);
+      this.definition.tiles.splice(index, 1);
+      this.isDirty = true;
+      this.relayout();
     }
-  }
-
-  getTags() {
-    return this.definition.tags.slice();
-  }
-
-  hasTag(tag: TagId): boolean {
-    return this.definition.tags.findIndex(t => t.id == tag) >= 0;
   }
 
   load(definition: DashboardDefinition) {
     this.definition = definition.clone();
+    this.isDirty = false;
     this.definitionChangedSource.next();
   }
 
   reset() {
     this.definition = this.defaultDefinition.clone();
+    this.isDirty = false;
     this.definitionChangedSource.next();
   }
 
   getDefinition(): DashboardDefinition {
-    // return clone to avoid changes to internal state
     return this.definition.clone();
   }
 }

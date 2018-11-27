@@ -312,6 +312,192 @@ export class DefinitionsProxy implements IDefinitionsProxy {
     }
 }
 
+export interface IElementsProxy {
+    getAllElements(): Observable<DashboardElement[] | null>;
+    getElement(id: number): Observable<DashboardElement | null>;
+    updateListElement(id: number, element: DashboardElement): Observable<DashboardElement | null>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ElementsProxy implements IElementsProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL_DASHBOARD) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    getAllElements(): Observable<DashboardElement[] | null> {
+        let url_ = this.baseUrl + "/api/Elements";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAllElements(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAllElements(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardElement[] | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardElement[] | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetAllElements(response: HttpResponseBase): Observable<DashboardElement[] | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(DashboardElement.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardElement[] | null>(<any>null);
+    }
+
+    getElement(id: number): Observable<DashboardElement | null> {
+        let url_ = this.baseUrl + "/api/Elements/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetElement(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetElement(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardElement | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardElement | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetElement(response: HttpResponseBase): Observable<DashboardElement | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DashboardElement.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("A server error occurred.", status, _responseText, _headers);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardElement | null>(<any>null);
+    }
+
+    updateListElement(id: number, element: DashboardElement): Observable<DashboardElement | null> {
+        let url_ = this.baseUrl + "/api/Elements/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(element);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateListElement(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateListElement(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardElement | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardElement | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdateListElement(response: HttpResponseBase): Observable<DashboardElement | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DashboardElement.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("A server error occurred.", status, _responseText, _headers);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardElement | null>(<any>null);
+    }
+}
+
 export abstract class EntityBase implements IEntityBase {
     id!: number;
 
@@ -350,11 +536,54 @@ export interface IEntityBase {
     id: number;
 }
 
-export class DashboardDefinition extends EntityBase implements IDashboardDefinition {
+export class DashboardElement extends EntityBase implements IDashboardElement {
     name?: string | null;
-    title?: string | null;
-    tags?: DashboardTag[] | null;
     position!: number;
+
+    constructor(data?: IDashboardElement) {
+        super(data);
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.name = data["name"] !== undefined ? data["name"] : <any>null;
+            this.position = data["position"] !== undefined ? data["position"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardElement {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardElement();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["position"] = this.position !== undefined ? this.position : <any>null;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): DashboardElement {
+        const json = this.toJSON();
+        let result = new DashboardElement();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDashboardElement extends IEntityBase {
+    name?: string | null;
+    position: number;
+}
+
+export class DashboardDefinition extends DashboardElement implements IDashboardDefinition {
+    title?: string | null;
+    columns!: number;
+    tiles?: DashboardTile[] | null;
 
     constructor(data?: IDashboardDefinition) {
         super(data);
@@ -363,14 +592,13 @@ export class DashboardDefinition extends EntityBase implements IDashboardDefinit
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.name = data["name"] !== undefined ? data["name"] : <any>null;
             this.title = data["title"] !== undefined ? data["title"] : <any>null;
-            if (data["tags"] && data["tags"].constructor === Array) {
-                this.tags = [];
-                for (let item of data["tags"])
-                    this.tags.push(DashboardTag.fromJS(item));
+            this.columns = data["columns"] !== undefined ? data["columns"] : <any>null;
+            if (data["tiles"] && data["tiles"].constructor === Array) {
+                this.tiles = [];
+                for (let item of data["tiles"])
+                    this.tiles.push(DashboardTile.fromJS(item));
             }
-            this.position = data["position"] !== undefined ? data["position"] : <any>null;
         }
     }
 
@@ -383,14 +611,13 @@ export class DashboardDefinition extends EntityBase implements IDashboardDefinit
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["name"] = this.name !== undefined ? this.name : <any>null;
         data["title"] = this.title !== undefined ? this.title : <any>null;
-        if (this.tags && this.tags.constructor === Array) {
-            data["tags"] = [];
-            for (let item of this.tags)
-                data["tags"].push(item.toJSON());
+        data["columns"] = this.columns !== undefined ? this.columns : <any>null;
+        if (this.tiles && this.tiles.constructor === Array) {
+            data["tiles"] = [];
+            for (let item of this.tiles)
+                data["tiles"].push(item.toJSON());
         }
-        data["position"] = this.position !== undefined ? this.position : <any>null;
         super.toJSON(data);
         return data; 
     }
@@ -403,54 +630,65 @@ export class DashboardDefinition extends EntityBase implements IDashboardDefinit
     }
 }
 
-export interface IDashboardDefinition extends IEntityBase {
-    name?: string | null;
+export interface IDashboardDefinition extends IDashboardElement {
     title?: string | null;
-    tags?: DashboardTag[] | null;
-    position: number;
+    columns: number;
+    tiles?: DashboardTile[] | null;
 }
 
-export class DashboardTag extends EntityBase implements IDashboardTag {
-    tag!: number;
+export class DashboardTile extends EntityBase implements IDashboardTile {
+    tagId!: number;
+    important!: boolean;
+    columnSpan!: number;
+    rowSpan!: number;
     dashboardDefinitionId!: number;
 
-    constructor(data?: IDashboardTag) {
+    constructor(data?: IDashboardTile) {
         super(data);
     }
 
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.tag = data["tag"] !== undefined ? data["tag"] : <any>null;
+            this.tagId = data["tagId"] !== undefined ? data["tagId"] : <any>null;
+            this.important = data["important"] !== undefined ? data["important"] : <any>null;
+            this.columnSpan = data["columnSpan"] !== undefined ? data["columnSpan"] : <any>null;
+            this.rowSpan = data["rowSpan"] !== undefined ? data["rowSpan"] : <any>null;
             this.dashboardDefinitionId = data["dashboardDefinitionId"] !== undefined ? data["dashboardDefinitionId"] : <any>null;
         }
     }
 
-    static fromJS(data: any): DashboardTag {
+    static fromJS(data: any): DashboardTile {
         data = typeof data === 'object' ? data : {};
-        let result = new DashboardTag();
+        let result = new DashboardTile();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["tag"] = this.tag !== undefined ? this.tag : <any>null;
+        data["tagId"] = this.tagId !== undefined ? this.tagId : <any>null;
+        data["important"] = this.important !== undefined ? this.important : <any>null;
+        data["columnSpan"] = this.columnSpan !== undefined ? this.columnSpan : <any>null;
+        data["rowSpan"] = this.rowSpan !== undefined ? this.rowSpan : <any>null;
         data["dashboardDefinitionId"] = this.dashboardDefinitionId !== undefined ? this.dashboardDefinitionId : <any>null;
         super.toJSON(data);
         return data; 
     }
 
-    clone(): DashboardTag {
+    clone(): DashboardTile {
         const json = this.toJSON();
-        let result = new DashboardTag();
+        let result = new DashboardTile();
         result.init(json);
         return result;
     }
 }
 
-export interface IDashboardTag extends IEntityBase {
-    tag: number;
+export interface IDashboardTile extends IEntityBase {
+    tagId: number;
+    important: boolean;
+    columnSpan: number;
+    rowSpan: number;
     dashboardDefinitionId: number;
 }
 
