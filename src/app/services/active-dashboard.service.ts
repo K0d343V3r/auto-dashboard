@@ -54,7 +54,11 @@ export class ActiveDashboardService {
   }
 
   get title(): string {
-    return this.definition.title;
+    if (this.definition.title !== null) {
+      return this.definition.title;
+    } else {
+      return this.definition.name;
+    }
   }
 
   set title(value: string) {

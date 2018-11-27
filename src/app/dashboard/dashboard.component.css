@@ -1,0 +1,7 @@
+mat-grid-tile {
+  background: lightblue;
+}
+
+mat-grid-list {
+  height: calc(100% - 64px);
+}
