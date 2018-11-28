@@ -31,7 +31,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.router.navigate([`editor/${this.activeDashboardService.id}`]);
     } else if (this.activeDashboardService.id > 0) {
       // dashboard exists, update it
-      this.activeDashboardService.save();
+      this.activeDashboardService.save().subscribe();
     } else {
       // dashboard does not exist, get a new name for it
       const dialogConfig = new MatDialogConfig();
