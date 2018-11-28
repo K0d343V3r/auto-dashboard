@@ -42,7 +42,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       dialogRef.afterClosed().subscribe(data => {
         if (data != null) {
           this.activeDashboardService.name = data.name;
-          this.activeDashboardService.save().subscribe(definition => {
+          this.activeDashboardService.save().subscribe(() => {
             // route to newly created dashboard
             this.router.navigate([`editor/${this.activeDashboardService.id}`]);
           });
