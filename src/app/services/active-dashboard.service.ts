@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { DashboardDefinition, DashboardTile } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
+import { LayoutSchemeService } from './layout-scheme.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,9 @@ export class ActiveDashboardService {
   isDirty: boolean = false;
   definitionChanged$ = this.definitionChangedSource.asObservable();
 
-  constructor() { 
+  constructor(
+    private layoutSchemeService: LayoutSchemeService
+  ) {
     // initialize default definition
     this.defaultDefinition = new DashboardDefinition({
       // position = -1, appends to end of collection
@@ -74,11 +77,10 @@ export class ActiveDashboardService {
     return this.definition.tiles;
   }
 
-  addTag(tagId: TagId, important: boolean) {
+  addTag(tagId: TagId) {
     if (this.definition.tiles.find(t => t.tagId == tagId) == null) {
       const dashboardTile = new DashboardTile();
       dashboardTile.tagId = tagId;
-      dashboardTile.important = important;
       this.definition.tiles.push(dashboardTile);
       this.isDirty = true;
       this.relayout();
@@ -86,13 +88,41 @@ export class ActiveDashboardService {
   }
 
   private relayout() {
-    // TODO
+    const importantCount = this.definition.tiles.filter(t => t.important).length;
+    const scheme = this.layoutSchemeService.getLayout(importantCount, this.definition.tiles.length);
+    this.definition.columns = scheme.columns;
+
+    // recreate tiles according to layout scheme
+    const tiles: DashboardTile[] = [];
+    for (let i = 0; i < scheme.items.length; i++) {
+      let index = this.definition.tiles.findIndex(t => t.important === scheme.items[i].primary);
+      if (index < 0) {
+        // layout service may not return any primary items if too many requested
+        // in this case, we just grab them in the order in which tiles were defined
+        index = 0;
+      }
+      const removedTiles = this.definition.tiles.splice(index, 1);
+      removedTiles[0].columnSpan = scheme.items[i].columnSpan;
+      removedTiles[0].rowSpan = scheme.items[i].rowSpan;
+      tiles.push(removedTiles[0]);
+    }
+
+    this.definition.tiles = tiles;
   }
 
   removeTag(tagId: TagId) {
     const index = this.definition.tiles.findIndex(t => t.tagId == tagId);
     if (index >= 0) {
       this.definition.tiles.splice(index, 1);
+      this.isDirty = true;
+      this.relayout();
+    }
+  }
+
+  toggleTagImportance(tagId: TagId) {
+    const index = this.definition.tiles.findIndex(t => t.tagId == tagId);
+    if (index >= 0) {
+      this.definition.tiles[index].important = !this.definition.tiles[index].important;
       this.isDirty = true;
       this.relayout();
     }

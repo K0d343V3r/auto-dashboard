@@ -1,0 +1,9 @@
+.list-entry-icon {
+  display: flex;
+  align-items: center; 
+  color: #283593;
+}
+
+mat-list-option {
+  height: 48px !important;
+}

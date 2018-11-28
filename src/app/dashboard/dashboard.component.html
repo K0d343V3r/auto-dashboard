@@ -7,14 +7,7 @@
     </button>
   </mat-toolbar-row>
 </mat-toolbar>
-<mat-grid-list cols="20" rowHeight="fit">
-  <mat-grid-tile colspan="5" rowspan="2">1</mat-grid-tile>
-  <mat-grid-tile colspan="5" rowspan="2">2</mat-grid-tile>
-  <mat-grid-tile colspan="5" rowspan="2">3</mat-grid-tile>
-  <mat-grid-tile colspan="5" rowspan="2">4</mat-grid-tile>
-  <mat-grid-tile colspan="4">5</mat-grid-tile>
-  <mat-grid-tile colspan="4">6</mat-grid-tile>
-  <mat-grid-tile colspan="4">7</mat-grid-tile>
-  <mat-grid-tile colspan="4">8</mat-grid-tile>
-  <mat-grid-tile colspan="4">9</mat-grid-tile>
+<mat-grid-list [cols]="activeDashboardService.columns" rowHeight="fit">
+  <mat-grid-tile *ngFor="let tile of activeDashboardService.tiles" [colspan]="tile.columnSpan" [rowspan]="tile.rowSpan">
+  </mat-grid-tile>
 </mat-grid-list>

@@ -26,9 +26,19 @@ export class ConfiguratorComponent implements OnInit {
     return this.activeDashboardService.tiles.find(t => t.tagId === tag.id) != null;
   }
 
+  isTagImportant(tag: SimulatorTag): boolean {
+    const tile = this.activeDashboardService.tiles.find(t => t.tagId === tag.id);
+    return tile != null && tile.important;
+  }
+
+  toggleTagImportance(tag: SimulatorTag, event: MouseEvent) {
+    this.activeDashboardService.toggleTagImportance(tag.id);
+    event.stopImmediatePropagation();
+  }
+
   onTagSelectionChange(event: MatSelectionListChange) {
     if (event.option.selected) {
-      this.activeDashboardService.addTag(event.option.value, false);
+      this.activeDashboardService.addTag(event.option.value);
     } else {
       this.activeDashboardService.removeTag(event.option.value);
     }

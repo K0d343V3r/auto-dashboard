@@ -1,8 +1,8 @@
 mat-toolbar {
   position: fixed;
-  bottom:0px;
+  bottom: 0px;
   height: 45px;
-  width:250px;
+  width: 275px;
 }
 
 mat-nav-list {

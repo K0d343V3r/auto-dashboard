@@ -1,5 +1,9 @@
 <mat-selection-list dense (selectionChange)="onTagSelectionChange($event)">
-  <mat-list-option *ngFor="let tag of tags$ | async" [value]="tag.id" [selected]="isTagSelected(tag)">
-    {{tag.name}}
+  <mat-list-option *ngFor="let tag of tags$ | async" [value]="tag.id" [selected]="isTagSelected(tag)" checkboxPosition="before">
+    <span>{{tag.name}}</span>
+    <span matLine class="fill-remaining-space"></span>
+    <button mat-icon-button matListIcon [disabled]="!isTagSelected(tag)" class="list-entry-icon" (click)="toggleTagImportance(tag, $event)">
+      <mat-icon matLine>{{isTagImportant(tag) ? 'star' : 'star_border'}}</mat-icon>
+    </button>
   </mat-list-option>
 </mat-selection-list>
