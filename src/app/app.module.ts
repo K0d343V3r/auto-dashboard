@@ -12,6 +12,8 @@ import { API_BASE_URL_DASHBOARD } from './proxies/dashboard-api';
 import { API_BASE_URL_SIMULATOR } from './proxies/data-simulator-api';
 import { HttpClientModule } from '@angular/common/http';
 import { OverviewComponent } from './overview/overview.component';
+import { PropertiesDialogComponent } from './properties-dialog/properties-dialog.component';
+import { ReactiveFormsModule } from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -20,12 +22,14 @@ import { OverviewComponent } from './overview/overview.component';
     WorkspaceComponent,
     BrowserComponent,
     DashboardComponent,
-    OverviewComponent
+    OverviewComponent,
+    PropertiesDialogComponent
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    ReactiveFormsModule,
     AppRoutingModule,
     MaterialModule
   ],
@@ -33,9 +37,10 @@ import { OverviewComponent } from './overview/overview.component';
     {
       provide: API_BASE_URL_DASHBOARD, useValue: 'https://localhost:44340'
     }, {
-      provide: API_BASE_URL_SIMULATOR, useValue: 'https://localhost:44364'  
+      provide: API_BASE_URL_SIMULATOR, useValue: 'https://localhost:44364'
     }
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [PropertiesDialogComponent]
 })
 export class AppModule { }

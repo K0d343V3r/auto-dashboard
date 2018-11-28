@@ -512,7 +512,7 @@ export abstract class EntityBase implements IEntityBase {
 
     init(data?: any) {
         if (data) {
-            this.id = data["id"] !== undefined ? data["id"] : <any>null;
+            this.id = data["id"];
         }
     }
 
@@ -523,7 +523,7 @@ export abstract class EntityBase implements IEntityBase {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["id"] = this.id;
         return data; 
     }
 
@@ -537,7 +537,7 @@ export interface IEntityBase {
 }
 
 export class DashboardElement extends EntityBase implements IDashboardElement {
-    name?: string | null;
+    name?: string | undefined;
     position!: number;
 
     constructor(data?: IDashboardElement) {
@@ -547,8 +547,8 @@ export class DashboardElement extends EntityBase implements IDashboardElement {
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.name = data["name"] !== undefined ? data["name"] : <any>null;
-            this.position = data["position"] !== undefined ? data["position"] : <any>null;
+            this.name = data["name"];
+            this.position = data["position"];
         }
     }
 
@@ -561,8 +561,8 @@ export class DashboardElement extends EntityBase implements IDashboardElement {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["position"] = this.position !== undefined ? this.position : <any>null;
+        data["name"] = this.name;
+        data["position"] = this.position;
         super.toJSON(data);
         return data; 
     }
@@ -576,14 +576,14 @@ export class DashboardElement extends EntityBase implements IDashboardElement {
 }
 
 export interface IDashboardElement extends IEntityBase {
-    name?: string | null;
+    name?: string | undefined;
     position: number;
 }
 
 export class DashboardDefinition extends DashboardElement implements IDashboardDefinition {
-    title?: string | null;
+    title?: string | undefined;
     columns!: number;
-    tiles?: DashboardTile[] | null;
+    tiles?: DashboardTile[] | undefined;
 
     constructor(data?: IDashboardDefinition) {
         super(data);
@@ -592,8 +592,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.title = data["title"] !== undefined ? data["title"] : <any>null;
-            this.columns = data["columns"] !== undefined ? data["columns"] : <any>null;
+            this.title = data["title"];
+            this.columns = data["columns"];
             if (data["tiles"] && data["tiles"].constructor === Array) {
                 this.tiles = [];
                 for (let item of data["tiles"])
@@ -611,8 +611,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["title"] = this.title !== undefined ? this.title : <any>null;
-        data["columns"] = this.columns !== undefined ? this.columns : <any>null;
+        data["title"] = this.title;
+        data["columns"] = this.columns;
         if (this.tiles && this.tiles.constructor === Array) {
             data["tiles"] = [];
             for (let item of this.tiles)
@@ -631,9 +631,9 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
 }
 
 export interface IDashboardDefinition extends IDashboardElement {
-    title?: string | null;
+    title?: string | undefined;
     columns: number;
-    tiles?: DashboardTile[] | null;
+    tiles?: DashboardTile[] | undefined;
 }
 
 export class DashboardTile extends EntityBase implements IDashboardTile {
@@ -650,11 +650,11 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.tagId = data["tagId"] !== undefined ? data["tagId"] : <any>null;
-            this.important = data["important"] !== undefined ? data["important"] : <any>null;
-            this.columnSpan = data["columnSpan"] !== undefined ? data["columnSpan"] : <any>null;
-            this.rowSpan = data["rowSpan"] !== undefined ? data["rowSpan"] : <any>null;
-            this.dashboardDefinitionId = data["dashboardDefinitionId"] !== undefined ? data["dashboardDefinitionId"] : <any>null;
+            this.tagId = data["tagId"];
+            this.important = data["important"];
+            this.columnSpan = data["columnSpan"];
+            this.rowSpan = data["rowSpan"];
+            this.dashboardDefinitionId = data["dashboardDefinitionId"];
         }
     }
 
@@ -667,11 +667,11 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["tagId"] = this.tagId !== undefined ? this.tagId : <any>null;
-        data["important"] = this.important !== undefined ? this.important : <any>null;
-        data["columnSpan"] = this.columnSpan !== undefined ? this.columnSpan : <any>null;
-        data["rowSpan"] = this.rowSpan !== undefined ? this.rowSpan : <any>null;
-        data["dashboardDefinitionId"] = this.dashboardDefinitionId !== undefined ? this.dashboardDefinitionId : <any>null;
+        data["tagId"] = this.tagId;
+        data["important"] = this.important;
+        data["columnSpan"] = this.columnSpan;
+        data["rowSpan"] = this.rowSpan;
+        data["dashboardDefinitionId"] = this.dashboardDefinitionId;
         super.toJSON(data);
         return data; 
     }

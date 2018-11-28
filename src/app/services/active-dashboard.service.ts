@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { DashboardDefinition, DashboardTile } from '../proxies/dashboard-api';
+import { DashboardDefinition, DashboardTile, DefinitionsProxy } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
 import { LayoutSchemeService } from './layout-scheme.service';
+import { Observable, of, EMPTY } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -16,12 +18,13 @@ export class ActiveDashboardService {
   definitionChanged$ = this.definitionChangedSource.asObservable();
 
   constructor(
-    private layoutSchemeService: LayoutSchemeService
+    private layoutSchemeService: LayoutSchemeService,
+    private definitionsProxy: DefinitionsProxy
   ) {
     // initialize default definition
     this.defaultDefinition = new DashboardDefinition({
       // position = -1, appends to end of collection
-      id: 0, position: -1, name: '', title: 'New Dashboard', columns: 0, tiles: []
+      id: 0, position: -1, name: 'New Dashboard', title: null, columns: 0, tiles: []
     });
 
     // start with default definition
@@ -44,7 +47,7 @@ export class ActiveDashboardService {
   }
 
   get title(): string {
-    if (this.definition.title !== null) {
+    if (this.definition.title != null) {
       return this.definition.title;
     } else {
       return this.definition.name;
@@ -129,18 +132,36 @@ export class ActiveDashboardService {
   }
 
   load(definition: DashboardDefinition) {
-    this.definition = definition.clone();
-    this.isDirty = false;
-    this.definitionChangedSource.next();
+    this.loadDefinition(definition.clone());
   }
 
   reset() {
-    this.definition = this.defaultDefinition.clone();
-    this.isDirty = false;
-    this.definitionChangedSource.next();
+    this.loadDefinition(this.defaultDefinition.clone());
   }
 
-  getDefinition(): DashboardDefinition {
-    return this.definition.clone();
+  save(): Observable<void> {
+    if (this.definition.id === 0) {
+      // create a new definition
+      return this.definitionsProxy.createDefinition(this.definition).pipe(mergeMap(definition => {
+        // pick up new ids for definition and tiles
+        this.loadDefinition(definition);
+        return of(undefined);
+      }));
+    } else {
+      // update existing definition
+      return this.definitionsProxy.updateDefinition(this.definition.id, this.definition).pipe(mergeMap(definition => {
+        // pick up correct ids for newly created tiles
+        this.loadDefinition(definition, false);
+        return of(undefined);
+      }));
+    }
+  }
+
+  private loadDefinition(definition: DashboardDefinition, notify: boolean = true) {
+    this.definition = definition;
+    this.isDirty = false;
+    if (notify) {
+      this.definitionChangedSource.next();
+    }
   }
 }

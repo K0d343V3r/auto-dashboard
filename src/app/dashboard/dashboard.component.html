@@ -2,8 +2,8 @@
   <mat-toolbar-row>
     <span>{{activeDashboardService.title}}</span>
     <span class="fill-remaining-space"></span>
-    <button mat-icon-button>
-      <mat-icon>add</mat-icon>
+    <button mat-icon-button [disabled]="isEditing && !activeDashboardService.isDirty">
+      <mat-icon (click)=saveOrEdit()>{{isEditing ? 'save' : 'edit'}}</mat-icon>
     </button>
   </mat-toolbar-row>
 </mat-toolbar>

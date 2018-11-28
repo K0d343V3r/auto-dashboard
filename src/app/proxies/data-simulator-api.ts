@@ -382,7 +382,7 @@ export class TagsProxy implements ITagsProxy {
 
 export class TagValues implements ITagValues {
     tag!: TagId;
-    values?: VQT[] | null;
+    values?: VQT[] | undefined;
 
     constructor(data?: ITagValues) {
         if (data) {
@@ -395,7 +395,7 @@ export class TagValues implements ITagValues {
 
     init(data?: any) {
         if (data) {
-            this.tag = data["tag"] !== undefined ? data["tag"] : <any>null;
+            this.tag = data["tag"];
             if (data["values"] && data["values"].constructor === Array) {
                 this.values = [];
                 for (let item of data["values"])
@@ -413,7 +413,7 @@ export class TagValues implements ITagValues {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["tag"] = this.tag !== undefined ? this.tag : <any>null;
+        data["tag"] = this.tag;
         if (this.values && this.values.constructor === Array) {
             data["values"] = [];
             for (let item of this.values)
@@ -432,7 +432,7 @@ export class TagValues implements ITagValues {
 
 export interface ITagValues {
     tag: TagId;
-    values?: VQT[] | null;
+    values?: VQT[] | undefined;
 }
 
 export enum TagId {
@@ -448,9 +448,9 @@ export enum TagId {
 }
 
 export class VQT implements IVQT {
-    value?: any | null;
+    value?: any | undefined;
     time!: Date;
-    quality?: Quality | null;
+    quality?: Quality | undefined;
 
     constructor(data?: IVQT) {
         if (data) {
@@ -463,9 +463,9 @@ export class VQT implements IVQT {
 
     init(data?: any) {
         if (data) {
-            this.value = data["value"] !== undefined ? data["value"] : <any>null;
-            this.time = data["time"] ? new Date(data["time"].toString()) : <any>null;
-            this.quality = data["quality"] ? Quality.fromJS(data["quality"]) : <any>null;
+            this.value = data["value"];
+            this.time = data["time"] ? new Date(data["time"].toString()) : <any>undefined;
+            this.quality = data["quality"] ? Quality.fromJS(data["quality"]) : <any>undefined;
         }
     }
 
@@ -478,9 +478,9 @@ export class VQT implements IVQT {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["value"] = this.value !== undefined ? this.value : <any>null;
-        data["time"] = this.time ? this.time.toISOString() : <any>null;
-        data["quality"] = this.quality ? this.quality.toJSON() : <any>null;
+        data["value"] = this.value;
+        data["time"] = this.time ? this.time.toISOString() : <any>undefined;
+        data["quality"] = this.quality ? this.quality.toJSON() : <any>undefined;
         return data; 
     }
 
@@ -493,9 +493,9 @@ export class VQT implements IVQT {
 }
 
 export interface IVQT {
-    value?: any | null;
+    value?: any | undefined;
     time: Date;
-    quality?: Quality | null;
+    quality?: Quality | undefined;
 }
 
 export class Quality implements IQuality {
@@ -513,8 +513,8 @@ export class Quality implements IQuality {
 
     init(data?: any) {
         if (data) {
-            this.major = data["major"] !== undefined ? data["major"] : <any>null;
-            this.hdaQuality = data["hdaQuality"] !== undefined ? data["hdaQuality"] : <any>null;
+            this.major = data["major"];
+            this.hdaQuality = data["hdaQuality"];
         }
     }
 
@@ -527,8 +527,8 @@ export class Quality implements IQuality {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["major"] = this.major !== undefined ? this.major : <any>null;
-        data["hdaQuality"] = this.hdaQuality !== undefined ? this.hdaQuality : <any>null;
+        data["major"] = this.major;
+        data["hdaQuality"] = this.hdaQuality;
         return data; 
     }
 
@@ -565,7 +565,7 @@ export enum HDAQuality {
 }
 
 export abstract class HistoryRequestBase implements IHistoryRequestBase {
-    tags?: TagId[] | null;
+    tags?: TagId[] | undefined;
     initialValue!: InitialValue;
     maxCount!: number;
 
@@ -585,8 +585,8 @@ export abstract class HistoryRequestBase implements IHistoryRequestBase {
                 for (let item of data["tags"])
                     this.tags.push(item);
             }
-            this.initialValue = data["initialValue"] !== undefined ? data["initialValue"] : <any>null;
-            this.maxCount = data["maxCount"] !== undefined ? data["maxCount"] : <any>null;
+            this.initialValue = data["initialValue"];
+            this.maxCount = data["maxCount"];
         }
     }
 
@@ -602,8 +602,8 @@ export abstract class HistoryRequestBase implements IHistoryRequestBase {
             for (let item of this.tags)
                 data["tags"].push(item);
         }
-        data["initialValue"] = this.initialValue !== undefined ? this.initialValue : <any>null;
-        data["maxCount"] = this.maxCount !== undefined ? this.maxCount : <any>null;
+        data["initialValue"] = this.initialValue;
+        data["maxCount"] = this.maxCount;
         return data; 
     }
 
@@ -613,7 +613,7 @@ export abstract class HistoryRequestBase implements IHistoryRequestBase {
 }
 
 export interface IHistoryRequestBase {
-    tags?: TagId[] | null;
+    tags?: TagId[] | undefined;
     initialValue: InitialValue;
     maxCount: number;
 }
@@ -629,8 +629,8 @@ export class AbsoluteHistoryRequest extends HistoryRequestBase implements IAbsol
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.startTime = data["startTime"] ? new Date(data["startTime"].toString()) : <any>null;
-            this.endTime = data["endTime"] ? new Date(data["endTime"].toString()) : <any>null;
+            this.startTime = data["startTime"] ? new Date(data["startTime"].toString()) : <any>undefined;
+            this.endTime = data["endTime"] ? new Date(data["endTime"].toString()) : <any>undefined;
         }
     }
 
@@ -643,8 +643,8 @@ export class AbsoluteHistoryRequest extends HistoryRequestBase implements IAbsol
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["startTime"] = this.startTime ? this.startTime.toISOString() : <any>null;
-        data["endTime"] = this.endTime ? this.endTime.toISOString() : <any>null;
+        data["startTime"] = this.startTime ? this.startTime.toISOString() : <any>undefined;
+        data["endTime"] = this.endTime ? this.endTime.toISOString() : <any>undefined;
         super.toJSON(data);
         return data; 
     }
@@ -679,8 +679,8 @@ export class RelativeHistoryRequest extends HistoryRequestBase implements IRelat
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.timeScale = data["timeScale"] !== undefined ? data["timeScale"] : <any>null;
-            this.offsetFromNow = data["offsetFromNow"] !== undefined ? data["offsetFromNow"] : <any>null;
+            this.timeScale = data["timeScale"];
+            this.offsetFromNow = data["offsetFromNow"];
         }
     }
 
@@ -693,8 +693,8 @@ export class RelativeHistoryRequest extends HistoryRequestBase implements IRelat
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["timeScale"] = this.timeScale !== undefined ? this.timeScale : <any>null;
-        data["offsetFromNow"] = this.offsetFromNow !== undefined ? this.offsetFromNow : <any>null;
+        data["timeScale"] = this.timeScale;
+        data["offsetFromNow"] = this.offsetFromNow;
         super.toJSON(data);
         return data; 
     }
@@ -722,7 +722,7 @@ export enum TimeScale {
 
 export class TagValue implements ITagValue {
     tag!: TagId;
-    value?: VQT | null;
+    value?: VQT | undefined;
 
     constructor(data?: ITagValue) {
         if (data) {
@@ -735,8 +735,8 @@ export class TagValue implements ITagValue {
 
     init(data?: any) {
         if (data) {
-            this.tag = data["tag"] !== undefined ? data["tag"] : <any>null;
-            this.value = data["value"] ? VQT.fromJS(data["value"]) : <any>null;
+            this.tag = data["tag"];
+            this.value = data["value"] ? VQT.fromJS(data["value"]) : <any>undefined;
         }
     }
 
@@ -749,8 +749,8 @@ export class TagValue implements ITagValue {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["tag"] = this.tag !== undefined ? this.tag : <any>null;
-        data["value"] = this.value ? this.value.toJSON() : <any>null;
+        data["tag"] = this.tag;
+        data["value"] = this.value ? this.value.toJSON() : <any>undefined;
         return data; 
     }
 
@@ -764,11 +764,11 @@ export class TagValue implements ITagValue {
 
 export interface ITagValue {
     tag: TagId;
-    value?: VQT | null;
+    value?: VQT | undefined;
 }
 
 export class ValueAtTimeRequest implements IValueAtTimeRequest {
-    tags?: TagId[] | null;
+    tags?: TagId[] | undefined;
     targetTime!: Date;
 
     constructor(data?: IValueAtTimeRequest) {
@@ -787,7 +787,7 @@ export class ValueAtTimeRequest implements IValueAtTimeRequest {
                 for (let item of data["tags"])
                     this.tags.push(item);
             }
-            this.targetTime = data["targetTime"] ? new Date(data["targetTime"].toString()) : <any>null;
+            this.targetTime = data["targetTime"] ? new Date(data["targetTime"].toString()) : <any>undefined;
         }
     }
 
@@ -805,7 +805,7 @@ export class ValueAtTimeRequest implements IValueAtTimeRequest {
             for (let item of this.tags)
                 data["tags"].push(item);
         }
-        data["targetTime"] = this.targetTime ? this.targetTime.toISOString() : <any>null;
+        data["targetTime"] = this.targetTime ? this.targetTime.toISOString() : <any>undefined;
         return data; 
     }
 
@@ -818,18 +818,18 @@ export class ValueAtTimeRequest implements IValueAtTimeRequest {
 }
 
 export interface IValueAtTimeRequest {
-    tags?: TagId[] | null;
+    tags?: TagId[] | undefined;
     targetTime: Date;
 }
 
 export class SimulatorTag implements ISimulatorTag {
     id!: TagId;
-    name?: string | null;
+    name?: string | undefined;
     type!: TagType;
-    scale?: NumericScale | null;
-    engineeringUnits?: string | null;
-    trueLabel?: string | null;
-    falseLabel?: string | null;
+    scale?: NumericScale | undefined;
+    engineeringUnits?: string | undefined;
+    trueLabel?: string | undefined;
+    falseLabel?: string | undefined;
 
     constructor(data?: ISimulatorTag) {
         if (data) {
@@ -842,13 +842,13 @@ export class SimulatorTag implements ISimulatorTag {
 
     init(data?: any) {
         if (data) {
-            this.id = data["id"] !== undefined ? data["id"] : <any>null;
-            this.name = data["name"] !== undefined ? data["name"] : <any>null;
-            this.type = data["type"] !== undefined ? data["type"] : <any>null;
-            this.scale = data["scale"] ? NumericScale.fromJS(data["scale"]) : <any>null;
-            this.engineeringUnits = data["engineeringUnits"] !== undefined ? data["engineeringUnits"] : <any>null;
-            this.trueLabel = data["trueLabel"] !== undefined ? data["trueLabel"] : <any>null;
-            this.falseLabel = data["falseLabel"] !== undefined ? data["falseLabel"] : <any>null;
+            this.id = data["id"];
+            this.name = data["name"];
+            this.type = data["type"];
+            this.scale = data["scale"] ? NumericScale.fromJS(data["scale"]) : <any>undefined;
+            this.engineeringUnits = data["engineeringUnits"];
+            this.trueLabel = data["trueLabel"];
+            this.falseLabel = data["falseLabel"];
         }
     }
 
@@ -861,13 +861,13 @@ export class SimulatorTag implements ISimulatorTag {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["type"] = this.type !== undefined ? this.type : <any>null;
-        data["scale"] = this.scale ? this.scale.toJSON() : <any>null;
-        data["engineeringUnits"] = this.engineeringUnits !== undefined ? this.engineeringUnits : <any>null;
-        data["trueLabel"] = this.trueLabel !== undefined ? this.trueLabel : <any>null;
-        data["falseLabel"] = this.falseLabel !== undefined ? this.falseLabel : <any>null;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["type"] = this.type;
+        data["scale"] = this.scale ? this.scale.toJSON() : <any>undefined;
+        data["engineeringUnits"] = this.engineeringUnits;
+        data["trueLabel"] = this.trueLabel;
+        data["falseLabel"] = this.falseLabel;
         return data; 
     }
 
@@ -881,12 +881,12 @@ export class SimulatorTag implements ISimulatorTag {
 
 export interface ISimulatorTag {
     id: TagId;
-    name?: string | null;
+    name?: string | undefined;
     type: TagType;
-    scale?: NumericScale | null;
-    engineeringUnits?: string | null;
-    trueLabel?: string | null;
-    falseLabel?: string | null;
+    scale?: NumericScale | undefined;
+    engineeringUnits?: string | undefined;
+    trueLabel?: string | undefined;
+    falseLabel?: string | undefined;
 }
 
 export enum TagType {
@@ -910,8 +910,8 @@ export class NumericScale implements INumericScale {
 
     init(data?: any) {
         if (data) {
-            this.min = data["min"] !== undefined ? data["min"] : <any>null;
-            this.max = data["max"] !== undefined ? data["max"] : <any>null;
+            this.min = data["min"];
+            this.max = data["max"];
         }
     }
 
@@ -924,8 +924,8 @@ export class NumericScale implements INumericScale {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["min"] = this.min !== undefined ? this.min : <any>null;
-        data["max"] = this.max !== undefined ? this.max : <any>null;
+        data["min"] = this.min;
+        data["max"] = this.max;
         return data; 
     }
 
