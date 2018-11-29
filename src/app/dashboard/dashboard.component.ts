@@ -35,10 +35,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   done() {
     if (this.activeDashboardService.id > 0) {
       // dashboard exists, update it
-      this.activeDashboardService.save().subscribe();
+      this.activeDashboardService.save().subscribe(() => {
 
-      // and go back to where we came from
-      this.location.back();
+        // and go back to where we came from
+        this.location.back();
+      });
     } else {
       // dashboard does not exist, get a new name for it
       const dialogConfig = new MatDialogConfig();
@@ -59,7 +60,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   cancel() {
-      // go back to where we came from
-      this.location.back();
+    // go back to where we came from
+    this.location.back();
   }
 }
