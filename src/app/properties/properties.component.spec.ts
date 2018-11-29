@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PropertiesDialogComponent } from './properties-dialog.component';
+import { PropertiesComponent } from './properties.component';
 
-describe('PropertiesDialogComponent', () => {
-  let component: PropertiesDialogComponent;
-  let fixture: ComponentFixture<PropertiesDialogComponent>;
+describe('PropertiesComponent', () => {
+  let component: PropertiesComponent;
+  let fixture: ComponentFixture<PropertiesComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PropertiesDialogComponent ]
+      declarations: [ PropertiesComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PropertiesDialogComponent);
+    fixture = TestBed.createComponent(PropertiesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

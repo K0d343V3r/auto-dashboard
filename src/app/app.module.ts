@@ -12,7 +12,7 @@ import { API_BASE_URL_DASHBOARD } from './proxies/dashboard-api';
 import { API_BASE_URL_SIMULATOR } from './proxies/data-simulator-api';
 import { HttpClientModule } from '@angular/common/http';
 import { OverviewComponent } from './overview/overview.component';
-import { PropertiesDialogComponent } from './properties-dialog/properties-dialog.component';
+import { PropertiesComponent } from './properties/properties.component';
 import { ReactiveFormsModule } from "@angular/forms";
 
 @NgModule({
@@ -23,7 +23,7 @@ import { ReactiveFormsModule } from "@angular/forms";
     BrowserComponent,
     DashboardComponent,
     OverviewComponent,
-    PropertiesDialogComponent
+    PropertiesComponent
   ],
   imports: [
     BrowserModule,
@@ -41,6 +41,6 @@ import { ReactiveFormsModule } from "@angular/forms";
     }
   ],
   bootstrap: [AppComponent],
-  entryComponents: [PropertiesDialogComponent]
+  entryComponents: [PropertiesComponent]
 })
 export class AppModule { }

@@ -2,25 +2,25 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
 import { FormGroup, FormBuilder } from '@angular/forms'
 
-export class PropertiesDialogData {
+export class PropertiesData {
   constructor(public name: string) {
   }
 }
 
 @Component({
-  selector: 'app-properties-dialog',
-  templateUrl: './properties-dialog.component.html',
-  styleUrls: ['./properties-dialog.component.css']
+  selector: 'app-properties',
+  templateUrl: './properties.component.html',
+  styleUrls: ['./properties.component.css']
 })
-export class PropertiesDialogComponent implements OnInit {
+export class PropertiesComponent implements OnInit {
   form: FormGroup;
   name: string;
   title: string;
 
   constructor(
     fb: FormBuilder,
-    private dialogRef: MatDialogRef<PropertiesDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) data: PropertiesDialogData) {
+    private dialogRef: MatDialogRef<PropertiesComponent>,
+    @Inject(MAT_DIALOG_DATA) data: PropertiesData) {
     if (data == null) {
       this.title = "New Dashboard"
       this.name = "";
@@ -38,7 +38,7 @@ export class PropertiesDialogComponent implements OnInit {
   }
 
   save() {
-    const data = new PropertiesDialogData(this.form.value.name.trim());
+    const data = new PropertiesData(this.form.value.name.trim());
     this.dialogRef.close(data);
   }
 

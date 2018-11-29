@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
-import { PropertiesDialogComponent, PropertiesDialogData } from '../properties-dialog/properties-dialog.component';
+import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 import { Location } from '@angular/common';
 
 @Component({
@@ -45,8 +45,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       dialogConfig.disableClose = true;
       dialogConfig.autoFocus = true;
 
-      const dialogRef = this.dialog.open(PropertiesDialogComponent, dialogConfig);
-      dialogRef.afterClosed().subscribe((data: PropertiesDialogData) => {
+      const dialogRef = this.dialog.open(PropertiesComponent, dialogConfig);
+      dialogRef.afterClosed().subscribe((data: PropertiesData) => {
         if (data != null) {
           this.activeDashboardService.name = data.name;
           this.activeDashboardService.save().subscribe(() => {
