@@ -17,7 +17,14 @@ export class DefinitionsResolverService implements Resolve<DashboardDefinition[]
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<DashboardDefinition[]> | Observable<never> {
     return this.definitionsProxy.getAllDefinitions().pipe(
       mergeMap(definitions => {
-        return of(definitions);
+        if (state.url.split('/').length > 2 || definitions.length === 0) {
+          // we are routing to a specific dashboard or we have no definitions, keep going
+          return of(definitions);
+        } else {
+          // we are routing to root viewer and we have definitions, redirect to first definition
+          this.router.navigate([`viewer/${definitions[0].id}`]);
+          return EMPTY;
+        }
       }),
       catchError(() => {
         // on error, go back to original location

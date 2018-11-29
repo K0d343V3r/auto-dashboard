@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DashboardDefinition } from '../proxies/dashboard-api';
+import { DashboardDefinition, DefinitionsProxy } from '../proxies/dashboard-api';
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
@@ -18,7 +18,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private activeDashboardService: ActiveDashboardService
+    private activeDashboardService: ActiveDashboardService,
+    private definitionsProxy: DefinitionsProxy
   ) {
   }
 
@@ -50,7 +51,24 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   removeDefinition() {
+    const removedDefinition = this.definitions.splice(this.selectedDefinitionIndex, 1)[0];
+    if (this.definitions.length == 0) {
+      // list is empty, let's go home
+      this.router.navigate(['viewer']);
+    }
+    else {
+      // navigate to next in line dashboard
+      let index;
+      if (this.selectedDefinitionIndex == this.definitions.length) {
+        index = this.selectedDefinitionIndex - 1;
+      } else {
+        index = this.selectedDefinitionIndex;
+      }
+      this.router.navigate([`viewer/${this.definitions[index].id}`]);
+    }
 
+    // remove from server
+    this.definitionsProxy.deleteDefinition(removedDefinition.id).subscribe();
   }
 
   move(up: boolean) {
