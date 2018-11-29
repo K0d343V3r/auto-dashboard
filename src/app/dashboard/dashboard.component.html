@@ -5,7 +5,7 @@
     <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isEditing" (click)="edit()">
       <mat-icon>edit</mat-icon>
     </button>
-    <button mat-icon-button matTooltip="Cancel Edits" *ngIf="isEditing" (click)="cancel()" [disabled]="isEditing && !activeDashboardService.isDirty">
+    <button mat-icon-button matTooltip="Cancel Edits" *ngIf="isEditing" (click)="cancel()">
       <mat-icon>cancel</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Done Editing" *ngIf="isEditing" (click)="done()" [disabled]="isEditing && !activeDashboardService.isDirty">

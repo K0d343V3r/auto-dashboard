@@ -3,6 +3,7 @@ import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesDialogComponent, PropertiesDialogData } from '../properties-dialog/properties-dialog.component';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,12 +11,13 @@ import { PropertiesDialogComponent, PropertiesDialogData } from '../properties-d
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  private isEditing: boolean;
+  isEditing: boolean;
 
   constructor(
     public activeDashboardService: ActiveDashboardService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private location: Location
   ) { }
 
   ngOnInit() {
@@ -33,9 +35,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   done() {
     if (this.activeDashboardService.id > 0) {
       // dashboard exists, update it
-      this.activeDashboardService.save().subscribe(() => {
-        this.exitEditor();
-      });
+      this.activeDashboardService.save().subscribe();
+
+      // and go back to where we came from
+      this.location.back();
     } else {
       // dashboard does not exist, get a new name for it
       const dialogConfig = new MatDialogConfig();
@@ -43,28 +46,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
       dialogConfig.autoFocus = true;
 
       const dialogRef = this.dialog.open(PropertiesDialogComponent, dialogConfig);
-      dialogRef.afterClosed().subscribe(data => {
+      dialogRef.afterClosed().subscribe((data: PropertiesDialogData) => {
         if (data != null) {
           this.activeDashboardService.name = data.name;
           this.activeDashboardService.save().subscribe(() => {
-            this.exitEditor();
+            // dashboard successfully created, now view it
+            this.router.navigate([`viewer/${this.activeDashboardService.id}`]);
           });
         }
       });
     }
   }
 
-  private exitEditor() {
-    if (this.activeDashboardService.id === 0) {
-      // we were creating a new dashboard, go back to viewer (TODO)
-      this.router.navigate(['viewer']);
-    } else {
-    // and go back where we came from (TODO)
-    this.router.navigate([`viewer/${this.activeDashboardService.id}`]);
-    }
-  }
-
   cancel() {
-    this.exitEditor();
+      // go back to where we came from
+      this.location.back();
   }
 }
