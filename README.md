@@ -11,10 +11,10 @@ An application to create, edit, and display information dashboards.
   - Numeric data points render as a gauge.
   - Boolean data points render as an on/off LED.
   - String data points render as plain text.
-- In addition to data points, user can configure dashboard to view:
+- In addition to specifying data points, user can configure dashboard to view (future):
   - Current (live) data for all data points.
-  - Historical data for all data points (future).
-  - Data at a point in time for all data points (future).
+  - Historical data for all data points.
+  - Data at a point in time for all data points.
 - When viewing historical data, all data points render as trend charts (future).
 - Dashboard data refreshes at a user specified frequency (i.e. every X seconds) (future).
 
