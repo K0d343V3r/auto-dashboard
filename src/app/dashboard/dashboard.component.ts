@@ -25,13 +25,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
   }
 
-  saveOrEdit() {
-    if (!this.isEditing) {
-      // open editor for this dashboard
-      this.router.navigate([`editor/${this.activeDashboardService.id}`]);
-    } else if (this.activeDashboardService.id > 0) {
+  edit() {
+    // open editor for this dashboard
+    this.router.navigate([`editor/${this.activeDashboardService.id}`]);
+  }
+
+  done() {
+    if (this.activeDashboardService.id > 0) {
       // dashboard exists, update it
-      this.activeDashboardService.save().subscribe();
+      this.activeDashboardService.save().subscribe(() => {
+        this.exitEditor();
+      });
     } else {
       // dashboard does not exist, get a new name for it
       const dialogConfig = new MatDialogConfig();
@@ -43,11 +47,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (data != null) {
           this.activeDashboardService.name = data.name;
           this.activeDashboardService.save().subscribe(() => {
-            // route to newly created dashboard
-            this.router.navigate([`editor/${this.activeDashboardService.id}`]);
+            this.exitEditor();
           });
         }
       });
     }
+  }
+
+  private exitEditor() {
+    if (this.activeDashboardService.id === 0) {
+      // we were creating a new dashboard, go back to viewer (TODO)
+      this.router.navigate(['viewer']);
+    } else {
+    // and go back where we came from (TODO)
+    this.router.navigate([`viewer/${this.activeDashboardService.id}`]);
+    }
+  }
+
+  cancel() {
+    this.exitEditor();
   }
 }

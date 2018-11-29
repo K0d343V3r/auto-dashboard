@@ -2,8 +2,14 @@
   <mat-toolbar-row>
     <span>{{activeDashboardService.title}}</span>
     <span class="fill-remaining-space"></span>
-    <button mat-icon-button [disabled]="isEditing && !activeDashboardService.isDirty">
-      <mat-icon (click)=saveOrEdit()>{{isEditing ? 'save' : 'edit'}}</mat-icon>
+    <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isEditing" (click)="edit()">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Cancel Edits" *ngIf="isEditing" (click)="cancel()" [disabled]="isEditing && !activeDashboardService.isDirty">
+      <mat-icon>cancel</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Done Editing" *ngIf="isEditing" (click)="done()" [disabled]="isEditing && !activeDashboardService.isDirty">
+      <mat-icon>done</mat-icon>
     </button>
   </mat-toolbar-row>
 </mat-toolbar>
