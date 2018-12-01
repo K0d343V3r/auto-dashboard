@@ -15,5 +15,13 @@
 </mat-toolbar>
 <mat-grid-list [cols]="activeDashboardService.columns" rowHeight="fit">
   <mat-grid-tile *ngFor="let tile of activeDashboardService.tiles" [colspan]="tile.columnSpan" [rowspan]="tile.rowSpan">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{getTagName(tile.tagId)}}
+        </mat-card-title>
+      </mat-card-header>
+      <div mat-card-image class="dashboard-card-content"></div>
+    </mat-card>
   </mat-grid-tile>
 </mat-grid-list>

@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 import { Location } from '@angular/common';
+import { SimulatorTagService } from '../services/simulator-tag.service';
+import { SimulatorTag } from '../proxies/data-simulator-api';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,20 +14,28 @@ import { Location } from '@angular/common';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  private tagsSubscription: Subscription;
+
   isEditing: boolean;
+  simulatorTags: SimulatorTag[] = [];
 
   constructor(
     public activeDashboardService: ActiveDashboardService,
     private router: Router,
     private dialog: MatDialog,
-    private location: Location
+    private location: Location,
+    private simulatorTagService: SimulatorTagService
   ) { }
 
   ngOnInit() {
     this.isEditing = this.router.url.split("/")[1] === 'editor';
+    this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
+      this.simulatorTags = tags;
+    });
   }
 
   ngOnDestroy() {
+  this.tagsSubscription.unsubscribe();
   }
 
   edit() {
@@ -62,5 +73,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   cancel() {
     // go back to where we came from
     this.location.back();
+  }
+
+  getTagName(tagId: number): string {
+    return this.simulatorTags.find(t => t.id === tagId).name;
   }
 }
