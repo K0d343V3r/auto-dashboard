@@ -15,4 +15,7 @@ export class LabelComponent implements OnInit, IDashboardControl {
   ngOnInit() {
   }
 
+  resize() {
+
+  }
 }

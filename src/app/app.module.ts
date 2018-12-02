@@ -21,7 +21,7 @@ import { GaugeComponent } from './controls/gauge/gauge.component';
 import { LedComponent } from './controls/led/led.component';
 import { LabelComponent } from './controls/label/label.component';
 import { ControlHostDirective } from './controls/common/control-host.directive';
-import { ControlLoaderComponent } from './controls/common/control-loader.component';
+import { DashboardControlComponent } from './controls/common/dashboard-control.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +36,7 @@ import { ControlLoaderComponent } from './controls/common/control-loader.compone
     LedComponent,
     LabelComponent,
     ControlHostDirective,
-    ControlLoaderComponent
+    DashboardControlComponent
   ],
   imports: [
     BrowserModule,

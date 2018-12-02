@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { DashboardDefinition, DashboardTile, DefinitionsProxy } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
-import { LayoutSchemeService } from './layout-scheme.service';
+import { LayoutSchemeService, LayoutItem } from './layout-scheme.service';
 import { Observable, of, EMPTY } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
@@ -13,9 +13,11 @@ export class ActiveDashboardService {
   private readonly defaultDefinition: DashboardDefinition;
   private definition: DashboardDefinition;
   private definitionChangedSource = new Subject();
+  private tileLayoutChangedSource = new Subject();
 
   isDirty: boolean = false;
   definitionChanged$ = this.definitionChangedSource.asObservable();
+  tileLayoutChanged$ = this.tileLayoutChangedSource.asObservable();
 
   constructor(
     private layoutSchemeService: LayoutSchemeService,
@@ -86,28 +88,37 @@ export class ActiveDashboardService {
       dashboardTile.tagId = tagId;
       this.definition.tiles.push(dashboardTile);
       this.isDirty = true;
-      this.relayout();
+      this.layout();
     }
   }
 
-  private relayout() {
+  private layout() {
+    // get new tile layout, based on number of tiles and importance
     const importantCount = this.definition.tiles.filter(t => t.important).length;
     const scheme = this.layoutSchemeService.getLayout(importantCount, this.definition.tiles.length);
+
+    // apply column scheme
     this.definition.columns = scheme.columns;
 
-    // recreate tiles according to layout scheme
+    // apply tile scheme 
+    this.applyTileScheme(scheme.items);
+
+    // and notify
+    this.tileLayoutChangedSource.next();
+  }
+
+  private applyTileScheme(items:LayoutItem[]) {
     const tiles: DashboardTile[] = [];
-    for (let i = 0; i < scheme.items.length; i++) {
-      let index = this.definition.tiles.findIndex(t => t.important === scheme.items[i].primary);
+    for (let item of items) {
+      let index = this.definition.tiles.findIndex(t => t.important === item.primary);
       if (index < 0) {
         // layout service may not return any primary items if too many requested
-        // in this case, we just grab them in the order in which tiles were defined
         index = 0;
       }
-      const removedTiles = this.definition.tiles.splice(index, 1);
-      removedTiles[0].columnSpan = scheme.items[i].columnSpan;
-      removedTiles[0].rowSpan = scheme.items[i].rowSpan;
-      tiles.push(removedTiles[0]);
+      const removedTile = this.definition.tiles.splice(index, 1)[0];
+      removedTile.columnSpan = item.columnSpan;
+      removedTile.rowSpan = item.rowSpan;
+      tiles.push(removedTile);
     }
 
     this.definition.tiles = tiles;
@@ -118,7 +129,7 @@ export class ActiveDashboardService {
     if (index >= 0) {
       this.definition.tiles.splice(index, 1);
       this.isDirty = true;
-      this.relayout();
+      this.layout();
     }
   }
 
@@ -127,7 +138,7 @@ export class ActiveDashboardService {
     if (index >= 0) {
       this.definition.tiles[index].important = !this.definition.tiles[index].important;
       this.isDirty = true;
-      this.relayout();
+      this.layout();
     }
   }
 

@@ -39,9 +39,13 @@ export class GaugeComponent implements OnInit, AfterViewInit, IDashboardControl 
   ngAfterViewInit() {
     this.chart.ref$.subscribe(chartObj => {
       this.chartObj = chartObj;
-      setTimeout(() => {
-        this.chartObj.reflow();
-      }, 100);
+      this.resize();
     });
+  }
+
+  resize() {
+    setTimeout(() => {
+      this.chartObj.reflow();
+    }, 100);
   }
 }

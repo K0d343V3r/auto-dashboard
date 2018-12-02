@@ -9,10 +9,12 @@ import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
 })
 export class LedComponent implements OnInit, IDashboardControl {
   @Input() tag: SimulatorTag;
-  
+
   constructor() { }
 
   ngOnInit() {
   }
 
+  resize() {
+  }
 }
