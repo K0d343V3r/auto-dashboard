@@ -14,6 +14,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { OverviewComponent } from './overview/overview.component';
 import { PropertiesComponent } from './properties/properties.component';
 import { ReactiveFormsModule } from "@angular/forms";
+import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
+import * as More from 'highcharts/highcharts-more.src';
+import * as SolidGauge from 'highcharts/modules/solid-gauge.src';
+import { GaugeComponent } from './controls/gauge/gauge.component';
+import { LedComponent } from './controls/led/led.component';
+import { LabelComponent } from './controls/label/label.component';
+import { ControlHostDirective } from './controls/common/control-host.directive';
+import { ControlLoaderComponent } from './controls/common/control-loader.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +31,12 @@ import { ReactiveFormsModule } from "@angular/forms";
     BrowserComponent,
     DashboardComponent,
     OverviewComponent,
-    PropertiesComponent
+    PropertiesComponent,
+    GaugeComponent,
+    LedComponent,
+    LabelComponent,
+    ControlHostDirective,
+    ControlLoaderComponent
   ],
   imports: [
     BrowserModule,
@@ -31,16 +44,19 @@ import { ReactiveFormsModule } from "@angular/forms";
     HttpClientModule,
     ReactiveFormsModule,
     AppRoutingModule,
-    MaterialModule
+    MaterialModule,
+    ChartModule
   ],
   providers: [
     {
       provide: API_BASE_URL_DASHBOARD, useValue: 'https://localhost:44340'
     }, {
       provide: API_BASE_URL_SIMULATOR, useValue: 'https://localhost:44364'
+    }, {
+      provide: HIGHCHARTS_MODULES, useFactory: () => [ More, SolidGauge ]
     }
   ],
   bootstrap: [AppComponent],
-  entryComponents: [PropertiesComponent]
+  entryComponents: [PropertiesComponent, GaugeComponent, LedComponent, LabelComponent]
 })
 export class AppModule { }

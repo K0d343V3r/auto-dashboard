@@ -6,7 +6,7 @@ import { PropertiesComponent, PropertiesData } from '../properties/properties.co
 import { Location } from '@angular/common';
 import { SimulatorTagService } from '../services/simulator-tag.service';
 import { SimulatorTag } from '../proxies/data-simulator-api';
-import { Subscription } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,27 +15,31 @@ import { Subscription } from 'rxjs';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private tagsSubscription: Subscription;
+  private tags: SimulatorTag[];
 
   isEditing: boolean;
-  simulatorTags: SimulatorTag[] = [];
+  activeDashboardService$: Observable<ActiveDashboardService>;
 
   constructor(
-    public activeDashboardService: ActiveDashboardService,
+    private activeDashboardService: ActiveDashboardService,
     private router: Router,
     private dialog: MatDialog,
     private location: Location,
     private simulatorTagService: SimulatorTagService
-  ) { }
+  ) {
+  }
 
   ngOnInit() {
     this.isEditing = this.router.url.split("/")[1] === 'editor';
+
     this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
-      this.simulatorTags = tags;
+      this.tags = tags;
+      this.activeDashboardService$ = of(this.activeDashboardService);
     });
   }
 
   ngOnDestroy() {
-  this.tagsSubscription.unsubscribe();
+    this.tagsSubscription.unsubscribe();
   }
 
   edit() {
@@ -75,7 +79,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  getTagName(tagId: number): string {
-    return this.simulatorTags.find(t => t.id === tagId).name;
+  getSimulatorTag(tagId: number): SimulatorTag {
+    return this.tags.find(t => t.id === tagId);
   }
 }

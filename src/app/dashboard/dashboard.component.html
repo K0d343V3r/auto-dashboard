@@ -13,15 +13,24 @@
     </button>
   </mat-toolbar-row>
 </mat-toolbar>
-<mat-grid-list [cols]="activeDashboardService.columns" rowHeight="fit">
-  <mat-grid-tile *ngFor="let tile of activeDashboardService.tiles" [colspan]="tile.columnSpan" [rowspan]="tile.rowSpan">
+<mat-grid-list [cols]="(activeDashboardService$ | async).columns" rowHeight="fit">
+  <mat-grid-tile *ngFor="let tile of (activeDashboardService$ | async).tiles" [colspan]="tile.columnSpan" [rowspan]="tile.rowSpan">
     <mat-card class="dashboard-card">
       <mat-card-header>
         <mat-card-title>
-          {{getTagName(tile.tagId)}}
+          {{getSimulatorTag(tile.tagId).name}}
+          <!-- <button mat-icon-button class="more-button" [matMenuTriggerFor]="menu" aria-label="Toggle menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu" xPosition="before">
+              <button mat-menu-item>Expand</button>
+              <button mat-menu-item>Remove</button>
+            </mat-menu> -->
         </mat-card-title>
       </mat-card-header>
-      <div mat-card-image class="dashboard-card-content"></div>
+      <div class="dashboard-card-content">
+        <app-control-loader [tag]="getSimulatorTag(tile.tagId)"></app-control-loader>
+      </div>
     </mat-card>
   </mat-grid-tile>
 </mat-grid-list>
