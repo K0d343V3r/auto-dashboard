@@ -13,8 +13,8 @@
     </button>
   </mat-toolbar-row>
 </mat-toolbar>
-<mat-grid-list [cols]="(activeDashboardService$ | async).columns" rowHeight="fit">
-  <mat-grid-tile *ngFor="let tile of (activeDashboardService$ | async).tiles" [colspan]="tile.columnSpan" [rowspan]="tile.rowSpan">
+<mat-grid-list [cols]="(activeDashboardService$ | async)?.columns" rowHeight="fit">
+  <mat-grid-tile *ngFor="let tile of (activeDashboardService$ | async)?.tiles" [colspan]="tile.columnSpan" [rowspan]="tile.rowSpan">
     <mat-card class="dashboard-card">
       <mat-card-header>
         <mat-card-title>
