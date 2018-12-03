@@ -57,6 +57,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.tagsSubscription.unsubscribe();
+    this.tileAddedSubscription.unsubscribe();
     this.definitionChangedSubscription.unsubscribe();
   }
 

@@ -6,7 +6,7 @@ import { GaugeComponent } from '../gauge/gauge.component';
 import { LabelComponent } from '../label/label.component';
 import { IDashboardControl } from './i-dashboard-control';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
-import { Subscription } from 'rxjs';
+import { Subscription, merge } from 'rxjs';
 import { DashboardDataService } from 'src/app/services/dashboard-data.service';
 
 @Component({
@@ -17,8 +17,7 @@ import { DashboardDataService } from 'src/app/services/dashboard-data.service';
 export class DashboardControlComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(ControlHostDirective) private controlHost: ControlHostDirective;
   private control: IDashboardControl;
-  private tileAddedSubscription: Subscription;
-  private tileRemovedSubscription: Subscription;
+  private resizeSubscription: Subscription;
   private dataChannelSubscription: Subscription;
 
   @Input() tag: SimulatorTag;
@@ -40,11 +39,9 @@ export class DashboardControlComponent implements OnInit, OnDestroy, AfterViewIn
     this.control = <IDashboardControl>componentRef.instance;
     this.control.tag = this.tag;
 
-    this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
-      this.control.resize();
-    });
-
-    this.tileRemovedSubscription = this.activeDashboardService.tileRemoved$.subscribe(() => {
+    this.resizeSubscription = merge(
+      this.activeDashboardService.tileAdded$,
+      this.activeDashboardService.tileRemoved$).subscribe(() => {
       this.control.resize();
     });
 
@@ -54,8 +51,7 @@ export class DashboardControlComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   ngOnDestroy() {
-    this.tileAddedSubscription.unsubscribe();
-    this.tileRemovedSubscription.unsubscribe();
+    this.resizeSubscription.unsubscribe();
     this.dashboardDataService.closeChannel(this.tag.id);
     this.dataChannelSubscription.unsubscribe();
   }
