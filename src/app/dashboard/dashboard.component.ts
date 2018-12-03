@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
@@ -7,6 +7,7 @@ import { Location } from '@angular/common';
 import { SimulatorTagService } from '../services/simulator-tag.service';
 import { SimulatorTag } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
+import { DashboardDataService } from '../services/dashboard-data.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,6 +16,8 @@ import { Observable, of, Subscription } from 'rxjs';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private tagsSubscription: Subscription;
+  private definitionChangedSubscription: Subscription;
+  private tileAddedSubscription: Subscription;
   private tags: SimulatorTag[];
 
   isEditing: boolean;
@@ -25,7 +28,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
     private location: Location,
-    private simulatorTagService: SimulatorTagService
+    private simulatorTagService: SimulatorTagService,
+    private dashboardDataService: DashboardDataService
   ) {
   }
 
@@ -35,11 +39,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
       this.tags = tags;
       this.activeDashboardService$ = of(this.activeDashboardService);
+      this.refreshData();
+
+      this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
+        this.refreshData();
+      });
+
+      this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
+        this.refreshData();
+      });
     });
+  }
+
+  private refreshData() {
+    setTimeout(() => { this.dashboardDataService.refresh(); }, 0);
   }
 
   ngOnDestroy() {
     this.tagsSubscription.unsubscribe();
+    this.definitionChangedSubscription.unsubscribe();
   }
 
   edit() {

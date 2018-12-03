@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, ComponentFactoryResolver, Type, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, ComponentFactoryResolver, Type, OnDestroy, AfterViewInit } from '@angular/core';
 import { SimulatorTag, TagType } from 'src/app/proxies/data-simulator-api';
 import { ControlHostDirective } from './control-host.directive';
 import { LedComponent } from '../led/led.component';
@@ -7,22 +7,26 @@ import { LabelComponent } from '../label/label.component';
 import { IDashboardControl } from './i-dashboard-control';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
 import { Subscription } from 'rxjs';
+import { DashboardDataService } from 'src/app/services/dashboard-data.service';
 
 @Component({
   selector: 'app-dashboard-control',
   templateUrl: './dashboard-control.component.html',
   styleUrls: ['./dashboard-control.component.css']
 })
-export class DashboardControlComponent implements OnInit, OnDestroy {
+export class DashboardControlComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(ControlHostDirective) private controlHost: ControlHostDirective;
   private control: IDashboardControl;
-  private layoutChangedSubscription: Subscription;
+  private tileAddedSubscription: Subscription;
+  private tileRemovedSubscription: Subscription;
+  private dataChannelSubscription: Subscription;
 
   @Input() tag: SimulatorTag;
 
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,
-    private activeDashboardService: ActiveDashboardService
+    private activeDashboardService: ActiveDashboardService,
+    private dashboardDataService: DashboardDataService
   ) { }
 
   ngOnInit() {
@@ -36,13 +40,28 @@ export class DashboardControlComponent implements OnInit, OnDestroy {
     this.control = <IDashboardControl>componentRef.instance;
     this.control.tag = this.tag;
 
-    this.layoutChangedSubscription = this.activeDashboardService.tileLayoutChanged$.subscribe(() => {
+    this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
       this.control.resize();
+    });
+
+    this.tileRemovedSubscription = this.activeDashboardService.tileRemoved$.subscribe(() => {
+      this.control.resize();
+    });
+
+    this.dataChannelSubscription = this.dashboardDataService.openChannel(this.tag.id).subscribe(values => {
+      this.control.values = values;
     });
   }
 
   ngOnDestroy() {
-    this.layoutChangedSubscription.unsubscribe();
+    this.tileAddedSubscription.unsubscribe();
+    this.tileRemovedSubscription.unsubscribe();
+    this.dashboardDataService.closeChannel(this.tag.id);
+    this.dataChannelSubscription.unsubscribe();
+  }
+
+  ngAfterViewInit() {
+
   }
 
   private getControlType(): Type<any> {

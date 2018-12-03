@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Input, AfterViewInit } from '@angular/core';
-import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
+import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
 import { IDashboardControl } from '../common/i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
 import { Subscription } from 'rxjs';
@@ -33,7 +33,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
         startAngle: -90,
         endAngle: 90,
         background: {
-          backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+          backgroundColor: ((<any>Highcharts).theme && (<any>Highcharts).theme.background2) || '#EEE',
           innerRadius: '60%',
           outerRadius: '100%',
           shape: 'arc'
@@ -79,13 +79,13 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
 
       series: [{
         name: this.tag.name,
-        data: [160],
+        data: [],
         dataLabels: {
           crop: false,
           overflow: 'allow',
           format:
-            `<div style = "text-align: center; vertical-align: bottom; color: '${(Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'}'">
-               <span style = "font-size: 25px">{y}</span>
+            `<div style = "text-align: center; vertical-align: bottom; color: '${((<any>Highcharts).theme && (<any>Highcharts).theme.contrastTextColor) || 'black'}'">
+               <span style = "font-size: 25px">{y:.2f}</span>
                <span style = "font-size: 12px">${this.tag.engineeringUnits == null ? "" : "&nbsp" + this.tag.engineeringUnits}</span>
              </div>`
         }
@@ -105,8 +105,15 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   }
 
   resize() {
-    setTimeout(() => {
-      this.chartObj.reflow();
-    }, 100);
+    // reflow must be done after chart is fully created
+    setTimeout(() => { this.chartObj.reflow(); }, 0);
+  }
+
+  set values(value: VQT[]) {
+    if ((<any>this.chartObj.series[0]).points.length === 0) {
+      this.chartObj.series[0].addPoint(value[0].value);
+    } else {
+      (<any>this.chartObj.series[0]).points[0].update(value[0].value);
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { IDashboardControl } from '../common/i-dashboard-control';
-import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
+import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
 
 @Component({
   selector: 'app-led',
@@ -16,5 +16,9 @@ export class LedComponent implements OnInit, IDashboardControl {
   }
 
   resize() {
+  }
+
+  set values(value: VQT[]) {
+
   }
 }
