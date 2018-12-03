@@ -9,6 +9,7 @@ import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
 })
 export class LedComponent implements OnInit, IDashboardControl {
   @Input() tag: SimulatorTag;
+  value: boolean = false;
 
   constructor() { }
 
@@ -19,6 +20,6 @@ export class LedComponent implements OnInit, IDashboardControl {
   }
 
   set values(value: VQT[]) {
-
+    this.value = value[0].value;
   }
 }

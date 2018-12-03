@@ -22,7 +22,10 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   ngOnInit() {
     this.chart = new Chart(<any>{
       chart: {
-        type: 'solidgauge'
+        type: 'solidgauge',
+        style: {
+          fontFamily: 'Roboto,"Helvetica Neue",sans-serif'
+        }
       },
 
       title: null,
@@ -66,7 +69,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
       plotOptions: {
         solidgauge: {
           dataLabels: {
-            y: 5,
+            y: 15,
             borderWidth: 0,
             useHTML: true
           }

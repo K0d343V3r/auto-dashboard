@@ -168,17 +168,17 @@ export class ActiveDashboardService {
       // update existing definition
       return this.definitionsProxy.updateDefinition(this.definition.id, this.definition).pipe(mergeMap(definition => {
         // pick up correct ids for newly created tiles
-        this.loadDefinition(definition, false);
+        this.loadDefinition(definition);
         return of(undefined);
       }));
     }
   }
 
-  private loadDefinition(definition: DashboardDefinition, notify: boolean = true) {
+  private loadDefinition(definition: DashboardDefinition) {
     const currentId = this.definition.id;
     this.definition = definition;
     this.isDirty = false;
-    if (notify && currentId != definition.id) {
+    if (currentId != definition.id) {
       this.definitionChangedSource.next();
     }
   }

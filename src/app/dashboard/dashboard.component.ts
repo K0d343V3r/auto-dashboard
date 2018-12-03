@@ -58,7 +58,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       // stop any ongoing auto-fresh, and set new interval
       this.dashboardDataService.stopRefresh();
-      window.setTimeout(() => { this.dashboardDataService.startRefresh(2); });
+      if (this.activeDashboardService.tiles.length > 0) {
+        // viable dashboard loaded, ask for data
+        window.setTimeout(() => { this.dashboardDataService.startRefresh(2); });
+      }
     }
   }
 
