@@ -9,6 +9,7 @@ import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
 })
 export class LabelComponent implements OnInit, IDashboardControl {
   @Input() tag: SimulatorTag;
+  value: string;
 
   constructor() { }
 
@@ -16,10 +17,9 @@ export class LabelComponent implements OnInit, IDashboardControl {
   }
 
   resize() {
-
   }
 
   set values(value: VQT[]) {
-
+    this.value = new Date(value[0].value).toLocaleString();
   }
 }
