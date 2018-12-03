@@ -10,6 +10,7 @@ class Channel {
   providedIn: 'root'
 })
 export class DashboardDataService {
+  private intervalID?: number = null;
   private channels: Map<TagId, Channel> = new Map<TagId, Channel>();
 
   constructor(
@@ -47,5 +48,19 @@ export class DashboardDataService {
         }
       }
     });
+  }
+
+  startRefresh(interval: number) {
+    this.refresh();
+    this.intervalID = window.setInterval(() => {
+      this.refresh();
+    }, interval * 1000);
+  }
+
+  stopRefresh() {
+    if (this.intervalID !== null) {
+      window.clearInterval(this.intervalID);
+      this.intervalID = null;
+    }
   }
 }

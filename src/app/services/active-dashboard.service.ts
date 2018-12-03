@@ -15,11 +15,13 @@ export class ActiveDashboardService {
   private definitionChangedSource = new Subject();
   private tileAddedSource = new Subject();
   private tileRemovedSource = new Subject();
+  private layoutChangedSource = new Subject();
 
   isDirty: boolean = false;
   definitionChanged$ = this.definitionChangedSource.asObservable();
   tileAdded$ = this.tileAddedSource.asObservable();
   tileRemoved$ = this.tileRemovedSource.asObservable();
+  layoutChanged$ = this.layoutChangedSource.asObservable();
 
   constructor(
     private layoutSchemeService: LayoutSchemeService,
@@ -105,6 +107,9 @@ export class ActiveDashboardService {
 
     // apply tile scheme 
     this.applyTileScheme(scheme.items);
+
+    // and notify
+    this.layoutChangedSource.next();
   }
 
   private applyTileScheme(items:LayoutItem[]) {
@@ -170,9 +175,10 @@ export class ActiveDashboardService {
   }
 
   private loadDefinition(definition: DashboardDefinition, notify: boolean = true) {
+    const currentId = this.definition.id;
     this.definition = definition;
     this.isDirty = false;
-    if (notify) {
+    if (notify && currentId != definition.id) {
       this.definitionChangedSource.next();
     }
   }

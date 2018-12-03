@@ -52,10 +52,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private refreshData() {
-    setTimeout(() => { this.dashboardDataService.refresh(); }, 0);
+    if (this.isEditing) {
+      // we do not auto-refresh in edit mode
+      window.setTimeout(() => { this.dashboardDataService.refresh(); });
+    } else {
+      // stop any ongoing auto-fresh, and set new interval
+      this.dashboardDataService.stopRefresh();
+      window.setTimeout(() => { this.dashboardDataService.startRefresh(2); });
+    }
   }
 
   ngOnDestroy() {
+    this.dashboardDataService.stopRefresh();
     this.tagsSubscription.unsubscribe();
     this.tileAddedSubscription.unsubscribe();
     this.definitionChangedSubscription.unsubscribe();

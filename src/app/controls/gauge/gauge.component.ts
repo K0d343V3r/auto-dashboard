@@ -106,7 +106,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
 
   resize() {
     // reflow must be done after chart is fully created
-    setTimeout(() => { this.chartObj.reflow(); }, 0);
+    window.setTimeout(() => { this.chartObj.reflow(); });
   }
 
   set values(value: VQT[]) {
