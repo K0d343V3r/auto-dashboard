@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DashboardDefinition, DefinitionsProxy } from '../proxies/dashboard-api';
+import { DefinitionsProxy, DashboardElement } from '../proxies/dashboard-api';
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
@@ -12,8 +12,8 @@ import { ActiveDashboardService } from '../services/active-dashboard.service';
 export class BrowserComponent implements OnInit, OnDestroy {
   private definitionChangedSubscription: Subscription;
 
-  definitions: DashboardDefinition[] = [];
-  selectedDefinitionIndex: number = -1;
+  elements: DashboardElement[] = [];
+  selectedElementIndex: number = -1;
 
   constructor(
     private router: Router,
@@ -25,7 +25,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // initialize with resolved definitions
-    this.definitions = this.activatedRoute.snapshot.data.definitions;
+    this.elements = this.activatedRoute.snapshot.data.elements;
     this.onDefinitionChanged();
 
     this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
@@ -35,9 +35,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   private onDefinitionChanged() {
     if (this.activeDashboardService.id == 0) {
-      this.selectedDefinitionIndex = -1
+      this.selectedElementIndex = -1
     } else {
-      this.selectedDefinitionIndex = this.definitions.findIndex(d => d.id == this.activeDashboardService.id);
+      this.selectedElementIndex = this.elements.findIndex(d => d.id == this.activeDashboardService.id);
     }
   }
 
@@ -51,24 +51,24 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   removeDefinition() {
-    const removedDefinition = this.definitions.splice(this.selectedDefinitionIndex, 1)[0];
-    if (this.definitions.length == 0) {
+    const removedElement = this.elements.splice(this.selectedElementIndex, 1)[0];
+    if (this.elements.length == 0) {
       // list is empty, let's go home
       this.router.navigate(['viewer']);
     }
     else {
       // navigate to next in line dashboard
       let index;
-      if (this.selectedDefinitionIndex == this.definitions.length) {
-        index = this.selectedDefinitionIndex - 1;
+      if (this.selectedElementIndex == this.elements.length) {
+        index = this.selectedElementIndex - 1;
       } else {
-        index = this.selectedDefinitionIndex;
+        index = this.selectedElementIndex;
       }
-      this.router.navigate([`viewer/${this.definitions[index].id}`]);
+      this.router.navigate([`viewer/${this.elements[index].id}`]);
     }
 
     // remove from server
-    this.definitionsProxy.deleteDefinition(removedDefinition.id).subscribe();
+    this.definitionsProxy.deleteDefinition(removedElement.id).subscribe();
   }
 
   move(up: boolean) {

@@ -4,7 +4,7 @@ import { WorkspaceComponent } from '../workspace/workspace.component';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { BrowserComponent } from '../browser/browser.component';
 import { ConfiguratorComponent } from '../configurator/configurator.component';
-import { DefinitionsResolverService } from '../services/definitions-resolver.service';
+import { ElementsResolverService } from '../services/elements-resolver.service';
 import { DefinitionResolverService } from '../services/definition-resolver.service';
 import { OverviewComponent } from '../overview/overview.component';
 
@@ -30,7 +30,7 @@ const routes: Routes = [
         component: BrowserComponent,
         outlet: 'sidenav',
         resolve: {
-          definitions: DefinitionsResolverService
+          elements: ElementsResolverService
         }
       }
     ]
@@ -76,6 +76,6 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule],
-  providers: [DefinitionsResolverService, DefinitionResolverService]
+  providers: [ElementsResolverService, DefinitionResolverService]
 })
 export class AppRoutingModule { }

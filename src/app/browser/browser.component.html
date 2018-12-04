@@ -1,20 +1,20 @@
 <mat-nav-list dense>
-  <mat-list-item *ngFor="let definition of definitions; let i = index" routerLinkActive="active" routerLink="/viewer/{{definition.id}}">
+  <mat-list-item *ngFor="let element of elements" routerLinkActive="active" routerLink="/viewer/{{element.id}}">
     <mat-icon matListIcon class="list-entry-icon">dashboard</mat-icon>
-    <a>{{definition.name}}</a>
+    <a>{{element.name}}</a>
   </mat-list-item>
 </mat-nav-list>
 <mat-toolbar color="primary">
   <button mat-icon-button (click)="addDefinition()">
     <mat-icon>add</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedDefinitionIndex < 0" (click)="removeDefinition()">
+  <button mat-icon-button [disabled]="selectedElementIndex < 0" (click)="removeDefinition()">
     <mat-icon>remove</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedDefinitionIndex <= 0" (click)="move(true)">
+  <button mat-icon-button [disabled]="selectedElementIndex <= 0" (click)="move(true)">
     <mat-icon>arrow_upward</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedDefinitionIndex < 0 || selectedDefinitionIndex == definitions.length - 1"
+  <button mat-icon-button [disabled]="selectedElementIndex < 0 || selectedElementIndex == elements.length - 1"
     (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
