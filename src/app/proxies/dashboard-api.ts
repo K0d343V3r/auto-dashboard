@@ -315,7 +315,7 @@ export class DefinitionsProxy implements IDefinitionsProxy {
 export interface IElementsProxy {
     getAllElements(): Observable<DashboardElement[] | null>;
     getElement(id: number): Observable<DashboardElement | null>;
-    updateListElement(id: number, element: DashboardElement): Observable<DashboardElement | null>;
+    updateElement(id: number, element: DashboardElement): Observable<DashboardElement | null>;
 }
 
 @Injectable({
@@ -438,7 +438,7 @@ export class ElementsProxy implements IElementsProxy {
         return _observableOf<DashboardElement | null>(<any>null);
     }
 
-    updateListElement(id: number, element: DashboardElement): Observable<DashboardElement | null> {
+    updateElement(id: number, element: DashboardElement): Observable<DashboardElement | null> {
         let url_ = this.baseUrl + "/api/Elements/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -458,11 +458,11 @@ export class ElementsProxy implements IElementsProxy {
         };
 
         return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processUpdateListElement(response_);
+            return this.processUpdateElement(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processUpdateListElement(<any>response_);
+                    return this.processUpdateElement(<any>response_);
                 } catch (e) {
                     return <Observable<DashboardElement | null>><any>_observableThrow(e);
                 }
@@ -471,7 +471,7 @@ export class ElementsProxy implements IElementsProxy {
         }));
     }
 
-    protected processUpdateListElement(response: HttpResponseBase): Observable<DashboardElement | null> {
+    protected processUpdateElement(response: HttpResponseBase): Observable<DashboardElement | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DefinitionsProxy, DashboardElement } from '../proxies/dashboard-api';
+import { DefinitionsProxy, DashboardElement, ElementsProxy } from '../proxies/dashboard-api';
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
@@ -19,7 +19,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private activeDashboardService: ActiveDashboardService,
-    private definitionsProxy: DefinitionsProxy
+    private definitionsProxy: DefinitionsProxy,
+    private elementsProxy: ElementsProxy
   ) {
   }
 
@@ -72,6 +73,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   move(up: boolean) {
+    const elementToMove = this.elements.splice(this.selectedElementIndex, 1)[0];
+    elementToMove.position = up ? this.selectedElementIndex - 1 : this.selectedElementIndex + 1;
+    this.elements.splice(elementToMove.position, 0, elementToMove);
+    this.selectedElementIndex = elementToMove.position;
 
+    // update in server
+    this.elementsProxy.updateElement(elementToMove.id, elementToMove).subscribe();
   }
 }
