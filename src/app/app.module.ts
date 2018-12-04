@@ -20,8 +20,8 @@ import * as SolidGauge from 'highcharts/modules/solid-gauge.src';
 import { GaugeComponent } from './controls/gauge/gauge.component';
 import { LedComponent } from './controls/led/led.component';
 import { LabelComponent } from './controls/label/label.component';
-import { ControlHostDirective } from './controls/common/control-host.directive';
-import { DashboardControlComponent } from './controls/common/dashboard-control.component';
+import { ControlHostDirective } from './controls/control-host/control-host.directive';
+import { ControlHostComponent } from './controls/control-host/control-host.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +36,7 @@ import { DashboardControlComponent } from './controls/common/dashboard-control.c
     LedComponent,
     LabelComponent,
     ControlHostDirective,
-    DashboardControlComponent
+    ControlHostComponent
   ],
   imports: [
     BrowserModule,

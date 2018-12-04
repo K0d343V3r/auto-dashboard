@@ -4,17 +4,17 @@ import { ControlHostDirective } from './control-host.directive';
 import { LedComponent } from '../led/led.component';
 import { GaugeComponent } from '../gauge/gauge.component';
 import { LabelComponent } from '../label/label.component';
-import { IDashboardControl } from './i-dashboard-control';
+import { IDashboardControl } from '../i-dashboard-control';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
 import { Subscription } from 'rxjs';
 import { DashboardDataService } from 'src/app/services/dashboard-data.service';
 
 @Component({
-  selector: 'app-dashboard-control',
-  templateUrl: './dashboard-control.component.html',
-  styleUrls: ['./dashboard-control.component.css']
+  selector: 'app-control-host',
+  templateUrl: './control-host.component.html',
+  styleUrls: ['./control-host.component.css']
 })
-export class DashboardControlComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(ControlHostDirective) private controlHost: ControlHostDirective;
   private control: IDashboardControl;
   private layoutChangedSubscription: Subscription;

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, AfterViewInit } from '@angular/core';
 import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
-import { IDashboardControl } from '../common/i-dashboard-control';
+import { IDashboardControl } from '../i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
 import { Subscription } from 'rxjs';
 //require('highcharts/themes/grid-light')(Highcharts);  // not theming right now

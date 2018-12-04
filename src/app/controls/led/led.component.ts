@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { IDashboardControl } from '../common/i-dashboard-control';
+import { IDashboardControl } from '../i-dashboard-control';
 import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
 
 @Component({
