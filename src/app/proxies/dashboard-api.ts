@@ -583,6 +583,8 @@ export interface IDashboardElement extends IEntityBase {
 export class DashboardDefinition extends DashboardElement implements IDashboardDefinition {
     title?: string | undefined;
     columns!: number;
+    requestType!: RequestType;
+    timePeriod?: TimePeriod | undefined;
     tiles?: DashboardTile[] | undefined;
 
     constructor(data?: IDashboardDefinition) {
@@ -594,6 +596,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
         if (data) {
             this.title = data["title"];
             this.columns = data["columns"];
+            this.requestType = data["requestType"];
+            this.timePeriod = data["timePeriod"] ? TimePeriod.fromJS(data["timePeriod"]) : <any>undefined;
             if (data["tiles"] && data["tiles"].constructor === Array) {
                 this.tiles = [];
                 for (let item of data["tiles"])
@@ -613,6 +617,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
         data = typeof data === 'object' ? data : {};
         data["title"] = this.title;
         data["columns"] = this.columns;
+        data["requestType"] = this.requestType;
+        data["timePeriod"] = this.timePeriod ? this.timePeriod.toJSON() : <any>undefined;
         if (this.tiles && this.tiles.constructor === Array) {
             data["tiles"] = [];
             for (let item of this.tiles)
@@ -633,7 +639,87 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
 export interface IDashboardDefinition extends IDashboardElement {
     title?: string | undefined;
     columns: number;
+    requestType: RequestType;
+    timePeriod?: TimePeriod | undefined;
     tiles?: DashboardTile[] | undefined;
+}
+
+export enum RequestType {
+    Live = 0, 
+    ValueAtTime = 1, 
+    History = 2, 
+}
+
+export class TimePeriod extends EntityBase implements ITimePeriod {
+    type!: TimePeriodType;
+    timeScale!: RelativeTimeScale;
+    offsetFromNow!: number;
+    startTime?: Date | undefined;
+    endTime?: Date | undefined;
+    dashboardDefinitionId!: number;
+
+    constructor(data?: ITimePeriod) {
+        super(data);
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.type = data["type"];
+            this.timeScale = data["timeScale"];
+            this.offsetFromNow = data["offsetFromNow"];
+            this.startTime = data["startTime"] ? new Date(data["startTime"].toString()) : <any>undefined;
+            this.endTime = data["endTime"] ? new Date(data["endTime"].toString()) : <any>undefined;
+            this.dashboardDefinitionId = data["dashboardDefinitionId"];
+        }
+    }
+
+    static fromJS(data: any): TimePeriod {
+        data = typeof data === 'object' ? data : {};
+        let result = new TimePeriod();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this.type;
+        data["timeScale"] = this.timeScale;
+        data["offsetFromNow"] = this.offsetFromNow;
+        data["startTime"] = this.startTime ? this.startTime.toISOString() : <any>undefined;
+        data["endTime"] = this.endTime ? this.endTime.toISOString() : <any>undefined;
+        data["dashboardDefinitionId"] = this.dashboardDefinitionId;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): TimePeriod {
+        const json = this.toJSON();
+        let result = new TimePeriod();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITimePeriod extends IEntityBase {
+    type: TimePeriodType;
+    timeScale: RelativeTimeScale;
+    offsetFromNow: number;
+    startTime?: Date | undefined;
+    endTime?: Date | undefined;
+    dashboardDefinitionId: number;
+}
+
+export enum TimePeriodType {
+    Relative = 0, 
+    Absolute = 1, 
+}
+
+export enum RelativeTimeScale {
+    Seconds = 0, 
+    Minutes = 1, 
+    Hours = 2, 
+    Days = 3, 
 }
 
 export class DashboardTile extends EntityBase implements IDashboardTile {
@@ -641,6 +727,7 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
     important!: boolean;
     columnSpan!: number;
     rowSpan!: number;
+    position!: number;
     dashboardDefinitionId!: number;
 
     constructor(data?: IDashboardTile) {
@@ -654,6 +741,7 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
             this.important = data["important"];
             this.columnSpan = data["columnSpan"];
             this.rowSpan = data["rowSpan"];
+            this.position = data["position"];
             this.dashboardDefinitionId = data["dashboardDefinitionId"];
         }
     }
@@ -671,6 +759,7 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
         data["important"] = this.important;
         data["columnSpan"] = this.columnSpan;
         data["rowSpan"] = this.rowSpan;
+        data["position"] = this.position;
         data["dashboardDefinitionId"] = this.dashboardDefinitionId;
         super.toJSON(data);
         return data; 
@@ -689,6 +778,7 @@ export interface IDashboardTile extends IEntityBase {
     important: boolean;
     columnSpan: number;
     rowSpan: number;
+    position: number;
     dashboardDefinitionId: number;
 }
 

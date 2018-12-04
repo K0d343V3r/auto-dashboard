@@ -31,7 +31,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
       title: null,
 
       pane: {
-        center: ['50%', '66%'],
+        center: ['50%', '62%'],
         size: '100%',
         startAngle: -90,
         endAngle: 90,

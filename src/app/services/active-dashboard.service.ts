@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DashboardDefinition, DashboardTile, DefinitionsProxy } from '../proxies/dashboard-api';
+import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
 import { LayoutSchemeService, LayoutItem } from './layout-scheme.service';
@@ -30,7 +30,7 @@ export class ActiveDashboardService {
     // initialize default definition
     this.defaultDefinition = new DashboardDefinition({
       // position = -1, appends to end of collection
-      id: 0, position: -1, name: 'New Dashboard', title: null, columns: 0, tiles: []
+      id: 0, position: -1, name: 'New Dashboard', columns: 0, requestType: RequestType.Live, tiles: []
     });
 
     // start with default definition

@@ -713,11 +713,10 @@ export interface IRelativeHistoryRequest extends IHistoryRequestBase {
 }
 
 export enum TimeScale {
-    Milliseconds = 0, 
-    Seconds = 1, 
-    Minutes = 2, 
-    Hours = 3, 
-    Days = 4, 
+    Seconds = 0, 
+    Minutes = 1, 
+    Hours = 2, 
+    Days = 3, 
 }
 
 export class TagValue implements ITagValue {

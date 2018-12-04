@@ -1,7 +1,7 @@
 <div class="container">
   <svg viewBox="0 0 100 120" class="led">
-    <circle cx="50" cy="50" r="21" stroke="#cccccc" stroke-width="1" [attr.fill]="value ? '#55BF3B' : '#DF5353'" />
-    <text *ngIf="tag.trueLabel != null && tag.falseLabel != null" x="50" y="91" text-anchor="middle" class="label">{{value
+    <circle cx="50" cy="46" r="21" stroke="#cccccc" stroke-width="1" [attr.fill]="value ? '#55BF3B' : '#DF5353'" />
+    <text *ngIf="tag.trueLabel != null && tag.falseLabel != null" x="50" y="87" text-anchor="middle" class="label">{{value
       ? tag.trueLabel : tag.falseLabel}}</text>
   </svg>
 </div>
