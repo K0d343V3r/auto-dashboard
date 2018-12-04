@@ -22,10 +22,10 @@ export class PropertiesComponent implements OnInit {
     private dialogRef: MatDialogRef<PropertiesComponent>,
     @Inject(MAT_DIALOG_DATA) data: PropertiesData) {
     if (data == null) {
-      this.title = "New Dashboard"
+      this.title = "New Dashboard";
       this.name = "";
     } else {
-      this.title = "Dashboard Properties"
+      this.title = "Properties";
       this.name = data.name;
     }
 

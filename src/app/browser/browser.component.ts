@@ -3,6 +3,8 @@ import { DefinitionsProxy, DashboardElement, ElementsProxy } from '../proxies/da
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
+import { MatDialog, MatDialogConfig } from "@angular/material";
+import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 
 @Component({
   selector: 'app-browser',
@@ -20,7 +22,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private activeDashboardService: ActiveDashboardService,
     private definitionsProxy: DefinitionsProxy,
-    private elementsProxy: ElementsProxy
+    private elementsProxy: ElementsProxy,
+    private dialog: MatDialog
   ) {
   }
 
@@ -80,5 +83,27 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
     // update in server
     this.elementsProxy.updateElement(elementToMove.id, elementToMove).subscribe();
+  }
+
+  showProperties() {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.data = new PropertiesData(this.elements[this.selectedElementIndex].name);
+
+    const dialogRef = this.dialog.open(PropertiesComponent, dialogConfig);
+    dialogRef.afterClosed().subscribe((data: PropertiesData) => {
+      if (data != null) {
+        // update name in list
+        const element = this.elements[this.selectedElementIndex];
+        element.name = data.name;
+
+        // update active dashboard name (this also sets dirty flag, but that's OK at this time)
+        this.activeDashboardService.name = data.name;
+
+        // and update server
+        this.elementsProxy.updateElement(element.id, element).subscribe();
+      }
+    });   
   }
 }

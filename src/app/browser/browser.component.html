@@ -14,8 +14,12 @@
   <button mat-icon-button [disabled]="selectedElementIndex <= 0" (click)="move(true)">
     <mat-icon>arrow_upward</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedElementIndex < 0 || selectedElementIndex == elements.length - 1"
+  <button mat-icon-button [disabled]="selectedElementIndex < 0 || selectedElementIndex === elements.length - 1"
     (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
+  <span class="fill-remaining-space"></span>
+  <button mat-icon-button [disabled]="0 === elements.length" (click)="showProperties()">
+  <mat-icon>info</mat-icon>
+</button>
 </mat-toolbar>
