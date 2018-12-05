@@ -2,7 +2,7 @@
   <mat-toolbar-row>
     <span>{{activeDashboardService.title}}</span>
     <span class="fill-remaining-space"></span>
-    <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isEditing" (click)="edit()">
+    <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isReadOnly && !isEditing" (click)="edit()">
       <mat-icon>edit</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Cancel Edits" *ngIf="isEditing" (click)="cancel()">

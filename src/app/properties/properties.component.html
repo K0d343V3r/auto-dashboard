@@ -1,11 +1,10 @@
-<h2 mat-dialog-title>{{title}}</h2>
+<span mat-dialog-title>{{title}}</span>
 <mat-dialog-content [formGroup]="form">
   <mat-form-field>
     <input matInput placeholder="Dashboard name" formControlName="name">
   </mat-form-field>
 </mat-dialog-content>
-
-<mat-dialog-actions>
+<mat-dialog-actions align="end">
   <button class="mat-raised-button" (click)="cancel()">Cancel</button>
   <button class="mat-raised-button mat-primary" (click)="save()">Save</button>
 </mat-dialog-actions>

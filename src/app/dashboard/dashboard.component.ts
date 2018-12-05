@@ -21,6 +21,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private tags: SimulatorTag[];
 
   isEditing: boolean;
+  isReadOnly: boolean;
   activeDashboardService$: Observable<ActiveDashboardService>;
 
   constructor(
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isEditing = this.router.url.split("/")[1] === 'editor';
+    this.isReadOnly = this.router.url.split("/")[1] === 'dashboard';
 
     this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
       this.tags = tags;
