@@ -4,6 +4,7 @@ import { ActiveDashboardService } from '../../services/active-dashboard.service'
 import { MatSelectionListChange } from '@angular/material';
 import { SimulatorTagService } from '../../services/simulator-tag.service';
 import { Observable } from 'rxjs';
+import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
 
 @Component({
   selector: 'app-data-settings',
@@ -15,7 +16,8 @@ export class DataSettingsComponent implements OnInit {
 
   constructor(
     private activeDashboardService: ActiveDashboardService,
-    private simulatorTagService: SimulatorTagService
+    private simulatorTagService: SimulatorTagService,
+    private dashboardUndoService: DashboardUndoService
   ) { }
 
   ngOnInit() {
@@ -32,15 +34,15 @@ export class DataSettingsComponent implements OnInit {
   }
 
   toggleTagImportance(tag: SimulatorTag, event: MouseEvent) {
-    this.activeDashboardService.toggleTagImportance(tag.id);
+    this.dashboardUndoService.toggleTagImportance(tag.id);
     event.stopImmediatePropagation();
   }
 
   onTagSelectionChange(event: MatSelectionListChange) {
     if (event.option.selected) {
-      this.activeDashboardService.addTag(event.option.value);
+      this.dashboardUndoService.addTag(event.option.value);
     } else {
-      this.activeDashboardService.removeTag(event.option.value);
+      this.dashboardUndoService.removeTag(event.option.value);
     }
   }
 }

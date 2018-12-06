@@ -1,14 +1,14 @@
-mat-toolbar {
-  position: fixed;
-  bottom: 0px;
-  height: 45px;
-  width: 280px;
-}
-
 mat-nav-list {
   margin-bottom: 45px;
 }
 
 .mat-nav-list .active {
   background: #CFD8DC;
+}
+
+mat-toolbar {
+  position: fixed !important;
+  bottom: 0px;
+  height: 45px !important;
+  width: 280px;
 }

@@ -1,23 +1,26 @@
 import { Injectable } from '@angular/core';
-import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType } from '../proxies/dashboard-api';
+import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType, TimePeriod } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
 import { LayoutSchemeService, LayoutItem } from './layout-scheme.service';
 import { Observable, of, EMPTY } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { IReversibleChanges } from './i-reversible-changes';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ActiveDashboardService {
+export class ActiveDashboardService implements IReversibleChanges {
   private readonly defaultDefinition: DashboardDefinition;
   private definition: DashboardDefinition;
+  private definitionLoadedSource = new Subject();
   private definitionChangedSource = new Subject();
   private tileAddedSource = new Subject();
   private tileRemovedSource = new Subject();
   private layoutChangedSource = new Subject();
 
   isDirty: boolean = false;
+  definitionLoaded$ = this.definitionLoadedSource.asObservable();
   definitionChanged$ = this.definitionChangedSource.asObservable();
   tileAdded$ = this.tileAddedSource.asObservable();
   tileRemoved$ = this.tileRemovedSource.asObservable();
@@ -39,6 +42,22 @@ export class ActiveDashboardService {
 
   get id(): number {
     return this.definition.id;
+  }
+
+  get columns(): number {
+    return this.definition.columns;
+  }
+
+  get tiles(): DashboardTile[] {
+    return this.definition.tiles;
+  }
+
+  get requestType(): RequestType {
+    return this.definition.requestType;
+  }
+
+  get timePeriod(): TimePeriod {
+    return this.definition.timePeriod;
   }
 
   get name(): string {
@@ -76,14 +95,6 @@ export class ActiveDashboardService {
       this.definition.position = value;
       this.isDirty = true;
     }
-  }
-
-  get columns(): number {
-    return this.definition.columns;
-  }
-
-  get tiles(): DashboardTile[] {
-    return this.definition.tiles;
   }
 
   addTag(tagId: TagId) {
@@ -148,6 +159,11 @@ export class ActiveDashboardService {
     }
   }
 
+  changeRequestType(requestType: RequestType, timePeriod: TimePeriod = null) {
+    this.definition.requestType = requestType;
+    this.definition.timePeriod = timePeriod;
+  }
+
   load(definition: DashboardDefinition) {
     this.loadDefinition(definition.clone());
   }
@@ -178,6 +194,7 @@ export class ActiveDashboardService {
     const currentId = this.definition.id;
     this.definition = definition;
     this.isDirty = false;
+    this.definitionLoadedSource.next();
     if (currentId != definition.id) {
       this.definitionChangedSource.next();
     }

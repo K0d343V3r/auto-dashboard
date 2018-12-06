@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DashboardUndoService } from '../services/dashboard-undo.service';
 
 @Component({
   selector: 'app-configurator',
@@ -7,6 +8,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ConfiguratorComponent implements OnInit {
   constructor(
+    public dashboardUndoService: DashboardUndoService
   ) { }
 
   ngOnInit() {

@@ -8,3 +8,11 @@
   <mat-tab label="Display">
   </mat-tab>
 </mat-tab-group>
+<mat-toolbar color="primary">
+  <button mat-icon-button [disabled]="!dashboardUndoService.canUndo()" (click)="dashboardUndoService.undo()">
+    <mat-icon>undo</mat-icon>
+  </button>
+  <button mat-icon-button [disabled]="!dashboardUndoService.canRedo()" (click)="dashboardUndoService.redo()">
+    <mat-icon>redo</mat-icon>
+  </button>
+</mat-toolbar>

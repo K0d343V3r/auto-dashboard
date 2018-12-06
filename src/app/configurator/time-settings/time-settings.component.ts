@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { RelativeTimeScale, RequestType } from '../../proxies/dashboard-api';
+import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
 
 export interface TimeScaleOption {
   value: RelativeTimeScale;
@@ -33,7 +34,9 @@ export class TimeSettingsComponent implements OnInit {
   RequestTypeOption: any = RequestTypeOption;
   selectedRequestType: number = 0;
 
-  constructor() { }
+  constructor(
+    private dashboardUndoService: DashboardUndoService
+  ) { }
 
   ngOnInit() {
   }

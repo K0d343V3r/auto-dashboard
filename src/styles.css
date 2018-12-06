@@ -21,7 +21,7 @@ body {
   flex: 1 1 auto;
 }
 
-.content-toolbar {
+.mat-toolbar .content-toolbar {
   position: sticky;
   position: -webkit-sticky; /* For macOS/iOS Safari */
   top: 0;                   /* Sets the sticky toolbar to be on top */
