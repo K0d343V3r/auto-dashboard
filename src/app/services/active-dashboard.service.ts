@@ -18,6 +18,7 @@ export class ActiveDashboardService implements IReversibleChanges {
   private tileAddedSource = new Subject();
   private tileRemovedSource = new Subject();
   private layoutChangedSource = new Subject();
+  private requestTypeChangedSource = new Subject();
 
   isDirty: boolean = false;
   definitionLoaded$ = this.definitionLoadedSource.asObservable();
@@ -25,6 +26,7 @@ export class ActiveDashboardService implements IReversibleChanges {
   tileAdded$ = this.tileAddedSource.asObservable();
   tileRemoved$ = this.tileRemovedSource.asObservable();
   layoutChanged$ = this.layoutChangedSource.asObservable();
+  requestTypeChanged$ = this.requestTypeChangedSource.asObservable();
 
   constructor(
     private layoutSchemeService: LayoutSchemeService,
@@ -123,7 +125,7 @@ export class ActiveDashboardService implements IReversibleChanges {
     this.layoutChangedSource.next();
   }
 
-  private applyTileScheme(items:LayoutItem[]) {
+  private applyTileScheme(items: LayoutItem[]) {
     const tiles: DashboardTile[] = [];
     for (let item of items) {
       let index = this.definition.tiles.findIndex(t => t.important === item.primary);
@@ -160,8 +162,27 @@ export class ActiveDashboardService implements IReversibleChanges {
   }
 
   changeRequestType(requestType: RequestType, timePeriod: TimePeriod = null) {
-    this.definition.requestType = requestType;
-    this.definition.timePeriod = timePeriod;
+    if (this.definition.requestType != requestType ||
+      !this.areTimePeriodsEqual(this.definition.timePeriod, timePeriod)) {
+      this.definition.requestType = requestType;
+      this.definition.timePeriod = timePeriod;
+      this.isDirty = true;
+      this.requestTypeChangedSource.next();
+    }
+  }
+
+  private areTimePeriodsEqual(timePeriod1: TimePeriod, timePeriod2: TimePeriod): boolean {
+    if (timePeriod1 == null && timePeriod2 == null) {
+      return true;
+    } else if (timePeriod1 != null && timePeriod2 != null) {
+    return timePeriod1.type === timePeriod2.type &&
+      timePeriod1.startTime === timePeriod2.startTime &&
+      timePeriod1.endTime === timePeriod2.endTime &&
+      timePeriod1.offsetFromNow === timePeriod2.offsetFromNow &&
+      timePeriod1.timeScale === timePeriod2.timeScale;
+    } else {
+      return false;
+    }
   }
 
   load(definition: DashboardDefinition) {

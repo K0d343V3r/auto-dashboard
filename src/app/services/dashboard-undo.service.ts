@@ -134,7 +134,7 @@ export class DashboardUndoService implements IReversibleChanges {
     this.processChange(new ImportanceChange(this.activeDashboardService, tagId));
   }
 
-  changeRequestType(requestType: RequestType, timePeriod: TimePeriod) {
+  changeRequestType(requestType: RequestType, timePeriod: TimePeriod = null) {
     this.processChange(new RequestTypeChange(this.activeDashboardService, requestType, timePeriod));
   }
 
