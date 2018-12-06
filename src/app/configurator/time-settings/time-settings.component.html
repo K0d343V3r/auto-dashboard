@@ -1,0 +1,28 @@
+<mat-radio-group class="radio-group" [(value)]="selectedRequestType">
+  <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.Current">
+    Show current values
+  </mat-radio-button>
+  <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.HistoricalRelative">
+    Show values for the last
+  </mat-radio-button>
+  <div class="radio-content">
+    <mat-form-field class="relative-offset" appearance="standard">
+      <mat-label>Duration</mat-label>
+      <input matInput [formControl]="offset">
+      <mat-error *ngIf="offset.invalid">{{getOffsetErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <mat-form-field class="time-scale" appearance="standard">
+      <mat-select [(value)]="selectedTimeScaleOption">
+        <mat-option *ngFor="let option of timeScaleOptions" [value]="option.value">
+          {{option.viewValue}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.HistoricalAbsolute">
+    Show values between
+  </mat-radio-button>
+  <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.ValueAtTime">
+    Show values at
+  </mat-radio-button>
+</mat-radio-group>

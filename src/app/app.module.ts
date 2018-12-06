@@ -22,6 +22,8 @@ import { LedComponent } from './controls/led/led.component';
 import { LabelComponent } from './controls/label/label.component';
 import { ControlHostDirective } from './controls/control-host/control-host.directive';
 import { ControlHostComponent } from './controls/control-host/control-host.component';
+import { DataSettingsComponent } from './configurator/data-settings/data-settings.component';
+import { TimeSettingsComponent } from './configurator/time-settings/time-settings.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +38,9 @@ import { ControlHostComponent } from './controls/control-host/control-host.compo
     LedComponent,
     LabelComponent,
     ControlHostDirective,
-    ControlHostComponent
+    ControlHostComponent,
+    DataSettingsComponent,
+    TimeSettingsComponent
   ],
   imports: [
     BrowserModule,
