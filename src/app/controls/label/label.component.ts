@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { IDashboardControl } from '../i-dashboard-control';
 import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
+import { TagData } from 'src/app/services/dashboard-data.service';
 
 @Component({
   selector: 'app-label',
@@ -19,7 +20,7 @@ export class LabelComponent implements OnInit, IDashboardControl {
   resize() {
   }
 
-  set values(value: VQT[]) {
-    this.value = new Date(value[0].value).toLocaleString();
+  set data(data: TagData) {
+    this.value = new Date(data.values[0].value).toLocaleString();
   }
 }

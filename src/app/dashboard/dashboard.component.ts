@@ -18,6 +18,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private tagsSubscription: Subscription;
   private definitionChangedSubscription: Subscription;
   private tileAddedSubscription: Subscription;
+  private requestTypeSubscription: Subscription;
   private tags: SimulatorTag[];
 
   isEditing: boolean;
@@ -50,6 +51,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
         this.refreshData();
       });
+
+      this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
+        this.refreshData();
+      });
     });
   }
 
@@ -62,7 +67,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.dashboardDataService.stopRefresh();
       if (this.activeDashboardService.tiles.length > 0) {
         // viable dashboard loaded, ask for data
-        window.setTimeout(() => { this.dashboardDataService.startRefresh(2); });
+        // window.setTimeout(() => { this.dashboardDataService.startRefresh(2); });
+        window.setTimeout(() => { this.dashboardDataService.refresh(); });
       }
     }
   }
@@ -72,6 +78,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.tagsSubscription.unsubscribe();
     this.tileAddedSubscription.unsubscribe();
     this.definitionChangedSubscription.unsubscribe();
+    this.requestTypeSubscription.unsubscribe();
   }
 
   edit() {

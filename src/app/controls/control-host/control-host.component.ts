@@ -8,6 +8,8 @@ import { IDashboardControl } from '../i-dashboard-control';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
 import { Subscription } from 'rxjs';
 import { DashboardDataService } from 'src/app/services/dashboard-data.service';
+import { RequestType } from 'src/app/proxies/dashboard-api';
+import { TrendComponent } from '../trend/trend.component';
 
 @Component({
   selector: 'app-control-host',
@@ -19,6 +21,7 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
   private control: IDashboardControl;
   private layoutChangedSubscription: Subscription;
   private dataChannelSubscription: Subscription;
+  private requestTypeSubscription: Subscription;
 
   @Input() tag: SimulatorTag;
 
@@ -29,45 +32,63 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
   ) { }
 
   ngOnInit() {
-    const controlType = this.getControlType();
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(controlType);
-
-    const viewContainerRef = this.controlHost.viewContainerRef;
-    viewContainerRef.clear();
-
-    const componentRef = viewContainerRef.createComponent(componentFactory);
-    this.control = <IDashboardControl>componentRef.instance;
-    this.control.tag = this.tag;
+    this.createHostedControl()
 
     this.layoutChangedSubscription = this.activeDashboardService.layoutChanged$.subscribe(() => {
       this.control.resize();
     });
 
     this.dataChannelSubscription = this.dashboardDataService.openChannel(this.tag.id).subscribe(values => {
-      this.control.values = values;
+      this.control.data = values;
     });
+
+    this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
+      this.createHostedControl();
+    })
   }
 
   ngOnDestroy() {
     this.layoutChangedSubscription.unsubscribe();
     this.dashboardDataService.closeChannel(this.tag.id);
     this.dataChannelSubscription.unsubscribe();
+    this.requestTypeSubscription.unsubscribe();
   }
 
   ngAfterViewInit() {
 
   }
 
+  private createHostedControl() {
+    // create hosted control factory
+    const factory = this.componentFactoryResolver.resolveComponentFactory(this.getControlType());
+
+    // remove existing hosted control
+    this.controlHost.viewContainerRef.clear();
+
+    // create new hosted control
+    const componentRef = this.controlHost.viewContainerRef.createComponent(factory);
+
+    // and initialize its inputs
+    this.control = <IDashboardControl>componentRef.instance;
+    this.control.tag = this.tag;
+  }
+
   private getControlType(): Type<any> {
-    switch (this.tag.type) {
-      case TagType.Boolean:
-        return LedComponent;
+    if (this.activeDashboardService.requestType === RequestType.History) {
+      // all tags render as trend charts
+      return TrendComponent;
+    } else {
+      // single value requests render based on tag data type
+      switch (this.tag.type) {
+        case TagType.Boolean:
+          return LedComponent;
 
-      case TagType.Number:
-        return GaugeComponent;
+        case TagType.Number:
+          return GaugeComponent;
 
-      case TagType.String:
-        return LabelComponent;
+        case TagType.String:
+          return LabelComponent;
+      }
     }
   }
 }

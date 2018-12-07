@@ -24,6 +24,7 @@ import { ControlHostDirective } from './controls/control-host/control-host.direc
 import { ControlHostComponent } from './controls/control-host/control-host.component';
 import { DataSettingsComponent } from './configurator/data-settings/data-settings.component';
 import { TimeSettingsComponent } from './configurator/time-settings/time-settings.component';
+import { TrendComponent } from './controls/trend/trend.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { TimeSettingsComponent } from './configurator/time-settings/time-setting
     ControlHostDirective,
     ControlHostComponent,
     DataSettingsComponent,
-    TimeSettingsComponent
+    TimeSettingsComponent,
+    TrendComponent
   ],
   imports: [
     BrowserModule,
@@ -61,6 +63,6 @@ import { TimeSettingsComponent } from './configurator/time-settings/time-setting
     }
   ],
   bootstrap: [AppComponent],
-  entryComponents: [PropertiesComponent, GaugeComponent, LedComponent, LabelComponent]
+  entryComponents: [PropertiesComponent, GaugeComponent, LedComponent, LabelComponent, TrendComponent]
 })
 export class AppModule { }

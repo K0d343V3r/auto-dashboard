@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { IReversibleChanges } from './i-reversible-changes';
+import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
 import { ActiveDashboardService } from './active-dashboard.service';
 import { TagId } from '../proxies/data-simulator-api';
-import { RequestType, TimePeriod } from '../proxies/dashboard-api';
-import { Subscription } from 'rxjs';
+import { RequestType } from '../proxies/dashboard-api';
 
 abstract class ReversibleChange {
   constructor(protected activeDashboardService: ActiveDashboardService) { }
@@ -67,20 +66,20 @@ class ImportanceChange extends ReversibleChange {
 
 class RequestTypeChange extends ReversibleChange {
   private previousRequestType: RequestType;
-  private previousTimePeriod: TimePeriod;
+  private previousTimeFrame: RequestTimeFrame;
 
-  constructor(activeDashboardService: ActiveDashboardService, private requestType: RequestType, private timePeriod: TimePeriod) {
+  constructor(activeDashboardService: ActiveDashboardService, private requestType: RequestType, private timeFrame: RequestTimeFrame) {
     super(activeDashboardService);
   }
 
   commit() {
     this.previousRequestType = this.activeDashboardService.requestType;
-    this.previousTimePeriod = this.activeDashboardService.timePeriod;
-    this.activeDashboardService.changeRequestType(this.requestType, this.timePeriod);
+    this.previousTimeFrame = this.activeDashboardService.getRequestTimeFrame();
+    this.activeDashboardService.changeRequestType(this.requestType, this.timeFrame);
   }
 
   revert() {
-    this.activeDashboardService.changeRequestType(this.previousRequestType, this.previousTimePeriod);
+    this.activeDashboardService.changeRequestType(this.previousRequestType, this.previousTimeFrame);
   }
 }
 
@@ -134,8 +133,8 @@ export class DashboardUndoService implements IReversibleChanges {
     this.processChange(new ImportanceChange(this.activeDashboardService, tagId));
   }
 
-  changeRequestType(requestType: RequestType, timePeriod: TimePeriod = null) {
-    this.processChange(new RequestTypeChange(this.activeDashboardService, requestType, timePeriod));
+  changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {
+    this.processChange(new RequestTypeChange(this.activeDashboardService, requestType, timeFrame));
   }
 
   canUndo(): boolean {

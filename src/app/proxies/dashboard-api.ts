@@ -584,7 +584,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
     title?: string | undefined;
     columns!: number;
     requestType!: RequestType;
-    timePeriod?: TimePeriod | undefined;
+    valueAtTimeTarget?: Date | undefined;
+    historyTimePeriod?: TimePeriod | undefined;
     tiles?: DashboardTile[] | undefined;
 
     constructor(data?: IDashboardDefinition) {
@@ -597,7 +598,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
             this.title = data["title"];
             this.columns = data["columns"];
             this.requestType = data["requestType"];
-            this.timePeriod = data["timePeriod"] ? TimePeriod.fromJS(data["timePeriod"]) : <any>undefined;
+            this.valueAtTimeTarget = data["valueAtTimeTarget"] ? new Date(data["valueAtTimeTarget"].toString()) : <any>undefined;
+            this.historyTimePeriod = data["historyTimePeriod"] ? TimePeriod.fromJS(data["historyTimePeriod"]) : <any>undefined;
             if (data["tiles"] && data["tiles"].constructor === Array) {
                 this.tiles = [];
                 for (let item of data["tiles"])
@@ -618,7 +620,8 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
         data["title"] = this.title;
         data["columns"] = this.columns;
         data["requestType"] = this.requestType;
-        data["timePeriod"] = this.timePeriod ? this.timePeriod.toJSON() : <any>undefined;
+        data["valueAtTimeTarget"] = this.valueAtTimeTarget ? this.valueAtTimeTarget.toISOString() : <any>undefined;
+        data["historyTimePeriod"] = this.historyTimePeriod ? this.historyTimePeriod.toJSON() : <any>undefined;
         if (this.tiles && this.tiles.constructor === Array) {
             data["tiles"] = [];
             for (let item of this.tiles)
@@ -640,7 +643,8 @@ export interface IDashboardDefinition extends IDashboardElement {
     title?: string | undefined;
     columns: number;
     requestType: RequestType;
-    timePeriod?: TimePeriod | undefined;
+    valueAtTimeTarget?: Date | undefined;
+    historyTimePeriod?: TimePeriod | undefined;
     tiles?: DashboardTile[] | undefined;
 }
 

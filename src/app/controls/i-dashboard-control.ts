@@ -1,7 +1,8 @@
-import { SimulatorTag, VQT } from "../proxies/data-simulator-api";
+import { SimulatorTag } from "../proxies/data-simulator-api";
+import { TagData } from "../services/dashboard-data.service";
 
 export interface IDashboardControl {
   tag: SimulatorTag;
-  values: VQT[];
+  data: TagData;
   resize();
 }

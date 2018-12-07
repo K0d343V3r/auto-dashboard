@@ -3,9 +3,9 @@ import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType, Time
 import { Subject } from 'rxjs';
 import { TagId } from '../proxies/data-simulator-api';
 import { LayoutSchemeService, LayoutItem } from './layout-scheme.service';
-import { Observable, of, EMPTY } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { IReversibleChanges } from './i-reversible-changes';
+import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
 
 @Injectable({
   providedIn: 'root'
@@ -58,8 +58,15 @@ export class ActiveDashboardService implements IReversibleChanges {
     return this.definition.requestType;
   }
 
-  get timePeriod(): TimePeriod {
-    return this.definition.timePeriod;
+  getRequestTimeFrame(): RequestTimeFrame {
+    if (this.definition.requestType === RequestType.Live) {
+      return null;
+    } else {
+      const timeFrame = new RequestTimeFrame();
+      timeFrame.targetTime = this.definition.valueAtTimeTarget;
+      timeFrame.timePeriod = this.definition.historyTimePeriod;
+      return timeFrame;
+    }
   }
 
   get name(): string {
@@ -161,28 +168,17 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
   }
 
-  changeRequestType(requestType: RequestType, timePeriod: TimePeriod = null) {
-    if (this.definition.requestType != requestType ||
-      !this.areTimePeriodsEqual(this.definition.timePeriod, timePeriod)) {
-      this.definition.requestType = requestType;
-      this.definition.timePeriod = timePeriod;
-      this.isDirty = true;
-      this.requestTypeChangedSource.next();
-    }
-  }
-
-  private areTimePeriodsEqual(timePeriod1: TimePeriod, timePeriod2: TimePeriod): boolean {
-    if (timePeriod1 == null && timePeriod2 == null) {
-      return true;
-    } else if (timePeriod1 != null && timePeriod2 != null) {
-    return timePeriod1.type === timePeriod2.type &&
-      timePeriod1.startTime === timePeriod2.startTime &&
-      timePeriod1.endTime === timePeriod2.endTime &&
-      timePeriod1.offsetFromNow === timePeriod2.offsetFromNow &&
-      timePeriod1.timeScale === timePeriod2.timeScale;
+  changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {
+    this.definition.requestType = requestType;
+    if (timeFrame === null) {
+      this.definition.historyTimePeriod = null;
+      this.definition.valueAtTimeTarget = null;
     } else {
-      return false;
+      this.definition.historyTimePeriod = timeFrame.timePeriod;
+      this.definition.valueAtTimeTarget = timeFrame.targetTime;
     }
+    this.isDirty = true;
+    this.requestTypeChangedSource.next();
   }
 
   load(definition: DashboardDefinition) {

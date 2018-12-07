@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input, AfterViewInit } from '@angular/cor
 import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
 import { IDashboardControl } from '../i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
-import { Subscription } from 'rxjs';
+import { TagData } from 'src/app/services/dashboard-data.service';
 //require('highcharts/themes/grid-light')(Highcharts);  // not theming right now
 
 @Component({
@@ -10,9 +10,8 @@ import { Subscription } from 'rxjs';
   templateUrl: './gauge.component.html',
   styleUrls: ['./gauge.component.css']
 })
-export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashboardControl {
+export class GaugeComponent implements OnInit, AfterViewInit, IDashboardControl {
   private chartObj: Highcharts.ChartObject;
-  private chartObjSubscription: Subscription;
 
   @Input() tag: SimulatorTag;
   chart: Chart;
@@ -27,9 +26,9 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
           fontFamily: 'Roboto,"Helvetica Neue",sans-serif'
         }
       },
-
-      title: null,
-
+      title: {
+        text: null
+      },
       pane: {
         center: ['50%', '62%'],
         size: '100%',
@@ -42,11 +41,9 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
           shape: 'arc'
         }
       },
-
       tooltip: {
         enabled: false
       },
-
       yAxis: {
         stops: [
           [0.1, '#55BF3B'], // green
@@ -65,7 +62,6 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
         min: this.tag.scale.min,
         max: this.tag.scale.max
       },
-
       plotOptions: {
         solidgauge: {
           dataLabels: {
@@ -75,11 +71,9 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
           }
         }
       },
-
       credits: {
         enabled: false
       },
-
       series: [{
         name: this.tag.name,
         data: [],
@@ -96,12 +90,8 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
     });
   }
 
-  ngOnDestroy() {
-    this.chartObjSubscription.unsubscribe();
-  }
-
   ngAfterViewInit() {
-    this.chartObjSubscription = this.chart.ref$.subscribe(chartObj => {
+    this.chart.ref$.subscribe(chartObj => {
       this.chartObj = chartObj;
       this.resize();
     });
@@ -112,11 +102,11 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
     window.setTimeout(() => { this.chartObj.reflow(); });
   }
 
-  set values(value: VQT[]) {
+  set data(data: TagData) {
     if ((<any>this.chartObj.series[0]).points.length === 0) {
-      this.chartObj.series[0].addPoint(value[0].value);
+      this.chartObj.series[0].addPoint(data.values[0].value);
     } else {
-      (<any>this.chartObj.series[0]).points[0].update(value[0].value);
+      (<any>this.chartObj.series[0]).points[0].update(data[0].value);
     }
   }
 }

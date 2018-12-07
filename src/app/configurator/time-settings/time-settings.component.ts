@@ -5,6 +5,7 @@ import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
 import { Subscription } from 'rxjs';
+import { RequestTimeFrame } from 'src/app/services/i-reversible-changes';
 
 export interface TimeScaleOption {
   value: RelativeTimeScale;
@@ -53,7 +54,7 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       if (value === RequestTypeOption.Current) {
         this.dashboardUndoService.changeRequestType(RequestType.Live);
       } else if (value === RequestTypeOption.HistoricalRelative) {
-        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimePeriod(true));
+        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
       } else if (value === RequestTypeOption.HistoricalAbsolute) {
         // TODO
         this.dashboardUndoService.changeRequestType(RequestType.Live);
@@ -64,17 +65,17 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
     });
 
     this.offset.valueChanges.pipe(
-      debounceTime(2000),
+      debounceTime(1000),
       distinctUntilChanged()
     ).subscribe(() => {
       if (this.offset.valid) {
-        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimePeriod(true));
+        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
       }
     });
 
     this.timeScale.valueChanges.subscribe(() => {
       if (this.timeScale.valid) {
-        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimePeriod(true));
+        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
       }
     });
 
@@ -87,15 +88,26 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
     this.requestTypeSubscription.unsubscribe();
   }
 
-  private createTimePeriod(relative: boolean): TimePeriod {
-    const timePeriod = new TimePeriod();
-    if (relative) {
-      timePeriod.offsetFromNow = this.offset.value;
-      timePeriod.timeScale = this.timeScale.value;
+  private createTimeFrame(): RequestTimeFrame {
+    if (this.requestType.value === RequestTypeOption.Current) {
+      return null;
     } else {
-      // TODO
+      const timeFrame = new RequestTimeFrame();
+      if (this.requestType.value === RequestTypeOption.HistoricalAbsolute) {
+        timeFrame.timePeriod = new TimePeriod();
+        timeFrame.timePeriod.type = TimePeriodType.Absolute;
+        timeFrame.timePeriod.endTime = new Date(); // TODO
+        timeFrame.timePeriod.startTime = new Date(); // TODO
+      } else if (this.requestType.value === RequestTypeOption.HistoricalRelative) {
+        timeFrame.timePeriod = new TimePeriod();
+        // offsetFromNow stored as a negative number
+        timeFrame.timePeriod.offsetFromNow = -this.offset.value;
+        timeFrame.timePeriod.timeScale = this.timeScale.value;
+      } else {
+        timeFrame.targetTime = new Date(); // TODO
+      }
+      return timeFrame;
     }
-    return timePeriod;
   }
 
   private updateControlStates() {
@@ -113,8 +125,10 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
     const requestType = this.getRequestType();
     this.requestType.setValue(requestType, { emitEvent: false });
     if (requestType === RequestTypeOption.HistoricalRelative) {
-      this.offset.setValue(this.activeDashboardService.timePeriod.offsetFromNow, { emitEvent: false });
-      this.timeScale.setValue(this.activeDashboardService.timePeriod.timeScale, { emitEvent: false });
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+      // offsetFromNow stored as a negative number
+      this.offset.setValue(-timeFrame.timePeriod.offsetFromNow, { emitEvent: false });
+      this.timeScale.setValue(timeFrame.timePeriod.timeScale, { emitEvent: false });
     }
   }
 
@@ -127,7 +141,8 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         return RequestTypeOption.ValueAtTime;
 
       case RequestType.History:
-        return this.activeDashboardService.timePeriod.type === TimePeriodType.Absolute ?
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+        return timeFrame.timePeriod.type === TimePeriodType.Absolute ?
           RequestTypeOption.HistoricalAbsolute : RequestTypeOption.HistoricalRelative;
 
       default:
