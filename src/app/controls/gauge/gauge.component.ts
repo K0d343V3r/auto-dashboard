@@ -106,7 +106,7 @@ export class GaugeComponent implements OnInit, AfterViewInit, IDashboardControl 
     if ((<any>this.chartObj.series[0]).points.length === 0) {
       this.chartObj.series[0].addPoint(data.values[0].value);
     } else {
-      (<any>this.chartObj.series[0]).points[0].update(data[0].value);
+      (<any>this.chartObj.series[0]).points[0].update(data.values[0].value);
     }
   }
 }

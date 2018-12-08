@@ -77,9 +77,15 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
   }
 
   set data(data: TagData) {
+    // append new points
     data.values.forEach(v => {
       this.chartObj.series[0].addPoint([v.time.getTime(), v.quality.major === MajorQuality.Bad ? null : v.value], false, false)
-      });
+    });
+
+    // update time axis min and max
+    this.chartObj.xAxis[0].setExtremes(data.startTime.getTime(), data.endTime.getTime(), false);
+
+    // and redraw chart
     this.chartObj.redraw();
   }
 }

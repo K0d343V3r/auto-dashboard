@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { TagId, VQT, DataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, RelativeHistoryResponse, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
-import { Observable, Subject } from 'rxjs';
+import { TagId, VQT, DataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard.service';
-import { RequestType, TimePeriodType, RelativeTimeScale } from '../proxies/dashboard-api';
+import { RequestType, TimePeriodType, RelativeTimeScale, TimePeriod } from '../proxies/dashboard-api';
 
 export class TagData {
   constructor(public startTime: Date, public endTime: Date, public values: VQT[]) { }
@@ -18,11 +18,15 @@ class Channel {
 export class DashboardDataService {
   private intervalID?: number = null;
   private channels: Map<TagId, Channel> = new Map<TagId, Channel>();
+  private readonly interval: number = 2;
+  private lastRefreshDate: Date = null;
+  private dataRequestSubscription: Subscription;
 
   constructor(
     private dataProxy: DataProxy,
     private activeDashboardService: ActiveDashboardService
-  ) { }
+  ) {
+  }
 
   openChannel(tagId: TagId): Observable<TagData> {
     let channel = this.channels.get(tagId);
@@ -49,14 +53,14 @@ export class DashboardDataService {
   refresh() {
     const tags = Array.from(this.channels.keys());
     if (this.activeDashboardService.requestType === RequestType.Live) {
-      this.dataProxy.getLiveValue(tags).subscribe(values => {
+      this.dataRequestSubscription = this.dataProxy.getLiveValue(tags).subscribe(values => {
         this.broadcastSingleValue(values);
       });
     } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
       const request = new ValueAtTimeRequest();
       request.targetTime = this.activeDashboardService.getRequestTimeFrame().targetTime;
       request.tags = tags;
-      this.dataProxy.getValueAtTime(request).subscribe(values => {
+      this.dataRequestSubscription = this.dataProxy.getValueAtTime(request).subscribe(values => {
         this.broadcastSingleValue(values);
       });
     } else {
@@ -67,20 +71,56 @@ export class DashboardDataService {
           request.tags = tags;
           request.startTime = timeFrame.timePeriod.startTime;
           request.endTime = timeFrame.timePeriod.endTime;
-          this.dataProxy.getHistoryAbsolute(request).subscribe(values => {
-            this.broadcastMultipleValues(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime, values);
+          request.initialValue = InitialValue.SampleAndHold;
+          this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
+            this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
           });
         } else {
           const request = new RelativeHistoryRequest();
           request.tags = tags;
-          request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
-          request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
-          this.dataProxy.getHistoryRelative(request).subscribe(response => {
-            this.broadcastMultipleValues(response.resolvedStartTime, response.resolvedEndTime, response.values);
+          if (!this.isRefreshing || this.lastRefreshDate === null) {
+            // not auto refreshing or not doing partial updates yet (first pass)
+            request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
+            request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
+            request.initialValue = InitialValue.SampleAndHold;
+          } else {
+            // subsequent (partial) auto-refresh pass, only ask for delta
+            request.anchorTime = this.lastRefreshDate;
+          }
+          this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
+            const startTime = this.getRelativeStartTime(timeFrame.timePeriod, response.endTime);
+            this.broadcastMultipleValues(startTime, response.endTime, response.values);
+            this.lastRefreshDate = response.endTime;
           });
         }
       }
     }
+  }
+
+  private getRelativeStartTime(timePeriod: TimePeriod, endTime: Date): Date {
+    let date = new Date(endTime);
+    switch (timePeriod.timeScale) {
+      case RelativeTimeScale.Seconds:
+        date.setSeconds(endTime.getSeconds() + timePeriod.offsetFromNow);
+        break;
+
+      case RelativeTimeScale.Minutes:
+        date.setMinutes(endTime.getMinutes() + timePeriod.offsetFromNow);
+        break;
+
+      case RelativeTimeScale.Hours:
+        date.setHours(endTime.getHours() + timePeriod.offsetFromNow);
+        break;
+
+      case RelativeTimeScale.Days:
+        date.setDate(endTime.getDate() + timePeriod.offsetFromNow);
+        break;
+
+      default:
+        throw "Invalid time scale.";
+    }
+
+    return date;
   }
 
   private toTimeScale(timeScale: RelativeTimeScale): TimeScale {
@@ -120,17 +160,40 @@ export class DashboardDataService {
     }
   }
 
-  startRefresh(interval: number) {
+  private get isRefreshing(): boolean {
+    return this.intervalID !== null;
+  }
+
+  startRefresh() {
+    // stop any ongoing auto refresh
+    this.stopRefresh();
+
+    // do a full refresh once
     this.refresh();
-    this.intervalID = window.setInterval(() => {
-      this.refresh();
-    }, interval * 1000);
+
+    const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+    if (this.activeDashboardService.requestType !== RequestType.History ||
+      timeFrame.timePeriod.type != TimePeriodType.Absolute) {
+      // do no auto-refresh for absolute time periods (returns same data)
+      this.intervalID = window.setInterval(() => {
+        this.refresh();
+      }, this.interval * 1000);   // TODO: get this from dashboard definition
+    }
   }
 
   stopRefresh() {
     if (this.intervalID !== null) {
+      // stop our data pump
       window.clearInterval(this.intervalID);
+
+      // cancel last outgoing data request
+      this.dataRequestSubscription.unsubscribe();
+
+      // we are no longer auto refreshing
       this.intervalID = null;
+
+      // start with full data pass on next refresh
+      this.lastRefreshDate = null;
     }
   }
 }

@@ -14,8 +14,8 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 export const API_BASE_URL_SIMULATOR = new InjectionToken<string>('API_BASE_URL_SIMULATOR');
 
 export interface IDataProxy {
-    getHistoryAbsolute(options: AbsoluteHistoryRequest): Observable<TagValues[] | null>;
-    getHistoryRelative(request: RelativeHistoryRequest): Observable<RelativeHistoryResponse | null>;
+    getHistoryAbsolute(options: AbsoluteHistoryRequest): Observable<HistoryResponse | null>;
+    getHistoryRelative(request: RelativeHistoryRequest): Observable<HistoryResponse | null>;
     getValueAtTime(request: ValueAtTimeRequest): Observable<TagValue[] | null>;
     getLiveValue(tags: TagId[]): Observable<TagValue[] | null>;
 }
@@ -33,7 +33,7 @@ export class DataProxy implements IDataProxy {
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
-    getHistoryAbsolute(options: AbsoluteHistoryRequest): Observable<TagValues[] | null> {
+    getHistoryAbsolute(options: AbsoluteHistoryRequest): Observable<HistoryResponse | null> {
         let url_ = this.baseUrl + "/api/Data/history/absolute";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -56,14 +56,14 @@ export class DataProxy implements IDataProxy {
                 try {
                     return this.processGetHistoryAbsolute(<any>response_);
                 } catch (e) {
-                    return <Observable<TagValues[] | null>><any>_observableThrow(e);
+                    return <Observable<HistoryResponse | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<TagValues[] | null>><any>_observableThrow(response_);
+                return <Observable<HistoryResponse | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetHistoryAbsolute(response: HttpResponseBase): Observable<TagValues[] | null> {
+    protected processGetHistoryAbsolute(response: HttpResponseBase): Observable<HistoryResponse | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -74,11 +74,7 @@ export class DataProxy implements IDataProxy {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200 && resultData200.constructor === Array) {
-                result200 = [];
-                for (let item of resultData200)
-                    result200.push(TagValues.fromJS(item));
-            }
+            result200 = resultData200 ? HistoryResponse.fromJS(resultData200) : <any>null;
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -86,10 +82,10 @@ export class DataProxy implements IDataProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<TagValues[] | null>(<any>null);
+        return _observableOf<HistoryResponse | null>(<any>null);
     }
 
-    getHistoryRelative(request: RelativeHistoryRequest): Observable<RelativeHistoryResponse | null> {
+    getHistoryRelative(request: RelativeHistoryRequest): Observable<HistoryResponse | null> {
         let url_ = this.baseUrl + "/api/Data/history/relative";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -112,14 +108,14 @@ export class DataProxy implements IDataProxy {
                 try {
                     return this.processGetHistoryRelative(<any>response_);
                 } catch (e) {
-                    return <Observable<RelativeHistoryResponse | null>><any>_observableThrow(e);
+                    return <Observable<HistoryResponse | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<RelativeHistoryResponse | null>><any>_observableThrow(response_);
+                return <Observable<HistoryResponse | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetHistoryRelative(response: HttpResponseBase): Observable<RelativeHistoryResponse | null> {
+    protected processGetHistoryRelative(response: HttpResponseBase): Observable<HistoryResponse | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -130,7 +126,7 @@ export class DataProxy implements IDataProxy {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? RelativeHistoryResponse.fromJS(resultData200) : <any>null;
+            result200 = resultData200 ? HistoryResponse.fromJS(resultData200) : <any>null;
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -138,7 +134,7 @@ export class DataProxy implements IDataProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<RelativeHistoryResponse | null>(<any>null);
+        return _observableOf<HistoryResponse | null>(<any>null);
     }
 
     getValueAtTime(request: ValueAtTimeRequest): Observable<TagValue[] | null> {
@@ -374,6 +370,65 @@ export class TagsProxy implements ITagsProxy {
         }
         return _observableOf<SimulatorTag | null>(<any>null);
     }
+}
+
+export class HistoryResponse implements IHistoryResponse {
+    startTime!: Date;
+    endTime!: Date;
+    values?: TagValues[] | undefined;
+
+    constructor(data?: IHistoryResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.startTime = data["startTime"] ? new Date(data["startTime"].toString()) : <any>undefined;
+            this.endTime = data["endTime"] ? new Date(data["endTime"].toString()) : <any>undefined;
+            if (data["values"] && data["values"].constructor === Array) {
+                this.values = [];
+                for (let item of data["values"])
+                    this.values.push(TagValues.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): HistoryResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new HistoryResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["startTime"] = this.startTime ? this.startTime.toISOString() : <any>undefined;
+        data["endTime"] = this.endTime ? this.endTime.toISOString() : <any>undefined;
+        if (this.values && this.values.constructor === Array) {
+            data["values"] = [];
+            for (let item of this.values)
+                data["values"].push(item.toJSON());
+        }
+        return data; 
+    }
+
+    clone(): HistoryResponse {
+        const json = this.toJSON();
+        let result = new HistoryResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHistoryResponse {
+    startTime: Date;
+    endTime: Date;
+    values?: TagValues[] | undefined;
 }
 
 export class TagValues implements ITagValues {
@@ -664,66 +719,8 @@ export enum InitialValue {
     SampleAndHold = 2, 
 }
 
-export class RelativeHistoryResponse implements IRelativeHistoryResponse {
-    resolvedStartTime!: Date;
-    resolvedEndTime!: Date;
-    values?: TagValues[] | undefined;
-
-    constructor(data?: IRelativeHistoryResponse) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.resolvedStartTime = data["resolvedStartTime"] ? new Date(data["resolvedStartTime"].toString()) : <any>undefined;
-            this.resolvedEndTime = data["resolvedEndTime"] ? new Date(data["resolvedEndTime"].toString()) : <any>undefined;
-            if (data["values"] && data["values"].constructor === Array) {
-                this.values = [];
-                for (let item of data["values"])
-                    this.values.push(TagValues.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): RelativeHistoryResponse {
-        data = typeof data === 'object' ? data : {};
-        let result = new RelativeHistoryResponse();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["resolvedStartTime"] = this.resolvedStartTime ? this.resolvedStartTime.toISOString() : <any>undefined;
-        data["resolvedEndTime"] = this.resolvedEndTime ? this.resolvedEndTime.toISOString() : <any>undefined;
-        if (this.values && this.values.constructor === Array) {
-            data["values"] = [];
-            for (let item of this.values)
-                data["values"].push(item.toJSON());
-        }
-        return data; 
-    }
-
-    clone(): RelativeHistoryResponse {
-        const json = this.toJSON();
-        let result = new RelativeHistoryResponse();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IRelativeHistoryResponse {
-    resolvedStartTime: Date;
-    resolvedEndTime: Date;
-    values?: TagValues[] | undefined;
-}
-
 export class RelativeHistoryRequest extends HistoryRequestBase implements IRelativeHistoryRequest {
+    anchorTime?: Date | undefined;
     timeScale!: TimeScale;
     offsetFromNow!: number;
 
@@ -734,6 +731,7 @@ export class RelativeHistoryRequest extends HistoryRequestBase implements IRelat
     init(data?: any) {
         super.init(data);
         if (data) {
+            this.anchorTime = data["anchorTime"] ? new Date(data["anchorTime"].toString()) : <any>undefined;
             this.timeScale = data["timeScale"];
             this.offsetFromNow = data["offsetFromNow"];
         }
@@ -748,6 +746,7 @@ export class RelativeHistoryRequest extends HistoryRequestBase implements IRelat
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["anchorTime"] = this.anchorTime ? this.anchorTime.toISOString() : <any>undefined;
         data["timeScale"] = this.timeScale;
         data["offsetFromNow"] = this.offsetFromNow;
         super.toJSON(data);
@@ -763,6 +762,7 @@ export class RelativeHistoryRequest extends HistoryRequestBase implements IRelat
 }
 
 export interface IRelativeHistoryRequest extends IHistoryRequestBase {
+    anchorTime?: Date | undefined;
     timeScale: TimeScale;
     offsetFromNow: number;
 }
