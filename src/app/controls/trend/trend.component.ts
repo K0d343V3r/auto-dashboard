@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
 import { Chart } from 'angular-highcharts';
 import { IDashboardControl } from '../i-dashboard-control';
-import { SimulatorTag, VQT, MajorQuality } from 'src/app/proxies/data-simulator-api';
+import { SimulatorTag, VQT, MajorQuality, TagType } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 
 @Component({
@@ -42,7 +42,7 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
         line: {
           step: true,
           marker: {
-            enabled: false
+            enabled: this.tag.type === TagType.String
           }
         }
       },
@@ -79,13 +79,24 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
   set data(data: TagData) {
     // append new points
     data.values.forEach(v => {
-      this.chartObj.series[0].addPoint([v.time.getTime(), v.quality.major === MajorQuality.Bad ? null : v.value], false, false)
+      const value = v.quality.major === MajorQuality.Bad ? null : this.getChartValue(v.value);
+      this.chartObj.series[0].addPoint([v.time.getTime(), value], false, false)
     });
 
-    // update time axis min and max
-    this.chartObj.xAxis[0].setExtremes(data.startTime.getTime(), data.endTime.getTime(), false);
+    // update time axis min and max (redraws chart)
+    this.chartObj.xAxis[0].setExtremes(data.startTime.getTime(), data.endTime.getTime());
+  }
 
-    // and redraw chart
-    this.chartObj.redraw();
+  private getChartValue(value: any): number {
+    switch (this.tag.type) {
+      case TagType.Boolean:
+        return value ? 1 : 0;
+
+      case TagType.Number:
+        return value;
+
+      case TagType.String:
+        return 1;
+    }
   }
 }
