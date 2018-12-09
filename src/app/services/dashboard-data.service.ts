@@ -65,34 +65,32 @@ export class DashboardDataService {
       });
     } else {
       const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      if (this.activeDashboardService.requestType === RequestType.History) {
-        if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
-          const request = new AbsoluteHistoryRequest();
-          request.tags = tags;
-          request.startTime = timeFrame.timePeriod.startTime;
-          request.endTime = timeFrame.timePeriod.endTime;
+      if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+        const request = new AbsoluteHistoryRequest();
+        request.tags = tags;
+        request.startTime = timeFrame.timePeriod.startTime;
+        request.endTime = timeFrame.timePeriod.endTime;
+        request.initialValue = InitialValue.SampleAndHold;
+        this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
+          this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
+        });
+      } else {
+        const request = new RelativeHistoryRequest();
+        request.tags = tags;
+        if (!this.isRefreshing || this.lastRefreshDate === null) {
+          // not auto refreshing or not doing partial updates yet (first pass)
+          request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
+          request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
           request.initialValue = InitialValue.SampleAndHold;
-          this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
-            this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
-          });
         } else {
-          const request = new RelativeHistoryRequest();
-          request.tags = tags;
-          if (!this.isRefreshing || this.lastRefreshDate === null) {
-            // not auto refreshing or not doing partial updates yet (first pass)
-            request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
-            request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
-            request.initialValue = InitialValue.SampleAndHold;
-          } else {
-            // subsequent (partial) auto-refresh pass, only ask for delta
-            request.anchorTime = this.lastRefreshDate;
-          }
-          this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
-            const startTime = this.getRelativeStartTime(timeFrame.timePeriod, response.endTime);
-            this.broadcastMultipleValues(startTime, response.endTime, response.values);
-            this.lastRefreshDate = response.endTime;
-          });
+          // subsequent (partial) auto-refresh pass, only ask for delta
+          request.anchorTime = this.lastRefreshDate;
         }
+        this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
+          const startTime = this.getRelativeStartTime(timeFrame.timePeriod, response.endTime);
+          this.broadcastMultipleValues(startTime, response.endTime, response.values);
+          this.lastRefreshDate = response.endTime;
+        });
       }
     }
   }
