@@ -8,7 +8,7 @@ An application to create, edit, and display information dashboards.
 - Automatic layout of dashboard tiles, based on number of selected data points (one data point per tile).
 - User can influence tile layout by tagging specific data points as important (important tiles get more real estate).
 - Tile content automatically determined based on requested time frame and data point type:
-  - For data requests at a point in time (current or specific date/time):
+  - For data requests for a point in time (current or specific date/time):
     - Numeric data points render as a gauge.
     - Boolean data points render as an on/off LED.
     - String data points render as plain text.
