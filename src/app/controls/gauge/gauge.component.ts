@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, Input, AfterViewInit } from '@angular/core';
-import { SimulatorTag, VQT } from 'src/app/proxies/data-simulator-api';
+import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
+import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
 import { IDashboardControl } from '../i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
 import { TagData } from 'src/app/services/dashboard-data.service';
@@ -100,6 +100,10 @@ export class GaugeComponent implements OnInit, AfterViewInit, IDashboardControl 
   resize() {
     // reflow must be done after chart is fully created
     window.setTimeout(() => { this.chartObj.reflow(); });
+  }
+
+  getContentWidth(): number {
+    return (<any>this.chartObj).plotWidth;
   }
 
   set data(data: TagData) {

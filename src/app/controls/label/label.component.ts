@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { IDashboardControl } from '../i-dashboard-control';
-import { SimulatorTag, VQT, MajorQuality } from 'src/app/proxies/data-simulator-api';
+import { SimulatorTag, MajorQuality } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 
 @Component({
@@ -18,6 +18,10 @@ export class LabelComponent implements OnInit, IDashboardControl {
   }
 
   resize() {
+  }
+
+  getContentWidth(): number {
+    return 0;
   }
 
   set data(data: TagData) {

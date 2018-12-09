@@ -58,6 +58,10 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
 
   }
 
+  getContentWidth(): number {
+    return this.control.getContentWidth();
+  }
+
   private createHostedControl() {
     // create hosted control factory
     const factory = this.componentFactoryResolver.resolveComponentFactory(this.getControlType());

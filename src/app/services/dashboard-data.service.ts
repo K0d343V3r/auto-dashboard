@@ -50,7 +50,7 @@ export class DashboardDataService {
     }
   }
 
-  refresh() {
+  refresh(maxValueCount: number = 0) {
     const tags = Array.from(this.channels.keys());
     if (this.activeDashboardService.requestType === RequestType.Live) {
       this.dataRequestSubscription = this.dataProxy.getLiveValue(tags).subscribe(values => {
@@ -71,12 +71,14 @@ export class DashboardDataService {
         request.startTime = timeFrame.timePeriod.startTime;
         request.endTime = timeFrame.timePeriod.endTime;
         request.initialValue = InitialValue.Linear;
+        request.maxCount = maxValueCount;
         this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
           this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
         });
       } else {
         const request = new RelativeHistoryRequest();
         request.tags = tags;
+        request.maxCount = maxValueCount;
         if (!this.isRefreshing || this.lastRefreshDate === null) {
           // not auto refreshing or not doing partial updates yet (first pass)
           request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
@@ -162,20 +164,17 @@ export class DashboardDataService {
     return this.intervalID !== null;
   }
 
-  startRefresh() {
+  startRefresh(maxValueCount: number = 0) {
     // stop any ongoing auto refresh
     this.stopRefresh();
 
     // do a full refresh once
-    this.refresh();
+    this.refresh(maxValueCount);
 
     const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-    if (this.activeDashboardService.requestType !== RequestType.History ||
-      timeFrame.timePeriod.type != TimePeriodType.Absolute) {
+    if (this.activeDashboardService.requestType !== RequestType.History || timeFrame.timePeriod.type != TimePeriodType.Absolute) {
       // do no auto-refresh for absolute time periods (returns same data)
-      this.intervalID = window.setInterval(() => {
-        this.refresh();
-      }, this.interval * 1000);   // TODO: get this from dashboard definition
+      this.intervalID = window.setInterval(() => { this.refresh(maxValueCount); }, this.interval * 1000);
     }
   }
 

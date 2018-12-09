@@ -5,4 +5,5 @@ export interface IDashboardControl {
   tag: SimulatorTag;
   data: TagData;
   resize();
+  getContentWidth();
 }

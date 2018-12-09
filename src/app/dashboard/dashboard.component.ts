@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChildren, QueryList } from '@angular/core';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
@@ -8,13 +8,15 @@ import { SimulatorTagService } from '../services/simulator-tag.service';
 import { SimulatorTag } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService } from '../services/dashboard-data.service';
+import { ControlHostComponent } from '../controls/control-host/control-host.component';
+import { RequestType } from '../proxies/dashboard-api';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private tagsSubscription: Subscription;
   private definitionChangedSubscription: Subscription;
   private tileAddedSubscription: Subscription;
@@ -24,6 +26,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isEditing: boolean;
   isReadOnly: boolean;
   activeDashboardService$: Observable<ActiveDashboardService>;
+  @ViewChildren(ControlHostComponent) controls!: QueryList<ControlHostComponent>;
 
   constructor(
     private activeDashboardService: ActiveDashboardService,
@@ -42,7 +45,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
       this.tags = tags;
       this.activeDashboardService$ = of(this.activeDashboardService);
-      this.refreshData();
 
       this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
         this.refreshData();
@@ -58,17 +60,49 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit() {
+    // give enough time for all tile content to be created
+    window.setTimeout(() => this.refreshData(), 200);
+  }
+
   private refreshData() {
     if (this.isEditing) {
       // we do not auto-refresh in edit mode
-      window.setTimeout(() => { this.dashboardDataService.refresh(); });
+      window.setTimeout(() => {
+        this.dashboardDataService.refresh(this.getMaxValueCount());
+      });
     } else {
       // stop any ongoing auto-fresh, and set new interval
       this.dashboardDataService.stopRefresh();
       if (this.activeDashboardService.tiles.length > 0) {
         // viable dashboard loaded, ask for data
-        window.setTimeout(() => { this.dashboardDataService.startRefresh(); });
+        window.setTimeout(() => {
+          this.dashboardDataService.startRefresh(this.getMaxValueCount());
+        });
       }
+    }
+  }
+
+  /**  
+   * This method is used to cap the number of values requested, based on the width of a trending area.
+   * That is, there is no point in asking for more values than pixels available to draw them.
+  */
+  private getMaxValueCount(): number {
+    if (this.activeDashboardService.requestType !== RequestType.History) {
+      // single value request, no need to throttle
+      return 0;
+    } else {
+      // get maximum content width from children
+      let maxCount = 0;
+      this.controls.forEach(c => {
+        const width = c.getContentWidth();
+        if (width > maxCount) {
+          maxCount = width;
+        }
+      });
+
+      // NOTE: we request values for twice the number of pixels in the trending area.
+      return maxCount * 2;
     }
   }
 

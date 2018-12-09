@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
 import { Chart } from 'angular-highcharts';
 import { IDashboardControl } from '../i-dashboard-control';
-import { SimulatorTag, VQT, MajorQuality, TagType } from 'src/app/proxies/data-simulator-api';
+import { SimulatorTag, MajorQuality, TagType } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 
 @Component({
@@ -79,6 +79,10 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
   resize() {
     // reflow must be done after chart is fully created
     window.setTimeout(() => { this.chartObj.reflow(); });
+  }
+
+  getContentWidth(): number {
+    return (<any>this.chartObj).plotWidth;
   }
 
   set data(data: TagData) {
