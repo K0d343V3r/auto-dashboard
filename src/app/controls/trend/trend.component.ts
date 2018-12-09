@@ -21,7 +21,7 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
     this.chart = new Chart({
       chart: {
         type: 'line',
-        spacingTop: 15,
+        spacingTop: 12,
         spacingBottom: 12,  // NOTE: use 8 when legend is turned on
         spacingLeft: 12,    // NOTE: use 8 when y-axis titles are turned on
         spacingRight: 12,
@@ -40,7 +40,6 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
       },
       plotOptions: {
         line: {
-          step: true,
           marker: {
             enabled: this.tag.type === TagType.String
           }
@@ -52,12 +51,18 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
       yAxis: {
         title: {
           text: null
-        }
+        },
+        maxPadding: 0,
+        minPadding: 0
+      },
+      time: {
+        useUTC: false
       },
       series: [
-        {
+        <any>{                                  // using "any" - step not in type definition  
           name: `${this.tag.name}`,
-          data: []
+          data: [],
+          step: this.tag.type !== TagType.Float
         }
       ]
     });
@@ -92,7 +97,8 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
       case TagType.Boolean:
         return value ? 1 : 0;
 
-      case TagType.Number:
+      case TagType.Float:
+      case TagType.Integer:
         return value;
 
       case TagType.String:

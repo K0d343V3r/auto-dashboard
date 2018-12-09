@@ -70,7 +70,7 @@ export class DashboardDataService {
         request.tags = tags;
         request.startTime = timeFrame.timePeriod.startTime;
         request.endTime = timeFrame.timePeriod.endTime;
-        request.initialValue = InitialValue.SampleAndHold;
+        request.initialValue = InitialValue.Linear;
         this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
           this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
         });
@@ -81,7 +81,7 @@ export class DashboardDataService {
           // not auto refreshing or not doing partial updates yet (first pass)
           request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
           request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
-          request.initialValue = InitialValue.SampleAndHold;
+          request.initialValue = InitialValue.Linear;
         } else {
           // subsequent (partial) auto-refresh pass, only ask for delta
           request.anchorTime = this.lastRefreshDate;

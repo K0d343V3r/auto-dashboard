@@ -944,9 +944,10 @@ export interface ISimulatorTag {
 }
 
 export enum TagType {
-    Number = 0, 
-    Boolean = 1, 
-    String = 2, 
+    Float = 0, 
+    Integer = 1, 
+    Boolean = 2, 
+    String = 3, 
 }
 
 export class NumericScale implements INumericScale {

@@ -83,7 +83,8 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
         case TagType.Boolean:
           return LedComponent;
 
-        case TagType.Number:
+        case TagType.Float:
+        case TagType.Integer:
           return GaugeComponent;
 
         case TagType.String:
