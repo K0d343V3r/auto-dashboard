@@ -1,6 +1,6 @@
 # Auto Dashboard
 
-An application to create, edit, and display information dashboards.
+An application to create, edit, and manage information dashboards.
 
 ##### Features:
 
