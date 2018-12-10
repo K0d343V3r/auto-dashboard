@@ -82,6 +82,10 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
   }
 
   getContentWidth(): number {
+    // make sure chart extends to parent container (otherwise plotWidth == 0)
+    this.chartObj.reflow();
+    
+    // and return width of plotting area
     return (<any>this.chartObj).plotWidth;
   }
 

@@ -2,8 +2,7 @@ import { TagId } from "../proxies/data-simulator-api";
 import { RequestType, TimePeriod } from '../proxies/dashboard-api';
 
 export class RequestTimeFrame {
-  targetTime: Date;
-  timePeriod: TimePeriod;
+  constructor(public targetTime: Date = null, public timePeriod: TimePeriod = null) {}
 }
 
 export interface IReversibleChanges {

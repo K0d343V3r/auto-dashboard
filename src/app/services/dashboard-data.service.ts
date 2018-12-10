@@ -8,6 +8,10 @@ export class TagData {
   constructor(public startTime: Date, public endTime: Date, public values: VQT[]) { }
 }
 
+export class ResponseTimeFrame {
+  constructor(public targetTime: Date, public startTime: Date, public endTime: Date) { }
+}
+
 class Channel {
   constructor(public connections: number, public data: Subject<TagData>) { }
 }
@@ -19,8 +23,11 @@ export class DashboardDataService {
   private intervalID?: number = null;
   private channels: Map<TagId, Channel> = new Map<TagId, Channel>();
   private readonly interval: number = 2;
-  private lastRefreshDate: Date = null;
+  private lastRefreshTime: Date = null;
   private dataRequestSubscription: Subscription;
+  private dataRetrievedSource = new Subject<ResponseTimeFrame>();
+
+  dataRetrieved$ = this.dataRetrievedSource.asObservable();
 
   constructor(
     private dataProxy: DataProxy,
@@ -52,47 +59,52 @@ export class DashboardDataService {
 
   refresh(maxValueCount: number = 0) {
     const tags = Array.from(this.channels.keys());
-    if (this.activeDashboardService.requestType === RequestType.Live) {
-      this.dataRequestSubscription = this.dataProxy.getLiveValue(tags).subscribe(values => {
-        this.broadcastSingleValue(values);
-      });
-    } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-      const request = new ValueAtTimeRequest();
-      request.targetTime = this.activeDashboardService.getRequestTimeFrame().targetTime;
-      request.tags = tags;
-      this.dataRequestSubscription = this.dataProxy.getValueAtTime(request).subscribe(values => {
-        this.broadcastSingleValue(values);
-      });
-    } else {
-      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
-        const request = new AbsoluteHistoryRequest();
-        request.tags = tags;
-        request.startTime = timeFrame.timePeriod.startTime;
-        request.endTime = timeFrame.timePeriod.endTime;
-        request.initialValue = InitialValue.Linear;
-        request.maxCount = maxValueCount;
-        this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
-          this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
+    if (tags.length > 0) {
+      if (this.activeDashboardService.requestType === RequestType.Live) {
+        this.dataRequestSubscription = this.dataProxy.getLiveValue(tags).subscribe(values => {
+          this.broadcastSingleValue(values);
         });
       } else {
-        const request = new RelativeHistoryRequest();
-        request.tags = tags;
-        request.maxCount = maxValueCount;
-        if (!this.isRefreshing || this.lastRefreshDate === null) {
-          // not auto refreshing or not doing partial updates yet (first pass)
-          request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
-          request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
-          request.initialValue = InitialValue.Linear;
+        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+        if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+          const request = new ValueAtTimeRequest();
+          request.targetTime = timeFrame.targetTime;
+          request.tags = tags;
+          this.dataRequestSubscription = this.dataProxy.getValueAtTime(request).subscribe(values => {
+            this.broadcastSingleValue(values);
+          });
         } else {
-          // subsequent (partial) auto-refresh pass, only ask for delta
-          request.anchorTime = this.lastRefreshDate;
+          if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+            const request = new AbsoluteHistoryRequest();
+            request.tags = tags;
+            request.startTime = timeFrame.timePeriod.startTime;
+            request.endTime = timeFrame.timePeriod.endTime;
+            request.initialValue = InitialValue.Linear;
+            request.maxCount = maxValueCount;
+            this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
+              this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
+            });
+          } else {
+            const request = new RelativeHistoryRequest();
+            request.tags = tags;
+            request.maxCount = maxValueCount;
+            if (!this.isRefreshing || this.lastRefreshTime === null) {
+              // not auto refreshing or not doing partial updates yet (first pass)
+              request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
+              request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
+              request.initialValue = InitialValue.Linear;
+            } else {
+              // subsequent (partial) auto-refresh pass, only ask for delta (from last end time to now)
+              request.anchorTime = this.lastRefreshTime;
+            }
+            this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
+              // work backwards from resolved end time to get full time period
+              const startTime = this.getRelativeStartTime(timeFrame.timePeriod, response.endTime);
+              this.broadcastMultipleValues(startTime, response.endTime, response.values);
+              this.lastRefreshTime = response.endTime;
+            });
+          }
         }
-        this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
-          const startTime = this.getRelativeStartTime(timeFrame.timePeriod, response.endTime);
-          this.broadcastMultipleValues(startTime, response.endTime, response.values);
-          this.lastRefreshDate = response.endTime;
-        });
       }
     }
   }
@@ -149,6 +161,8 @@ export class DashboardDataService {
         channel.data.next({ startTime: startTime, endTime: endTime, values: value.values });
       }
     }
+
+    this.dataRetrievedSource.next(new ResponseTimeFrame(null, startTime, endTime));
   }
 
   private broadcastSingleValue(values: TagValue[]) {
@@ -158,6 +172,9 @@ export class DashboardDataService {
         channel.data.next({ startTime: value.value.time, endTime: value.value.time, values: [value.value] });
       }
     }
+
+    // single data requests always return a value and they all have the same timestamp
+    this.dataRetrievedSource.next(new ResponseTimeFrame(values[0].value.time, null, null));
   }
 
   private get isRefreshing(): boolean {
@@ -172,8 +189,9 @@ export class DashboardDataService {
     this.refresh(maxValueCount);
 
     const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-    if (this.activeDashboardService.requestType !== RequestType.History || timeFrame.timePeriod.type != TimePeriodType.Absolute) {
-      // do no auto-refresh for absolute time periods (returns same data)
+    if (this.activeDashboardService.requestType === RequestType.Live || 
+      (this.activeDashboardService.requestType === RequestType.History && timeFrame.timePeriod.type === TimePeriodType.Relative)) {
+      // we only auto-fresh for live data or relative requests for historical data
       this.intervalID = window.setInterval(() => { this.refresh(maxValueCount); }, this.interval * 1000);
     }
   }
@@ -190,7 +208,7 @@ export class DashboardDataService {
       this.intervalID = null;
 
       // start with full data pass on next refresh
-      this.lastRefreshDate = null;
+      this.lastRefreshTime = null;
     }
   }
 }

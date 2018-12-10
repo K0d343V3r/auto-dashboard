@@ -62,10 +62,7 @@ export class ActiveDashboardService implements IReversibleChanges {
     if (this.definition.requestType === RequestType.Live) {
       return null;
     } else {
-      const timeFrame = new RequestTimeFrame();
-      timeFrame.targetTime = this.definition.valueAtTimeTarget;
-      timeFrame.timePeriod = this.definition.historyTimePeriod;
-      return timeFrame;
+      return new RequestTimeFrame(this.definition.valueAtTimeTarget, this.definition.historyTimePeriod);
     }
   }
 

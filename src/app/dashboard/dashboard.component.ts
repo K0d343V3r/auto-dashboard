@@ -16,7 +16,7 @@ import { RequestType } from '../proxies/dashboard-api';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private tagsSubscription: Subscription;
   private definitionChangedSubscription: Subscription;
   private tileAddedSubscription: Subscription;
@@ -45,6 +45,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
       this.tags = tags;
       this.activeDashboardService$ = of(this.activeDashboardService);
+      this.refreshData();
 
       this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
         this.refreshData();
@@ -60,23 +61,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
-    // give enough time for all tile content to be created
-    window.setTimeout(() => this.refreshData(), 200);
-  }
-
   private refreshData() {
-    if (this.isEditing) {
-      // we do not auto-refresh in edit mode
-      window.setTimeout(() => {
-        this.dashboardDataService.refresh(this.getMaxValueCount());
-      });
-    } else {
-      // stop any ongoing auto-fresh, and set new interval
-      this.dashboardDataService.stopRefresh();
-      if (this.activeDashboardService.tiles.length > 0) {
-        // viable dashboard loaded, ask for data
+    if (this.activeDashboardService.tiles.length) {
+      if (this.isEditing) {
+        // we do not auto-refresh in edit mode
         window.setTimeout(() => {
+          // NOTE: must be called within setTimeout(), otherwise child components may not exist
+          this.dashboardDataService.refresh(this.getMaxValueCount());
+        });
+      } else {
+        // stop any ongoing auto-fresh, and start auto-refresh again
+        this.dashboardDataService.stopRefresh();
+        window.setTimeout(() => {
+          // NOTE: must be called within setTimeout(), otherwise child components may not exist
           this.dashboardDataService.startRefresh(this.getMaxValueCount());
         });
       }
