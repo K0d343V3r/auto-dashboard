@@ -1,1 +1,1 @@
-<div class="label">{{value}}</div>
+<div class="label" [class.no-value]="value == null">{{value == null ? "&lt;no value&gt;" : value.toLocaleString()}}</div>

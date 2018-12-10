@@ -6,3 +6,7 @@
   width: 100%;
   font-weight: bold;
 }
+
+.no-value {
+  color: gray;
+}

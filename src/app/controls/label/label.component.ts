@@ -10,7 +10,7 @@ import { TagData } from 'src/app/services/dashboard-data.service';
 })
 export class LabelComponent implements OnInit, IDashboardControl {
   @Input() tag: SimulatorTag;
-  value: string;
+  value: Date;
 
   constructor() { }
 
@@ -26,9 +26,9 @@ export class LabelComponent implements OnInit, IDashboardControl {
 
   set data(data: TagData) {
     if (data.values[0].quality.major === MajorQuality.Bad) {
-      this.value = "";
+      this.value = null;
     } else {
-      this.value = new Date(data.values[0].value).toLocaleString();
+      this.value = new Date(data.values[0].value);
     }
   }
 }
