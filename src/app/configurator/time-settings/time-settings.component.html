@@ -50,12 +50,12 @@
   <div class="radio-content">
     <mat-form-field class="calendar-date">
       <mat-label>Date</mat-label>
-      <input matInput [matDatepicker]="timePicker" />
+      <input matInput [matDatepicker]="timePicker" [formControl]="atDate" />
       <mat-datepicker-toggle matSuffix [for]="timePicker"></mat-datepicker-toggle>
       <mat-datepicker #timePicker></mat-datepicker>
     </mat-form-field>
     <mat-form-field class="calendar-time" appearance="standard">
-      <input matInput type="time" step="1" />
+      <input matInput type="time" step="1" [formControl]="atTime"  />
     </mat-form-field>
   </div>
 </mat-radio-group>

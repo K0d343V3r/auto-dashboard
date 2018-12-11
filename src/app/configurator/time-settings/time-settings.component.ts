@@ -34,6 +34,8 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
   startTime: FormControl;
   endDate: FormControl;
   endTime: FormControl;
+  atDate: FormControl;
+  atTime: FormControl;
 
   timeScaleOptions: TimeScaleOption[] = [
     { value: RelativeTimeScale.Seconds, viewValue: "Seconds" },
@@ -63,6 +65,9 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
     startDate.setMinutes(startDate.getMinutes() - 5);
     this.startDate = new FormControl(startDate, [TimeSettingsComponent.dateValidator(this)]);
     this.startTime = new FormControl(this.toTimeString(startDate));
+
+    this.atDate = new FormControl(endDate);
+    this.atTime = new FormControl(this.toTimeString(endDate));
   }
 
   private static dateValidator(component: TimeSettingsComponent): ValidatorFn {
@@ -108,7 +113,9 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       this.startDate.valueChanges,
       this.startTime.valueChanges,
       this.endDate.valueChanges,
-      this.endTime.valueChanges
+      this.endTime.valueChanges,
+      this.atDate.valueChanges,
+      this.atTime.valueChanges
     ).subscribe(() => {
       // re-execute date validation (may be incorrect due to time changes)
       this.startDate.updateValueAndValidity({ emitEvent: false });
@@ -133,9 +140,8 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
     } else if (this.requestType.value === RequestTypeOption.HistoricalAbsolute &&
       this.startDate.valid && this.startTime.valid && this.endDate.valid && this.endTime.valid) {
       this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
-    } else if (this.requestType.value === RequestTypeOption.ValueAtTime) {
-      // TODO
-      this.dashboardUndoService.changeRequestType(RequestType.Live);
+    } else if (this.requestType.value === RequestTypeOption.ValueAtTime && this.atDate.valid && this.atTime.valid) {
+      this.dashboardUndoService.changeRequestType(RequestType.ValueAtTime, this.createTimeFrame());
     }
   }
 
@@ -160,7 +166,7 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         timeFrame.timePeriod.offsetFromNow = -this.offset.value;
         timeFrame.timePeriod.timeScale = this.timeScale.value;
       } else {
-        timeFrame.targetTime = new Date(); // TODO
+        timeFrame.targetTime = this.toDate(this.atDate.value, this.atTime.value);
       }
       return timeFrame;
     }
@@ -193,6 +199,14 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       this.endDate.disable({ emitEvent: false });
       this.endTime.disable({ emitEvent: false });
     }
+
+    if (this.requestType.value === RequestTypeOption.ValueAtTime) {
+      this.atDate.enable({ emitEvent: false });
+      this.atTime.enable({ emitEvent: false });
+    } else {
+      this.atDate.disable({ emitEvent: false });
+      this.atTime.disable({ emitEvent: false });
+    }
   }
 
   private updateFromModel() {
@@ -210,7 +224,8 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         this.endDate.setValue(timeFrame.timePeriod.endTime, { emitEvent: false });
         this.endTime.setValue(this.toTimeString(timeFrame.timePeriod.endTime), { emitEvent: false });
       } else {
-        // TODO
+        this.atDate.setValue(timeFrame.targetTime, { emitEvent: false });
+        this.atTime.setValue(this.toTimeString(timeFrame.targetTime), { emitEvent: false });
       }
     }
   }
