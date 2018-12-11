@@ -7,7 +7,7 @@ import { Location } from '@angular/common';
 import { SimulatorTagService } from '../services/simulator-tag.service';
 import { SimulatorTag } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
-import { DashboardDataService } from '../services/dashboard-data.service';
+import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
 import { RequestType, TimePeriodType, TimePeriod, RelativeTimeScale } from '../proxies/dashboard-api';
 
@@ -21,6 +21,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private definitionChangedSubscription: Subscription;
   private tileAddedSubscription: Subscription;
   private requestTypeSubscription: Subscription;
+  private dataRefreshedSubscription: Subscription;
   private tags: SimulatorTag[];
 
   subtitle: String;
@@ -48,59 +49,95 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.tags = tags;
       this.activeDashboardService$ = of(this.activeDashboardService);
       this.refreshData();
+    });
 
-      this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
-        this.changeSubtitle();
-        this.refreshData();
-      });
+    this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
+      this.changeSubtitle();
+      this.refreshData();
+    });
 
-      this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
-        this.refreshData();
-      });
+    this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
+      this.refreshData();
+    });
 
-      this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
-        this.changeSubtitle();
-        this.refreshData();
-      });
+    this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
+      this.changeSubtitle();
+      this.refreshData();
+    });
+
+    this.dataRefreshedSubscription = this.dashboardDataService.dataRefreshed$.subscribe(timeFrame => {
+      this.changeSubtitle(timeFrame);
     });
   }
 
-  private changeSubtitle() {
+  private changeSubtitle(responseTime: ResponseTimeFrame = null) {
     if (this.isEditing) {
       if (this.activeDashboardService.requestType === RequestType.Live) {
-        this.subtitle = "Current Values";
+        this.subtitle = "Show current values";
       } else {
         const timeFrame = this.activeDashboardService.getRequestTimeFrame();
         if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-          this.subtitle = `Values At ${timeFrame.targetTime.toLocaleString()}`;
+          this.subtitle = `Show values ${this.getPointInTimeText(timeFrame.targetTime)}`;
         } else if (this.activeDashboardService.requestType === RequestType.History) {
           if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
-            this.subtitle = this.getRelativeTimePeriodText(timeFrame.timePeriod);
+            this.subtitle = `Show values for the ${this.getRelativeTimePeriodText(timeFrame.timePeriod)}`;
           } else {
-            this.subtitle = `Values Between ${timeFrame.timePeriod.startTime.toLocaleString()} and ${timeFrame.timePeriod.endTime.toLocaleString()}`;''
+            this.subtitle = `Show values ${this.getTimeSpanText(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
           }
         }
+      }
+    } else if (responseTime === null) {
+      this.subtitle = "";
+    } else if (this.activeDashboardService.requestType === RequestType.Live) {
+      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))} (current)`;
+    } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))}`;
+    } else if (this.activeDashboardService.requestType === RequestType.History) {
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+      const text = this.capitalize(this.getTimeSpanText(responseTime.startTime, responseTime.endTime));
+      if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+        this.subtitle = `${text}`;
+      } else {
+        this.subtitle = `${text} (${this.getRelativeTimePeriodText(timeFrame.timePeriod)})`;
       }
     }
   }
 
-  private getRelativeTimePeriodText(timePeriod: TimePeriod): string {
-    return `Values For The Last ${-timePeriod.offsetFromNow} ${this.toTimeScaleString(timePeriod.timeScale)}`;
+  private capitalize(text: string): string {
+    if (text.length == 0) {
+      return "";
+    } else {
+      return `${text.charAt(0).toLocaleUpperCase()}${text.substr(1)}`;
+    }
   }
 
-  private toTimeScaleString(timeScale: RelativeTimeScale): string {
+  private getPointInTimeText(time: Date): string {
+    return `at ${time.toLocaleTimeString()} on ${time.toLocaleDateString()}`;
+  }
+
+  private getRelativeTimePeriodText(timePeriod: TimePeriod): string {
+    return -timePeriod.offsetFromNow === 1 ?
+      `last ${this.toTimeScaleString(timePeriod.timeScale, true)}` :
+      `last ${-timePeriod.offsetFromNow} ${this.toTimeScaleString(timePeriod.timeScale, false)}`;
+  }
+
+  private getTimeSpanText(startTime: Date, endTime: Date): string {
+    return `from ${startTime.toLocaleString()} to ${endTime.toLocaleString()}`;
+  }
+
+  private toTimeScaleString(timeScale: RelativeTimeScale, singular: boolean): string {
     switch (timeScale) {
       case RelativeTimeScale.Seconds:
-        return "Seconds";
+        return singular ? "second" : "seconds";
 
       case RelativeTimeScale.Minutes:
-        return "Minutes";
+        return singular ? "minute" : "minutes";
 
       case RelativeTimeScale.Hours:
-        return "Hours";
+        return singular ? "hour" : "hours";
 
       case RelativeTimeScale.Days:
-        return "Days";
+        return singular ? "day" : "days";
 
       default:
         throw "Invalid time scale.";
@@ -155,6 +192,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.tileAddedSubscription.unsubscribe();
     this.definitionChangedSubscription.unsubscribe();
     this.requestTypeSubscription.unsubscribe();
+    this.dataRefreshedSubscription.unsubscribe();
   }
 
   edit() {

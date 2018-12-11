@@ -25,9 +25,9 @@ export class DashboardDataService {
   private readonly interval: number = 2;
   private lastRefreshTime: Date = null;
   private dataRequestSubscription: Subscription;
-  private dataRetrievedSource = new Subject<ResponseTimeFrame>();
+  private dataRefreshedSource = new Subject<ResponseTimeFrame>();
 
-  dataRetrieved$ = this.dataRetrievedSource.asObservable();
+  dataRefreshed$ = this.dataRefreshedSource.asObservable();
 
   constructor(
     private dataProxy: DataProxy,
@@ -162,7 +162,7 @@ export class DashboardDataService {
       }
     }
 
-    this.dataRetrievedSource.next(new ResponseTimeFrame(null, startTime, endTime));
+    this.dataRefreshedSource.next(new ResponseTimeFrame(null, startTime, endTime));
   }
 
   private broadcastSingleValue(values: TagValue[]) {
@@ -174,7 +174,7 @@ export class DashboardDataService {
     }
 
     // single data requests always return a value and they all have the same timestamp
-    this.dataRetrievedSource.next(new ResponseTimeFrame(values[0].value.time, null, null));
+    this.dataRefreshedSource.next(new ResponseTimeFrame(values[0].value.time, null, null));
   }
 
   private get isRefreshing(): boolean {
