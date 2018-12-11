@@ -122,7 +122,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private getTimeSpanText(startTime: Date, endTime: Date): string {
-    return `from ${startTime.toLocaleString()} to ${endTime.toLocaleString()}`;
+    if (this.toDateOnly(startTime).getTime() === this.toDateOnly(endTime).getTime())
+    {
+      return `from ${startTime.toLocaleTimeString()} to ${endTime.toLocaleTimeString()} on ${startTime.toLocaleDateString()}`;
+    } else {
+      return `from ${startTime.toLocaleString()} to ${endTime.toLocaleString()}`;
+    }
+  }
+
+  private toDateOnly(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
   }
 
   private toTimeScaleString(timeScale: RelativeTimeScale, singular: boolean): string {
