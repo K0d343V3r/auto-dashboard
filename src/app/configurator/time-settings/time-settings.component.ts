@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { RelativeTimeScale, RequestType, TimePeriodType, TimePeriod } from '../../proxies/dashboard-api';
 import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
-import { Subscription } from 'rxjs';
+import { Subscription, merge } from 'rxjs';
 import { RequestTimeFrame } from 'src/app/services/i-reversible-changes';
 
 export interface TimeScaleOption {
@@ -27,9 +27,13 @@ export enum RequestTypeOption {
 export class TimeSettingsComponent implements OnInit, OnDestroy {
   private requestTypeSubscription = new Subscription();
 
-  offset = new FormControl(5, [Validators.min(1), Validators.required, Validators.pattern('^[0-9]*$')]);
-  timeScale = new FormControl(RelativeTimeScale.Minutes);
-  requestType = new FormControl(RequestTypeOption.Current);
+  offset: FormControl;
+  timeScale: FormControl;
+  requestType: FormControl;
+  startDate: FormControl;
+  startTime: FormControl;
+  endDate: FormControl;
+  endTime: FormControl;
 
   timeScaleOptions: TimeScaleOption[] = [
     { value: RelativeTimeScale.Seconds, viewValue: "Seconds" },
@@ -43,45 +47,96 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
   constructor(
     private dashboardUndoService: DashboardUndoService,
     private activeDashboardService: ActiveDashboardService
-  ) { }
+  ) {
+    // relative default is last 5 minutes
+    this.offset = new FormControl(5, [Validators.min(1), Validators.required, Validators.pattern('^[0-9]*$')]);
+    this.timeScale = new FormControl(RelativeTimeScale.Minutes);
+
+    // default is live (current) data
+    this.requestType = new FormControl(RequestTypeOption.Current);
+
+    // absolute default is 5 minutes ago to now
+    const endDate = new Date();
+    this.endDate = new FormControl(endDate, [TimeSettingsComponent.dateValidator(this)]);
+    this.endTime = new FormControl(this.toTimeString(endDate));
+    const startDate = new Date(endDate);
+    startDate.setMinutes(startDate.getMinutes() - 5);
+    this.startDate = new FormControl(startDate, [TimeSettingsComponent.dateValidator(this)]);
+    this.startTime = new FormControl(this.toTimeString(startDate));
+  }
+
+  private static dateValidator(component: TimeSettingsComponent): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      // NOTE: decided against form groups this time, so validator being called one control at a time
+      if (component.startDate == null || component.startTime == null || component.endDate == null || component.endTime == null) {
+        return null;
+      } else {
+        const start = component.toDate(component.startDate.value, component.startTime.value);
+        const end = component.toDate(component.endDate.value, component.endTime.value);
+        if (start.getTime() < end.getTime()) {
+          return null;
+        } else {
+          return { 'dates': { value: control.value } };
+        }
+      };
+    }
+  }
+
+  private toTimeString(date: Date) {
+    // this is a format acceptable to <input type= "time"> element
+    const hours = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
+    const minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
+    const seconds = date.getSeconds() < 10 ? `0${date.getSeconds()}` : date.getSeconds();
+    return `${hours}:${minutes}:${seconds}`;
+  }
 
   ngOnInit() {
-    this.loadFromModel();
+    this.updateFromModel();
     this.updateControlStates();
 
-    this.requestType.valueChanges.subscribe(value => {
+    this.requestType.valueChanges.subscribe(() => {
+      // enable/disable controls based on radio button selection
       this.updateControlStates();
-      if (value === RequestTypeOption.Current) {
-        this.dashboardUndoService.changeRequestType(RequestType.Live);
-      } else if (value === RequestTypeOption.HistoricalRelative) {
-        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
-      } else if (value === RequestTypeOption.HistoricalAbsolute) {
-        // TODO
-        this.dashboardUndoService.changeRequestType(RequestType.Live);
-      } else if (value === RequestTypeOption.ValueAtTime) {
-        // TODO
-        this.dashboardUndoService.changeRequestType(RequestType.Live);
-      }
+
+      // and update dashboard model
+      this.updateModel();
     });
 
-    this.offset.valueChanges.pipe(
-      debounceTime(1000),
-      distinctUntilChanged()
+    merge(
+      this.offset.valueChanges.pipe(debounceTime(1000), distinctUntilChanged()),
+      this.timeScale.valueChanges,
+      this.startDate.valueChanges,
+      this.startTime.valueChanges,
+      this.endDate.valueChanges,
+      this.endTime.valueChanges
     ).subscribe(() => {
-      if (this.offset.valid) {
-        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
-      }
-    });
+      // re-execute date validation (may be incorrect due to time changes)
+      this.startDate.updateValueAndValidity({ emitEvent: false });
+      this.endDate.updateValueAndValidity({ emitEvent: false });
 
-    this.timeScale.valueChanges.subscribe(() => {
-      if (this.timeScale.valid) {
-        this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
-      }
+      // and update dashboard model
+      this.updateModel();
     });
 
     this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
-      this.loadFromModel();
+      // we subscribe to this event to react to changes from Undo service
+      this.updateFromModel();
     });
+  }
+
+  private updateModel() {
+    // update dashboard model based on current user (valid) settings
+    if (this.requestType.value === RequestTypeOption.Current) {
+      this.dashboardUndoService.changeRequestType(RequestType.Live);
+    } else if (this.requestType.value === RequestTypeOption.HistoricalRelative && this.offset.valid && this.timeScale.valid) {
+      this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
+    } else if (this.requestType.value === RequestTypeOption.HistoricalAbsolute &&
+      this.startDate.valid && this.startTime.valid && this.endDate.valid && this.endTime.valid) {
+      this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
+    } else if (this.requestType.value === RequestTypeOption.ValueAtTime) {
+      // TODO
+      this.dashboardUndoService.changeRequestType(RequestType.Live);
+    }
   }
 
   ngOnDestroy() {
@@ -96,10 +151,11 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       if (this.requestType.value === RequestTypeOption.HistoricalAbsolute) {
         timeFrame.timePeriod = new TimePeriod();
         timeFrame.timePeriod.type = TimePeriodType.Absolute;
-        timeFrame.timePeriod.endTime = new Date(); // TODO
-        timeFrame.timePeriod.startTime = new Date(); // TODO
+        timeFrame.timePeriod.endTime = this.toDate(this.endDate.value, this.endTime.value);
+        timeFrame.timePeriod.startTime = this.toDate(this.startDate.value, this.startTime.value);
       } else if (this.requestType.value === RequestTypeOption.HistoricalRelative) {
         timeFrame.timePeriod = new TimePeriod();
+        timeFrame.timePeriod.type = TimePeriodType.Relative;
         // offsetFromNow stored as a negative number
         timeFrame.timePeriod.offsetFromNow = -this.offset.value;
         timeFrame.timePeriod.timeScale = this.timeScale.value;
@@ -108,6 +164,11 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       }
       return timeFrame;
     }
+  }
+
+  private toDate(date: Date, time: string): Date {
+    const parts: string[] = time.split(':');
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), +parts[0], +parts[1], +parts[2]);
   }
 
   private updateControlStates() {
@@ -119,16 +180,38 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       this.offset.disable({ emitEvent: false });
       this.timeScale.disable({ emitEvent: false });
     }
+
+    if (this.requestType.value === RequestTypeOption.HistoricalAbsolute) {
+      this.startDate.enable({ emitEvent: false });
+      this.startTime.enable({ emitEvent: false });
+      this.endDate.enable({ emitEvent: false });
+      this.endTime.enable({ emitEvent: false });
+    }
+    else {
+      this.startDate.disable({ emitEvent: false });
+      this.startTime.disable({ emitEvent: false });
+      this.endDate.disable({ emitEvent: false });
+      this.endTime.disable({ emitEvent: false });
+    }
   }
 
-  private loadFromModel() {
+  private updateFromModel() {
     const requestType = this.getRequestType();
     this.requestType.setValue(requestType, { emitEvent: false });
-    if (requestType === RequestTypeOption.HistoricalRelative) {
+    if (requestType !== RequestTypeOption.Current) {
       const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      // offsetFromNow stored as a negative number
-      this.offset.setValue(-timeFrame.timePeriod.offsetFromNow, { emitEvent: false });
-      this.timeScale.setValue(timeFrame.timePeriod.timeScale, { emitEvent: false });
+      if (requestType === RequestTypeOption.HistoricalRelative) {
+        // offsetFromNow stored as a negative number
+        this.offset.setValue(-timeFrame.timePeriod.offsetFromNow, { emitEvent: false });
+        this.timeScale.setValue(timeFrame.timePeriod.timeScale, { emitEvent: false });
+      } else if (requestType === RequestTypeOption.HistoricalAbsolute) {
+        this.startDate.setValue(timeFrame.timePeriod.startTime, { emitEvent: false });
+        this.startTime.setValue(this.toTimeString(timeFrame.timePeriod.startTime), { emitEvent: false });
+        this.endDate.setValue(timeFrame.timePeriod.endTime, { emitEvent: false });
+        this.endTime.setValue(this.toTimeString(timeFrame.timePeriod.endTime), { emitEvent: false });
+      } else {
+        // TODO
+      }
     }
   }
 
@@ -141,7 +224,7 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         return RequestTypeOption.ValueAtTime;
 
       case RequestType.History:
-      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
         return timeFrame.timePeriod.type === TimePeriodType.Absolute ?
           RequestTypeOption.HistoricalAbsolute : RequestTypeOption.HistoricalRelative;
 
@@ -157,5 +240,13 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       return "Enter a duration.";
     } else
       return "Enter a number."
+  }
+
+  getDatesErrorMessage(start: boolean): string {
+    if (start) {
+      return "Must be before End.";
+    } else {
+      return "Must be after Start.";
+    }
   }
 }

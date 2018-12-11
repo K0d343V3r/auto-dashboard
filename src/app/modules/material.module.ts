@@ -16,8 +16,8 @@ import {
   // MatTableModule,
   // MatCheckboxModule,
   MatSelectModule,
-  // MatDatepickerModule,
-  // MatNativeDateModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
   // MatSlideToggleModule,
   MatToolbarModule
 } from '@angular/material';
@@ -40,8 +40,8 @@ import {
     MatTabsModule,
     MatRadioModule,
     MatSelectModule,
-    // MatDatepickerModule,
-    // MatNativeDateModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     // MatSlideToggleModule,
     MatListModule
   ],
@@ -62,8 +62,8 @@ import {
     MatTabsModule,
     MatRadioModule,
     MatSelectModule,
-    // MatDatepickerModule,
-    // MatNativeDateModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     // MatSlideToggleModule,
     MatListModule
   ]

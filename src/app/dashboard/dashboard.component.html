@@ -1,6 +1,9 @@
 <mat-toolbar color="primary" class="content-toolbar">
   <mat-toolbar-row>
-    <span>{{activeDashboardService.title}}</span>
+    <div class="toolbar-content">
+      <span>{{activeDashboardService.title}}</span>
+      <span class="subtitle">{{subtitle}}</span>
+    </div>
     <span class="fill-remaining-space"></span>
     <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isReadOnly && !isEditing" (click)="edit()">
       <mat-icon>edit</mat-icon>

@@ -1,14 +1,14 @@
 <mat-radio-group class="radio-group" [formControl]="requestType">
-  <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.Current">
+  <mat-radio-button class="radio-button no-content" color="primary" [value]="RequestTypeOption.Current">
     Show current values
   </mat-radio-button>
-  <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.HistoricalRelative">
+  <mat-radio-button class="radio-button input-content" color="primary" [value]="RequestTypeOption.HistoricalRelative">
     Show values for the last
   </mat-radio-button>
   <div class="radio-content">
     <mat-form-field class="relative-offset" appearance="standard">
       <mat-label>Duration</mat-label>
-      <input matInput [formControl]="offset">
+      <input matInput [formControl]="offset" />
       <mat-error *ngIf="offset.invalid">{{getOffsetErrorMessage()}}</mat-error>
     </mat-form-field>
     <mat-form-field class="time-scale" appearance="standard">
@@ -22,7 +22,40 @@
   <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.HistoricalAbsolute">
     Show values between
   </mat-radio-button>
+  <div class="radio-content">
+    <mat-form-field class="calendar-date">
+      <mat-label>Start date</mat-label>
+      <input matInput [matDatepicker]="startPicker" [formControl]="startDate" />
+      <mat-error *ngIf="startDate.invalid">{{getDatesErrorMessage(true)}}</mat-error>
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field class="calendar-time" appearance="standard">
+      <input matInput type="time" step="1" [formControl]="startTime" />
+    </mat-form-field>
+    <mat-form-field class="calendar-date">
+      <mat-label>End date</mat-label>
+      <input matInput [matDatepicker]="endPicker" [formControl]="endDate" />
+      <mat-error *ngIf="endDate.invalid">{{getDatesErrorMessage(false)}}</mat-error>
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field class="calendar-time" appearance="standard">
+      <input matInput type="time" step="1" [formControl]="endTime" />
+    </mat-form-field>
+  </div>
   <mat-radio-button class="radio-button" color="primary" [value]="RequestTypeOption.ValueAtTime">
     Show values at
   </mat-radio-button>
+  <div class="radio-content">
+    <mat-form-field class="calendar-date">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="timePicker" />
+      <mat-datepicker-toggle matSuffix [for]="timePicker"></mat-datepicker-toggle>
+      <mat-datepicker #timePicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field class="calendar-time" appearance="standard">
+      <input matInput type="time" step="1" />
+    </mat-form-field>
+  </div>
 </mat-radio-group>

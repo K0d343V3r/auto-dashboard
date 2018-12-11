@@ -9,7 +9,7 @@ import { SimulatorTag } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
-import { RequestType } from '../proxies/dashboard-api';
+import { RequestType, TimePeriodType, TimePeriod, RelativeTimeScale } from '../proxies/dashboard-api';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private requestTypeSubscription: Subscription;
   private tags: SimulatorTag[];
 
+  subtitle: String;
   isEditing: boolean;
   isReadOnly: boolean;
   activeDashboardService$: Observable<ActiveDashboardService>;
@@ -41,6 +42,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.isEditing = this.router.url.split("/")[1] === 'editor';
     this.isReadOnly = this.router.url.split("/")[1] === 'dashboard';
+    this.changeSubtitle();
 
     this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
       this.tags = tags;
@@ -48,6 +50,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.refreshData();
 
       this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
+        this.changeSubtitle();
         this.refreshData();
       });
 
@@ -56,9 +59,52 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
 
       this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
+        this.changeSubtitle();
         this.refreshData();
       });
     });
+  }
+
+  private changeSubtitle() {
+    if (this.isEditing) {
+      if (this.activeDashboardService.requestType === RequestType.Live) {
+        this.subtitle = "Current Values";
+      } else {
+        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+        if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+          this.subtitle = `Values At ${timeFrame.targetTime.toLocaleString()}`;
+        } else if (this.activeDashboardService.requestType === RequestType.History) {
+          if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
+            this.subtitle = this.getRelativeTimePeriodText(timeFrame.timePeriod);
+          } else {
+            this.subtitle = `Values Between ${timeFrame.timePeriod.startTime.toLocaleString()} and ${timeFrame.timePeriod.endTime.toLocaleString()}`;''
+          }
+        }
+      }
+    }
+  }
+
+  private getRelativeTimePeriodText(timePeriod: TimePeriod): string {
+    return `Values For The Last ${-timePeriod.offsetFromNow} ${this.toTimeScaleString(timePeriod.timeScale)}`;
+  }
+
+  private toTimeScaleString(timeScale: RelativeTimeScale): string {
+    switch (timeScale) {
+      case RelativeTimeScale.Seconds:
+        return "Seconds";
+
+      case RelativeTimeScale.Minutes:
+        return "Minutes";
+
+      case RelativeTimeScale.Hours:
+        return "Hours";
+
+      case RelativeTimeScale.Days:
+        return "Days";
+
+      default:
+        throw "Invalid time scale.";
+    }
   }
 
   private refreshData() {

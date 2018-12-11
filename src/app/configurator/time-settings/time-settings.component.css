@@ -8,19 +8,38 @@
 .radio-button {
   margin-top: 10px;
   margin-left: 14px;
-  margin-bottom: 10px;
+}
+
+.no-content {
+  margin-bottom: 20px;
+}
+
+.input-content {
+  margin-bottom: 5px;
 }
 
 .relative-offset {
-  width: 90px !important;
-  margin-right: 10px;
+  width: 115px !important;
+  padding-right: 10px;
+}
+
+.calendar-date {
+  width: 115px !important;
+  padding-right: 10px;
+}
+
+.calendar-time {
+  width: 110px !important;
 }
 
 .radio-content {
-  margin-left: 42px;
-  margin-right: 10px;
+  display: flex;
+  padding-left: 42px;
+  padding-right: 5px;
+  flex-wrap: wrap;
+  align-items: baseline;
 }
 
 .time-scale {
-  width: 120px;
+  width: 110px;
 }
