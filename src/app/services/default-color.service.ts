@@ -6,6 +6,11 @@ import { Injectable } from '@angular/core';
 export class DefaultColorService {
   private colors: Map<string, number> = new Map<string, number>();
 
+  readonly stopColor: string = "#EF5350";
+  readonly goColor: string = "#66BB6A";
+  readonly readyColor: string = "#FFEE58";
+  readonly disabledColor: string = "#9E9E9E";
+
   constructor() { 
     // default Highcharts colors
     // this.colors.set("#7cb5ec", 0);
@@ -19,17 +24,18 @@ export class DefaultColorService {
     // this.colors.set("#f45b5b", 0);
     // this.colors.set("#f45b5b", 0);
 
-    // material design colors
+    // hand-picked material design colors
+    // https://material.io/archive/guidelines/style/color.html#color-color-palette
     this.colors.set("#42A5F5", 0);
-    this.colors.set("#F44336", 0);
-    this.colors.set("#4CAF50", 0);
+    this.colors.set(this.stopColor, 0);
+    this.colors.set(this.goColor, 0);
     this.colors.set("#795548", 0);
     this.colors.set("#26C6DA", 0);
     this.colors.set("#7E57C2", 0);
     this.colors.set("#8BC34A", 0);
     this.colors.set("#FF9800", 0);
     this.colors.set("#607D8B", 0);
-    this.colors.set("#9E9E9E", 0);
+    this.colors.set("#E91E63", 0);
   }
 
   getNewColor() {

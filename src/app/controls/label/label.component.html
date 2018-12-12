@@ -1,1 +1,1 @@
-<div class="label" [class.no-value]="value == null">{{value == null ? "&lt;no value&gt;" : value.toLocaleString()}}</div>
+<div class="label" [style.color]="value == null ? defaultColorService.disabledColor : 'black'">{{value == null ? "&lt;no value&gt;" : value.toLocaleString()}}</div>

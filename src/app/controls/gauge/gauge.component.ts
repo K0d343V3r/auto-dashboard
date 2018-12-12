@@ -3,6 +3,7 @@ import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
 import { IDashboardControl } from '../i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
 import { TagData } from 'src/app/services/dashboard-data.service';
+import { DefaultColorService } from 'src/app/services/default-color.service';
 //require('highcharts/themes/grid-light')(Highcharts);  // not theming right now
 
 @Component({
@@ -16,7 +17,9 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   @Input() tag: SimulatorTag;
   chart: Chart;
 
-  constructor() { }
+  constructor(
+    private defaultColorService: DefaultColorService
+  ) { }
 
   ngOnInit() {
     this.chart = new Chart(<any>{
@@ -46,9 +49,9 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
       },
       yAxis: {
         stops: [
-          [0.1, '#55BF3B'], // green
-          [0.5, '#DDDF0D'], // yellow
-          [0.9, '#DF5353']  // red
+          [0.1, this.defaultColorService.goColor], // green
+          [0.5, this.defaultColorService.readyColor], // yellow
+          [0.9, this.defaultColorService.stopColor]  // red
         ],
         lineWidth: 0,
         minorTickInterval: null,
