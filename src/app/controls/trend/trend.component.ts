@@ -3,6 +3,7 @@ import { Chart } from 'angular-highcharts';
 import { IDashboardControl } from '../i-dashboard-control';
 import { SimulatorTag, MajorQuality, TagType } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
+import { DefaultColorService } from 'src/app/services/default-color.service';
 
 @Component({
   selector: 'app-trend',
@@ -11,13 +12,18 @@ import { TagData } from 'src/app/services/dashboard-data.service';
 })
 export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashboardControl {
   private internalChart: Highcharts.ChartObject;
+  private color: string;
 
   @Input() tag: SimulatorTag;
   chart: Chart;
 
-  constructor() { }
+  constructor(
+    private defaultColorService: DefaultColorService
+  ) { }
 
   ngOnInit() {
+    this.color = this.defaultColorService.getNewColor();
+
     this.chart = new Chart({
       chart: {
         type: 'line',
@@ -43,6 +49,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
           marker: {
             enabled: this.tag.type === TagType.String
           }
+        },
+        series: {
+          color: this.color
         }
       },
       xAxis: {
@@ -68,8 +77,11 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
     });
 
   }
-  
+
   ngOnDestroy() {
+    // put color back in the color pool
+    this.defaultColorService.releaseColor(this.color);
+
     // internal chart will be destroyed by Chart directive, do not use it anymore
     this.internalChart = null;
   }
@@ -83,10 +95,10 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
 
   resize() {
     // reflow must be done after chart is fully created
-    window.setTimeout(() => { 
+    window.setTimeout(() => {
       // and before it is destroyed
       if (this.internalChart !== null) {
-        this.internalChart.reflow(); 
+        this.internalChart.reflow();
       }
     });
   }
@@ -94,7 +106,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   getContentWidth(): number {
     // make sure chart extends to parent container (otherwise plotWidth == 0)
     this.internalChart.reflow();
-    
+
     // and return width of plotting area
     return (<any>this.internalChart).plotWidth;
   }
