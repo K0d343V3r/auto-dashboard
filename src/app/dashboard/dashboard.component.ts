@@ -86,19 +86,42 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }
         }
       }
-    } else if (responseTime === null) {
-      this.subtitle = "";
-    } else if (this.activeDashboardService.requestType === RequestType.Live) {
-      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))} (current)`;
-    } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))}`;
-    } else if (this.activeDashboardService.requestType === RequestType.History) {
+    } else {
+      if (responseTime === null) {
+        // we have not retrieved data yet, show approximate time info while we wait
+        responseTime = this.createDefaultResponseTimeFrame();
+      }
+      if (this.activeDashboardService.requestType === RequestType.Live) {
+        this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))} (current)`;
+      } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+        this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))}`;
+      } else if (this.activeDashboardService.requestType === RequestType.History) {
+        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+        const text = this.capitalize(this.getTimeSpanText(responseTime.startTime, responseTime.endTime));
+        if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+          this.subtitle = `${text}`;
+        } else {
+          this.subtitle = `${text} (${this.getRelativeTimePeriodText(timeFrame.timePeriod)})`;
+        }
+      }
+    }
+  }
+
+  private createDefaultResponseTimeFrame(): ResponseTimeFrame {
+    if (this.activeDashboardService.requestType === RequestType.Live) {
+      return new ResponseTimeFrame(new Date(), null, null);
+    } else {
       const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      const text = this.capitalize(this.getTimeSpanText(responseTime.startTime, responseTime.endTime));
-      if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
-        this.subtitle = `${text}`;
+      if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+        return new ResponseTimeFrame(timeFrame.targetTime, null, null);
       } else {
-        this.subtitle = `${text} (${this.getRelativeTimePeriodText(timeFrame.timePeriod)})`;
+        if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+          return new ResponseTimeFrame(null, timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime);
+        } else {
+          const endDate = new Date();
+          const startDate = this.dashboardDataService.getRelativeStartTime(timeFrame.timePeriod, endDate);
+          return new ResponseTimeFrame(null, startDate, endDate);
+        }
       }
     }
   }

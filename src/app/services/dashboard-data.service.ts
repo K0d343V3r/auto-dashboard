@@ -109,7 +109,7 @@ export class DashboardDataService {
     }
   }
 
-  private getRelativeStartTime(timePeriod: TimePeriod, endTime: Date): Date {
+  public getRelativeStartTime(timePeriod: TimePeriod, endTime: Date): Date {
     let date = new Date(endTime);
     switch (timePeriod.timeScale) {
       case RelativeTimeScale.Seconds:
