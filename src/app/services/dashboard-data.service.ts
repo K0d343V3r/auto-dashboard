@@ -3,6 +3,7 @@ import { TagId, VQT, DataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryReq
 import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard.service';
 import { RequestType, TimePeriodType, RelativeTimeScale, TimePeriod } from '../proxies/dashboard-api';
+import { TimeService } from './time.service';
 
 export class TagData {
   constructor(public startTime: Date, public endTime: Date, public values: VQT[]) { }
@@ -31,7 +32,8 @@ export class DashboardDataService {
 
   constructor(
     private dataProxy: DataProxy,
-    private activeDashboardService: ActiveDashboardService
+    private activeDashboardService: ActiveDashboardService,
+    private timeService: TimeService
   ) {
   }
 
@@ -99,7 +101,8 @@ export class DashboardDataService {
             }
             this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
               // work backwards from resolved end time to get full time period
-              const startTime = this.getRelativeStartTime(timeFrame.timePeriod, response.endTime);
+              const startTime = this.timeService.resolveRelativeTime(
+                response.endTime, timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale);
               this.broadcastMultipleValues(startTime, response.endTime, response.values);
               this.lastRefreshTime = response.endTime;
             });
@@ -107,32 +110,6 @@ export class DashboardDataService {
         }
       }
     }
-  }
-
-  public getRelativeStartTime(timePeriod: TimePeriod, endTime: Date): Date {
-    let date = new Date(endTime);
-    switch (timePeriod.timeScale) {
-      case RelativeTimeScale.Seconds:
-        date.setSeconds(endTime.getSeconds() + timePeriod.offsetFromNow);
-        break;
-
-      case RelativeTimeScale.Minutes:
-        date.setMinutes(endTime.getMinutes() + timePeriod.offsetFromNow);
-        break;
-
-      case RelativeTimeScale.Hours:
-        date.setHours(endTime.getHours() + timePeriod.offsetFromNow);
-        break;
-
-      case RelativeTimeScale.Days:
-        date.setDate(endTime.getDate() + timePeriod.offsetFromNow);
-        break;
-
-      default:
-        throw "Invalid time scale.";
-    }
-
-    return date;
   }
 
   private toTimeScale(timeScale: RelativeTimeScale): TimeScale {

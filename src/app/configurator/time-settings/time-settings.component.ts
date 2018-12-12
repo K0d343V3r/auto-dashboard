@@ -6,6 +6,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
 import { Subscription, merge } from 'rxjs';
 import { RequestTimeFrame } from 'src/app/services/i-reversible-changes';
+import { TimeService } from 'src/app/services/time.service';
 
 export interface TimeScaleOption {
   value: RelativeTimeScale;
@@ -37,19 +38,21 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
   atDate: FormControl;
   atTime: FormControl;
 
-  timeScaleOptions: TimeScaleOption[] = [
-    { value: RelativeTimeScale.Seconds, viewValue: "Seconds" },
-    { value: RelativeTimeScale.Minutes, viewValue: "Minutes" },
-    { value: RelativeTimeScale.Hours, viewValue: "Hours" },
-    { value: RelativeTimeScale.Days, viewValue: "Days" }
-  ];
-
+  timeScaleOptions: TimeScaleOption[];
   RequestTypeOption: any = RequestTypeOption;
 
   constructor(
     private dashboardUndoService: DashboardUndoService,
-    private activeDashboardService: ActiveDashboardService
+    private activeDashboardService: ActiveDashboardService,
+    private timeService: TimeService
   ) {
+    this.timeScaleOptions = [
+      { value: RelativeTimeScale.Seconds, viewValue: this.timeService.toTimeScaleString(RelativeTimeScale.Seconds, false, true) },
+      { value: RelativeTimeScale.Minutes, viewValue: this.timeService.toTimeScaleString(RelativeTimeScale.Minutes, false, true) },
+      { value: RelativeTimeScale.Hours, viewValue: this.timeService.toTimeScaleString(RelativeTimeScale.Hours, false, true) },
+      { value: RelativeTimeScale.Days, viewValue: this.timeService.toTimeScaleString(RelativeTimeScale.Days, false, true) }
+    ];
+
     // relative default is last 5 minutes
     this.offset = new FormControl(5, [Validators.min(1), Validators.required, Validators.pattern('^[0-9]*$')]);
     this.timeScale = new FormControl(RelativeTimeScale.Minutes);
@@ -60,14 +63,14 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
     // absolute default is 5 minutes ago to now
     const endDate = new Date();
     this.endDate = new FormControl(endDate, [TimeSettingsComponent.dateValidator(this)]);
-    this.endTime = new FormControl(this.toTimeString(endDate));
+    this.endTime = new FormControl(this.timeService.to24HourTimeString(endDate));
     const startDate = new Date(endDate);
     startDate.setMinutes(startDate.getMinutes() - 5);
     this.startDate = new FormControl(startDate, [TimeSettingsComponent.dateValidator(this)]);
-    this.startTime = new FormControl(this.toTimeString(startDate));
+    this.startTime = new FormControl(this.timeService.to24HourTimeString(startDate));
 
     this.atDate = new FormControl(endDate);
-    this.atTime = new FormControl(this.toTimeString(endDate));
+    this.atTime = new FormControl(this.timeService.to24HourTimeString(endDate));
   }
 
   private static dateValidator(component: TimeSettingsComponent): ValidatorFn {
@@ -76,8 +79,8 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       if (component.startDate == null || component.startTime == null || component.endDate == null || component.endTime == null) {
         return null;
       } else {
-        const start = component.toDate(component.startDate.value, component.startTime.value);
-        const end = component.toDate(component.endDate.value, component.endTime.value);
+        const start = component.timeService.combine(component.startDate.value, component.startTime.value);
+        const end = component.timeService.combine(component.endDate.value, component.endTime.value);
         if (start.getTime() < end.getTime()) {
           return null;
         } else {
@@ -85,14 +88,6 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         }
       };
     }
-  }
-
-  private toTimeString(date: Date) {
-    // this is a format acceptable to <input type= "time"> element
-    const hours = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
-    const minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
-    const seconds = date.getSeconds() < 10 ? `0${date.getSeconds()}` : date.getSeconds();
-    return `${hours}:${minutes}:${seconds}`;
   }
 
   ngOnInit() {
@@ -157,8 +152,8 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
       if (this.requestType.value === RequestTypeOption.HistoricalAbsolute) {
         timeFrame.timePeriod = new TimePeriod();
         timeFrame.timePeriod.type = TimePeriodType.Absolute;
-        timeFrame.timePeriod.endTime = this.toDate(this.endDate.value, this.endTime.value);
-        timeFrame.timePeriod.startTime = this.toDate(this.startDate.value, this.startTime.value);
+        timeFrame.timePeriod.endTime = this.timeService.combine(this.endDate.value, this.endTime.value);
+        timeFrame.timePeriod.startTime = this.timeService.combine(this.startDate.value, this.startTime.value);
       } else if (this.requestType.value === RequestTypeOption.HistoricalRelative) {
         timeFrame.timePeriod = new TimePeriod();
         timeFrame.timePeriod.type = TimePeriodType.Relative;
@@ -166,15 +161,10 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         timeFrame.timePeriod.offsetFromNow = -this.offset.value;
         timeFrame.timePeriod.timeScale = this.timeScale.value;
       } else {
-        timeFrame.targetTime = this.toDate(this.atDate.value, this.atTime.value);
+        timeFrame.targetTime = this.timeService.combine(this.atDate.value, this.atTime.value);
       }
       return timeFrame;
     }
-  }
-
-  private toDate(date: Date, time: string): Date {
-    const parts: string[] = time.split(':');
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), +parts[0], +parts[1], +parts[2]);
   }
 
   private updateControlStates() {
@@ -220,12 +210,12 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
         this.timeScale.setValue(timeFrame.timePeriod.timeScale, { emitEvent: false });
       } else if (requestType === RequestTypeOption.HistoricalAbsolute) {
         this.startDate.setValue(timeFrame.timePeriod.startTime, { emitEvent: false });
-        this.startTime.setValue(this.toTimeString(timeFrame.timePeriod.startTime), { emitEvent: false });
+        this.startTime.setValue(this.timeService.to24HourTimeString(timeFrame.timePeriod.startTime), { emitEvent: false });
         this.endDate.setValue(timeFrame.timePeriod.endTime, { emitEvent: false });
-        this.endTime.setValue(this.toTimeString(timeFrame.timePeriod.endTime), { emitEvent: false });
+        this.endTime.setValue(this.timeService.to24HourTimeString(timeFrame.timePeriod.endTime), { emitEvent: false });
       } else {
         this.atDate.setValue(timeFrame.targetTime, { emitEvent: false });
-        this.atTime.setValue(this.toTimeString(timeFrame.targetTime), { emitEvent: false });
+        this.atTime.setValue(this.timeService.to24HourTimeString(timeFrame.targetTime), { emitEvent: false });
       }
     }
   }

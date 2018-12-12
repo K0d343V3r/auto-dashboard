@@ -10,6 +10,7 @@ import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
 import { RequestType, TimePeriodType, TimePeriod, RelativeTimeScale } from '../proxies/dashboard-api';
+import { TimeService } from '../services/time.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,7 +37,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private location: Location,
     private simulatorTagService: SimulatorTagService,
-    private dashboardDataService: DashboardDataService
+    private dashboardDataService: DashboardDataService,
+    private timeService: TimeService
   ) {
   }
 
@@ -82,16 +84,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private changeViewingSubtitle(responseTime: ResponseTimeFrame) {
     if (this.activeDashboardService.requestType === RequestType.Live) {
-      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))} (current)`;
+      this.subtitle = `At ${this.timeService.toDateString(responseTime.targetTime)} (current)`;
     } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))}`;
+      this.subtitle = `At ${this.timeService.toDateString(responseTime.targetTime)}`;
     } else if (this.activeDashboardService.requestType === RequestType.History) {
       const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      const text = this.capitalize(this.getTimeSpanText(responseTime.startTime, responseTime.endTime));
+      const text = this.timeService.toTimeSpanString(responseTime.startTime, responseTime.endTime, true);
       if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
         this.subtitle = `${text}`;
       } else {
-        this.subtitle = `${text} (${this.getRelativeTimePeriodText(timeFrame.timePeriod)})`;
+        this.subtitle = `${text} (${this.timeService.toRelativeTimeString(
+          timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale)})`;
       }
     }
   }
@@ -102,12 +105,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       const timeFrame = this.activeDashboardService.getRequestTimeFrame();
       if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-        this.subtitle = `Show values ${this.getPointInTimeText(timeFrame.targetTime)}`;
+        this.subtitle = `Show values at ${this.timeService.toDateString(timeFrame.targetTime)}`;
       } else if (this.activeDashboardService.requestType === RequestType.History) {
         if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
-          this.subtitle = `Show values for the ${this.getRelativeTimePeriodText(timeFrame.timePeriod)}`;
+          this.subtitle = `Show values for the ${this.timeService.toRelativeTimeString(
+            timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale)}`;
         } else {
-          this.subtitle = `Show values ${this.getTimeSpanText(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
+          this.subtitle = `Show values ${this.timeService.toTimeSpanString(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
         }
       }
     }
@@ -125,59 +129,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return new ResponseTimeFrame(null, timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime);
         } else {
           const endDate = new Date();
-          const startDate = this.dashboardDataService.getRelativeStartTime(timeFrame.timePeriod, endDate);
+          const startDate = this.timeService.resolveRelativeTime(
+            endDate, timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale);
           return new ResponseTimeFrame(null, startDate, endDate);
         }
       }
-    }
-  }
-
-  private capitalize(text: string): string {
-    if (text.length == 0) {
-      return "";
-    } else {
-      return `${text.charAt(0).toLocaleUpperCase()}${text.substr(1)}`;
-    }
-  }
-
-  private getPointInTimeText(time: Date): string {
-    return `at ${time.toLocaleTimeString()} on ${time.toLocaleDateString()}`;
-  }
-
-  private getRelativeTimePeriodText(timePeriod: TimePeriod): string {
-    return -timePeriod.offsetFromNow === 1 ?
-      `last ${this.toTimeScaleString(timePeriod.timeScale, true)}` :
-      `last ${-timePeriod.offsetFromNow} ${this.toTimeScaleString(timePeriod.timeScale, false)}`;
-  }
-
-  private getTimeSpanText(startTime: Date, endTime: Date): string {
-    if (this.toDateOnly(startTime).getTime() === this.toDateOnly(endTime).getTime()) {
-      return `from ${startTime.toLocaleTimeString()} to ${endTime.toLocaleTimeString()} on ${startTime.toLocaleDateString()}`;
-    } else {
-      return `from ${startTime.toLocaleString()} to ${endTime.toLocaleString()}`;
-    }
-  }
-
-  private toDateOnly(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
-  }
-
-  private toTimeScaleString(timeScale: RelativeTimeScale, singular: boolean): string {
-    switch (timeScale) {
-      case RelativeTimeScale.Seconds:
-        return singular ? "second" : "seconds";
-
-      case RelativeTimeScale.Minutes:
-        return singular ? "minute" : "minutes";
-
-      case RelativeTimeScale.Hours:
-        return singular ? "hour" : "hours";
-
-      case RelativeTimeScale.Days:
-        return singular ? "day" : "days";
-
-      default:
-        throw "Invalid time scale.";
     }
   }
 
