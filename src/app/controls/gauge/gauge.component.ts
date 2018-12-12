@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, AfterViewInit } from '@angular/core';
 import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
 import { IDashboardControl } from '../i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
@@ -10,8 +10,8 @@ import { TagData } from 'src/app/services/dashboard-data.service';
   templateUrl: './gauge.component.html',
   styleUrls: ['./gauge.component.css']
 })
-export class GaugeComponent implements OnInit, AfterViewInit, IDashboardControl {
-  private chartObj: Highcharts.ChartObject;
+export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashboardControl {
+  private internalChart: Highcharts.ChartObject;
 
   @Input() tag: SimulatorTag;
   chart: Chart;
@@ -92,25 +92,34 @@ export class GaugeComponent implements OnInit, AfterViewInit, IDashboardControl 
 
   ngAfterViewInit() {
     this.chart.ref$.subscribe(chartObj => {
-      this.chartObj = chartObj;
+      this.internalChart = chartObj;
       this.resize();
     });
   }
 
+  ngOnDestroy() {
+    this.internalChart = null;
+  }
+
   resize() {
     // reflow must be done after chart is fully created
-    window.setTimeout(() => { this.chartObj.reflow(); });
+    window.setTimeout(() => {
+      // and before it is destroyed
+      if (this.internalChart !== null) {
+        this.internalChart.reflow();
+      }
+    });
   }
 
   getContentWidth(): number {
-    return (<any>this.chartObj).plotWidth;
+    return (<any>this.internalChart).plotWidth;
   }
 
   set data(data: TagData) {
-    if ((<any>this.chartObj.series[0]).points.length === 0) {
-      this.chartObj.series[0].addPoint(data.values[0].value);
+    if ((<any>this.internalChart.series[0]).points.length === 0) {
+      this.internalChart.series[0].addPoint(data.values[0].value);
     } else {
-      (<any>this.chartObj.series[0]).points[0].update(data.values[0].value);
+      (<any>this.internalChart.series[0]).points[0].update(data.values[0].value);
     }
   }
 }

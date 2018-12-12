@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input, AfterViewInit, OnDestroy } from '@angular/core';
 import { Chart } from 'angular-highcharts';
 import { IDashboardControl } from '../i-dashboard-control';
 import { SimulatorTag, MajorQuality, TagType } from 'src/app/proxies/data-simulator-api';
@@ -9,8 +9,8 @@ import { TagData } from 'src/app/services/dashboard-data.service';
   templateUrl: './trend.component.html',
   styleUrls: ['./trend.component.css']
 })
-export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl {
-  private chartObj: Highcharts.ChartObject;
+export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashboardControl {
+  private internalChart: Highcharts.ChartObject;
 
   @Input() tag: SimulatorTag;
   chart: Chart;
@@ -68,36 +68,46 @@ export class TrendComponent implements OnInit, AfterViewInit, IDashboardControl 
     });
 
   }
+  
+  ngOnDestroy() {
+    // internal chart will be destroyed by Chart directive, do not use it anymore
+    this.internalChart = null;
+  }
 
   ngAfterViewInit() {
     this.chart.ref$.subscribe(chartObj => {
-      this.chartObj = chartObj;
+      this.internalChart = chartObj;
       this.resize();
     });
   }
 
   resize() {
     // reflow must be done after chart is fully created
-    window.setTimeout(() => { this.chartObj.reflow(); });
+    window.setTimeout(() => { 
+      // and before it is destroyed
+      if (this.internalChart !== null) {
+        this.internalChart.reflow(); 
+      }
+    });
   }
 
   getContentWidth(): number {
     // make sure chart extends to parent container (otherwise plotWidth == 0)
-    this.chartObj.reflow();
+    this.internalChart.reflow();
     
     // and return width of plotting area
-    return (<any>this.chartObj).plotWidth;
+    return (<any>this.internalChart).plotWidth;
   }
 
   set data(data: TagData) {
     // append new points
     data.values.forEach(v => {
       const value = v.quality.major === MajorQuality.Bad ? null : this.getChartValue(v.value);
-      this.chartObj.series[0].addPoint([v.time.getTime(), value], false, false)
+      this.internalChart.series[0].addPoint([v.time.getTime(), value], false, false)
     });
 
     // update time axis min and max (redraws chart)
-    this.chartObj.xAxis[0].setExtremes(data.startTime.getTime(), data.endTime.getTime());
+    this.internalChart.xAxis[0].setExtremes(data.startTime.getTime(), data.endTime.getTime());
   }
 
   private getChartValue(value: any): number {
