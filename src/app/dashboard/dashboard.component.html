@@ -1,7 +1,7 @@
 <mat-toolbar color="primary" class="content-toolbar">
   <mat-toolbar-row>
     <div class="toolbar-content">
-      <span>{{activeDashboardService.title}}</span>
+      <span>{{(activeDashboardService$ | async)?.title}}</span>
       <span class="subtitle">{{subtitle}}</span>
     </div>
     <span class="fill-remaining-space"></span>
@@ -11,7 +11,7 @@
     <button mat-icon-button matTooltip="Cancel Edits" *ngIf="isEditing" (click)="cancel()">
       <mat-icon>cancel</mat-icon>
     </button>
-    <button mat-icon-button matTooltip="Done Editing" *ngIf="isEditing" (click)="done()" [disabled]="isEditing && !activeDashboardService.isDirty">
+    <button mat-icon-button matTooltip="Done Editing" *ngIf="isEditing" (click)="done()" [disabled]="isEditing && !(activeDashboardService$ | async)?.isDirty">
       <mat-icon>done</mat-icon>
     </button>
   </mat-toolbar-row>

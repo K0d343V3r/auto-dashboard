@@ -122,8 +122,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private getTimeSpanText(startTime: Date, endTime: Date): string {
-    if (this.toDateOnly(startTime).getTime() === this.toDateOnly(endTime).getTime())
-    {
+    if (this.toDateOnly(startTime).getTime() === this.toDateOnly(endTime).getTime()) {
       return `from ${startTime.toLocaleTimeString()} to ${endTime.toLocaleTimeString()} on ${startTime.toLocaleDateString()}`;
     } else {
       return `from ${startTime.toLocaleString()} to ${endTime.toLocaleString()}`;
@@ -213,9 +212,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.activeDashboardService.id > 0) {
       // dashboard exists, update it
       this.activeDashboardService.save().subscribe(() => {
-
-        // and go back to where we came from
-        this.location.back();
+        // and go back to where we opened editor
+        this.navigate();
       });
     } else {
       // dashboard does not exist, get a new name for it
@@ -229,16 +227,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.activeDashboardService.name = data.name;
           this.activeDashboardService.save().subscribe(() => {
             // dashboard successfully created, now view it
-            this.router.navigate([`viewer/${this.activeDashboardService.id}`]);
+            this.navigate(`viewer/${this.activeDashboardService.id}`);
           });
         }
       });
     }
   }
 
+  private navigate(url: string = null) {
+    // stop any new template rebinding since we are on our way out
+    this.activeDashboardService$ = null;
+
+    // and navigate away from editor
+    if (url === null) {
+      this.location.back();
+    } else {
+      this.router.navigate([url]);
+    }
+  }
+
   cancel() {
-    // go back to where we came from
-    this.location.back();
+    // go back to where we opened editor
+    this.navigate();
   }
 
   getSimulatorTag(tagId: number): SimulatorTag {
