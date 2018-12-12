@@ -70,38 +70,44 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private changeSubtitle(responseTime: ResponseTimeFrame = null) {
+  private changeSubtitle(timeFrame: ResponseTimeFrame = null) {
     if (this.isEditing) {
-      if (this.activeDashboardService.requestType === RequestType.Live) {
-        this.subtitle = "Show current values";
-      } else {
-        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-        if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-          this.subtitle = `Show values ${this.getPointInTimeText(timeFrame.targetTime)}`;
-        } else if (this.activeDashboardService.requestType === RequestType.History) {
-          if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
-            this.subtitle = `Show values for the ${this.getRelativeTimePeriodText(timeFrame.timePeriod)}`;
-          } else {
-            this.subtitle = `Show values ${this.getTimeSpanText(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
-          }
-        }
-      }
+      this.changeEditingSubtitle();
+    } else if (timeFrame === null) {
+      this.changeViewingSubtitle(this.createDefaultResponseTimeFrame());
     } else {
-      if (responseTime === null) {
-        // we have not retrieved data yet, show approximate time info while we wait
-        responseTime = this.createDefaultResponseTimeFrame();
+      this.changeViewingSubtitle(timeFrame);
+    }
+  }
+
+  private changeViewingSubtitle(responseTime: ResponseTimeFrame) {
+    if (this.activeDashboardService.requestType === RequestType.Live) {
+      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))} (current)`;
+    } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+      this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))}`;
+    } else if (this.activeDashboardService.requestType === RequestType.History) {
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+      const text = this.capitalize(this.getTimeSpanText(responseTime.startTime, responseTime.endTime));
+      if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+        this.subtitle = `${text}`;
+      } else {
+        this.subtitle = `${text} (${this.getRelativeTimePeriodText(timeFrame.timePeriod)})`;
       }
-      if (this.activeDashboardService.requestType === RequestType.Live) {
-        this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))} (current)`;
-      } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-        this.subtitle = `${this.capitalize(this.getPointInTimeText(responseTime.targetTime))}`;
+    }
+  }
+
+  private changeEditingSubtitle() {
+    if (this.activeDashboardService.requestType === RequestType.Live) {
+      this.subtitle = "Show current values";
+    } else {
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+      if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+        this.subtitle = `Show values ${this.getPointInTimeText(timeFrame.targetTime)}`;
       } else if (this.activeDashboardService.requestType === RequestType.History) {
-        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-        const text = this.capitalize(this.getTimeSpanText(responseTime.startTime, responseTime.endTime));
-        if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
-          this.subtitle = `${text}`;
+        if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
+          this.subtitle = `Show values for the ${this.getRelativeTimePeriodText(timeFrame.timePeriod)}`;
         } else {
-          this.subtitle = `${text} (${this.getRelativeTimePeriodText(timeFrame.timePeriod)})`;
+          this.subtitle = `Show values ${this.getTimeSpanText(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
         }
       }
     }
