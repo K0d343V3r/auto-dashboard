@@ -84,7 +84,8 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
         useUTC: false
       },
       tooltip: {
-        pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>${this.getTooltipToken()}</b><br/>`
+        pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>${this.getTooltipToken()}</b><br/>`,
+        xDateFormat: this.timeService.getHighchartsDateFormat();
       },
       series: [
         <any>{                                  // using "any" - step not in type definition  
@@ -172,7 +173,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
     if (this.tag.type === TagType.Boolean) {
       return this.getBooleanLabel(value);
     } else if (this.tag.type === TagType.String) {
-      return this.timeService.toDateString(new Date(value), true);
+      return this.timeService.toDateString(new Date(value));
     } else {
       return null;
     }

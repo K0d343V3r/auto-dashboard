@@ -112,4 +112,8 @@ export class TimeService {
     const parts: string[] = hour24Time.split(':');
     return new Date(date.getFullYear(), date.getMonth(), date.getDate(), +parts[0], +parts[1], +parts[2]);
   }
+
+  getHighchartsDateFormat(): string {
+    return "%l:%M:%S %p on %m/%d/%Y";
+  }
 }
