@@ -84,9 +84,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private changeViewingSubtitle(responseTime: ResponseTimeFrame) {
     if (this.activeDashboardService.requestType === RequestType.Live) {
-      this.subtitle = `At ${this.timeService.toDateString(responseTime.targetTime)} (current)`;
+      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)} (current)`;
     } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-      this.subtitle = `At ${this.timeService.toDateString(responseTime.targetTime)}`;
+      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)}`;
     } else if (this.activeDashboardService.requestType === RequestType.History) {
       const timeFrame = this.activeDashboardService.getRequestTimeFrame();
       const text = this.timeService.toTimeSpanString(responseTime.startTime, responseTime.endTime, true);
@@ -111,7 +111,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.subtitle = `Show values for the ${this.timeService.toRelativeTimeString(
             timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale)}`;
         } else {
-          this.subtitle = `Show values ${this.timeService.toTimeSpanString(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
+          this.subtitle = `Show values from ${this.timeService.toTimeSpanString(timeFrame.timePeriod.startTime, timeFrame.timePeriod.endTime)}`;
         }
       }
     }

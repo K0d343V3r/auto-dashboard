@@ -3,6 +3,7 @@ import { IDashboardControl } from '../i-dashboard-control';
 import { SimulatorTag, MajorQuality } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 import { DefaultColorService } from 'src/app/services/default-color.service';
+import { TimeService } from 'src/app/services/time.service';
 
 @Component({
   selector: 'app-label',
@@ -14,7 +15,8 @@ export class LabelComponent implements OnInit, IDashboardControl {
   value: Date;
 
   constructor(
-    public defaultColorService: DefaultColorService
+    public defaultColorService: DefaultColorService,
+    public timeService: TimeService
   ) { }
 
   ngOnInit() {

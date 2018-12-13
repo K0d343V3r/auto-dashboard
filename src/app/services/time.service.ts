@@ -64,9 +64,9 @@ export class TimeService {
   toTimeSpanString(startTime: Date, endTime: Date, capitalize: boolean = false): string {
     let text;
     if (this.toDateOnly(startTime).getTime() === this.toDateOnly(endTime).getTime()) {
-      text = `from ${this.toTimeString(startTime)} to ${this.toTimeString(endTime)} on ${startTime.toLocaleDateString()}`;
+      text = `${this.toTimeString(startTime)} to ${this.toTimeString(endTime)} on ${startTime.toLocaleDateString()}`;
     } else {
-      text = `from ${this.toDateString(startTime, true)} to ${this.toDateString(endTime, true)}`;
+      text = `${this.toDateString(startTime)} to ${this.toDateString(endTime)}`;
     }
     return capitalize ? this.capitalize(text) : text;
   }
