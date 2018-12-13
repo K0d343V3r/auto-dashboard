@@ -85,7 +85,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
       },
       tooltip: {
         pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>${this.getTooltipToken()}</b><br/>`,
-        xDateFormat: this.timeService.getHighchartsDateFormat();
+        xDateFormat: this.timeService.getHighchartsDateFormat()
       },
       series: [
         <any>{                                  // using "any" - step not in type definition  
