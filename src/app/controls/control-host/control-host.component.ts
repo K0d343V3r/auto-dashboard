@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, ViewChild, ComponentFactoryResolver, Type, OnDestroy, AfterViewInit } from '@angular/core';
-import { SimulatorTag, TagType } from 'src/app/proxies/data-simulator-api';
+import { SimulatorItem, SimulatorTag, BooleanTag, NumericTag, StringTag, SimulatorDocument } from 'src/app/proxies/data-simulator-api';
 import { ControlHostDirective } from './control-host.directive';
 import { LedComponent } from '../led/led.component';
 import { GaugeComponent } from '../gauge/gauge.component';
@@ -23,7 +23,7 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
   private dataChannelSubscription: Subscription;
   private requestTypeSubscription: Subscription;
 
-  @Input() tag: SimulatorTag;
+  @Input() tag: SimulatorItem;
 
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,
@@ -38,9 +38,11 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
       this.control.resize();
     });
 
-    this.dataChannelSubscription = this.dashboardDataService.openChannel(this.tag.id).subscribe(values => {
-      this.control.data = values;
-    });
+    if (this.tag instanceof SimulatorTag) {
+      this.dataChannelSubscription = this.dashboardDataService.openChannel(this.tag.id).subscribe(values => {
+        this.control.data = values;
+      });
+    }
 
     this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
       this.createHostedControl();
@@ -49,8 +51,10 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.layoutChangedSubscription.unsubscribe();
-    this.dashboardDataService.closeChannel(this.tag.id);
-    this.dataChannelSubscription.unsubscribe();
+    if (this.tag instanceof SimulatorTag) {
+      this.dashboardDataService.closeChannel(this.tag.id);
+      this.dataChannelSubscription.unsubscribe();
+    }
     this.requestTypeSubscription.unsubscribe();
   }
 
@@ -78,22 +82,17 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private getControlType(): Type<any> {
-    if (this.activeDashboardService.requestType === RequestType.History) {
+    if (this.tag instanceof SimulatorDocument) {
+      // TODO
+    } else if (this.activeDashboardService.requestType === RequestType.History) {
       // all tags render as trend charts
       return TrendComponent;
-    } else {
-      // single value requests render based on tag data type
-      switch (this.tag.type) {
-        case TagType.Boolean:
-          return LedComponent;
-
-        case TagType.Float:
-        case TagType.Integer:
-          return GaugeComponent;
-
-        case TagType.String:
-          return LabelComponent;
-      }
+    } else if (this.tag instanceof BooleanTag) {
+      return LedComponent;
+    } else if (this.tag instanceof NumericTag) {
+      return GaugeComponent;
+    } else if (this.tag instanceof StringTag) {
+      return LabelComponent;
     }
   }
 }

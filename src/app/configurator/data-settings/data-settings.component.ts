@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { SimulatorTag } from '../../proxies/data-simulator-api';
+import { SimulatorItem } from '../../proxies/data-simulator-api';
 import { ActiveDashboardService } from '../../services/active-dashboard.service';
 import { MatSelectionListChange } from '@angular/material';
 import { SimulatorTagService } from '../../services/simulator-tag.service';
@@ -12,7 +12,7 @@ import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
   styleUrls: ['./data-settings.component.css']
 })
 export class DataSettingsComponent implements OnInit {
-  tags$: Observable<SimulatorTag[]>;
+  tags$: Observable<SimulatorItem[]>;
 
   constructor(
     private activeDashboardService: ActiveDashboardService,
@@ -24,16 +24,16 @@ export class DataSettingsComponent implements OnInit {
     this.tags$ = this.simulatorTagService.getAllTags();
   }
 
-  isTagSelected(tag: SimulatorTag): boolean {
+  isTagSelected(tag: SimulatorItem): boolean {
     return this.activeDashboardService.tiles.find(t => t.tagId === tag.id) != null;
   }
 
-  isTagImportant(tag: SimulatorTag): boolean {
+  isTagImportant(tag: SimulatorItem): boolean {
     const tile = this.activeDashboardService.tiles.find(t => t.tagId === tag.id);
     return tile != null && tile.important;
   }
 
-  toggleTagImportance(tag: SimulatorTag, event: MouseEvent) {
+  toggleTagImportance(tag: SimulatorItem, event: MouseEvent) {
     this.dashboardUndoService.toggleTagImportance(tag.id);
     event.stopImmediatePropagation();
   }

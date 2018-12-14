@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy, AfterViewInit } from '@angular/core';
-import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
-import { IDashboardControl } from '../i-dashboard-control';
+import { SimulatorTag, NumericTag } from 'src/app/proxies/data-simulator-api';
+import { ITagControl } from '../i-dashboard-control';
 import { Chart, Highcharts } from 'angular-highcharts';
 import { TagData } from 'src/app/services/dashboard-data.service';
 import { DefaultColorService } from 'src/app/services/default-color.service';
@@ -11,7 +11,7 @@ import { DefaultColorService } from 'src/app/services/default-color.service';
   templateUrl: './gauge.component.html',
   styleUrls: ['./gauge.component.css']
 })
-export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashboardControl {
+export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, ITagControl {
   private internalChart: Highcharts.ChartObject;
 
   @Input() tag: SimulatorTag;
@@ -62,8 +62,8 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
         labels: {
           y: 16
         },
-        min: this.tag.scale.min,
-        max: this.tag.scale.max
+        min: (<NumericTag>this.tag).scale.min,
+        max: (<NumericTag>this.tag).scale.max
       },
       plotOptions: {
         solidgauge: {
@@ -86,7 +86,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
           format:
             `<div style = "text-align: center; vertical-align: bottom; color: '${((<any>Highcharts).theme && (<any>Highcharts).theme.contrastTextColor) || 'black'}'">
                <span style = "font-size: 25px">{y:.2f}</span>
-               <span style = "font-size: 12px">${this.tag.engineeringUnits == null ? "" : "&nbsp" + this.tag.engineeringUnits}</span>
+               <span style = "font-size: 12px">${(<NumericTag>this.tag).engineeringUnits == null ? "" : "&nbsp" + (<NumericTag>this.tag).engineeringUnits}</span>
              </div>`
         }
       }]

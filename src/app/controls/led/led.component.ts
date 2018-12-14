@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { IDashboardControl } from '../i-dashboard-control';
+import { ITagControl } from '../i-dashboard-control';
 import { SimulatorTag } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 import { DefaultColorService } from 'src/app/services/default-color.service';
@@ -9,7 +9,7 @@ import { DefaultColorService } from 'src/app/services/default-color.service';
   templateUrl: './led.component.html',
   styleUrls: ['./led.component.css']
 })
-export class LedComponent implements OnInit, IDashboardControl {
+export class LedComponent implements OnInit, ITagControl {
   @Input() tag: SimulatorTag;
   value: boolean = false;
 

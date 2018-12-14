@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, AfterViewInit, OnDestroy } from '@angular/core';
 import { Chart } from 'angular-highcharts';
-import { IDashboardControl } from '../i-dashboard-control';
-import { SimulatorTag, MajorQuality, TagType } from 'src/app/proxies/data-simulator-api';
+import { ITagControl } from '../i-dashboard-control';
+import { SimulatorTag, MajorQuality, StringTag, BooleanTag, NumericTag, NumericType } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 import { DefaultColorService } from 'src/app/services/default-color.service';
 import { TimeService } from 'src/app/services/time.service';
@@ -11,7 +11,7 @@ import { TimeService } from 'src/app/services/time.service';
   templateUrl: './trend.component.html',
   styleUrls: ['./trend.component.css']
 })
-export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashboardControl {
+export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagControl {
   private internalChart: Highcharts.ChartObject;
   private color: string;
 
@@ -49,7 +49,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
       plotOptions: {
         line: {
           marker: {
-            enabled: this.tag.type === TagType.String
+            enabled: this.tag instanceof StringTag
           }
         },
         series: {
@@ -72,9 +72,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
         },
         maxPadding: 0,
         minPadding: 0,
-        tickInterval: this.tag.type === TagType.Boolean ? 1 : undefined,
+        tickInterval: this.tag instanceof BooleanTag ? 1 : undefined,
         labels: {
-          enabled: this.tag.type !== TagType.String,
+          enabled: !(this.tag instanceof StringTag),
           formatter: ((context: Highcharts.AxisLabelFormatterOptions): string => {
             return this.getAxisLabel(context.value);
           })
@@ -91,14 +91,14 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
         <any>{                                  // using "any" - step not in type definition  
           name: `${this.tag.name}`,
           data: [],
-          step: this.tag.type !== TagType.Float
+          step: this.tag instanceof NumericTag && (<NumericTag>this.tag).type !== NumericType.Float
         }
       ]
     });
   }
 
   private getTooltipToken(): string {
-    if (this.tag.type === TagType.Float || this.tag.type === TagType.Integer) {
+    if (this.tag instanceof NumericTag) {
       return "{point.y}";
     } else {
       return "{point.tooltipValue}";
@@ -106,7 +106,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   }
 
   private getAxisLabel(value: number): string {
-    if (this.tag.type === TagType.Boolean) {
+    if (this.tag instanceof BooleanTag) {
       return this.getBooleanLabel(value === 1);
     } else {
       return value.toString();
@@ -115,9 +115,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
 
   private getBooleanLabel(value: boolean): string {
     if (value) {
-      return this.tag.trueLabel != null ? this.tag.trueLabel : "True";
+      return (<BooleanTag>this.tag).trueLabel != null ? (<BooleanTag>this.tag).trueLabel : "True";
     } else {
-      return this.tag.falseLabel != null ? this.tag.falseLabel : "False";
+      return (<BooleanTag>this.tag).falseLabel != null ? (<BooleanTag>this.tag).falseLabel : "False";
     }
   }
 
@@ -170,9 +170,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   }
 
   private getTooltipValue(value: any): string {
-    if (this.tag.type === TagType.Boolean) {
+    if (this.tag instanceof BooleanTag) {
       return this.getBooleanLabel(value);
-    } else if (this.tag.type === TagType.String) {
+    } else if (this.tag instanceof StringTag) {
       return this.timeService.toDateString(new Date(value));
     } else {
       return null;
@@ -180,16 +180,12 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, IDashbo
   }
 
   private getCharttingValue(value: any): number {
-    switch (this.tag.type) {
-      case TagType.Boolean:
-        return value ? 1 : 0;
-
-      case TagType.Float:
-      case TagType.Integer:
-        return value;
-
-      case TagType.String:
-        return 1;
+    if (this.tag instanceof BooleanTag) {
+      return value ? 1 : 0;
+    } else if (this.tag instanceof StringTag) {
+      return 1;
+    } else {
+      return value;
     }
   }
 }

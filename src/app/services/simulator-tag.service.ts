@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TagsProxy, SimulatorTag } from '../proxies/data-simulator-api';
+import { ItemsProxy, SimulatorItem } from '../proxies/data-simulator-api';
 import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
@@ -7,18 +7,18 @@ import { mergeMap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class SimulatorTagService {
-  private tags$: Observable<SimulatorTag[]>;
+  private tags$: Observable<SimulatorItem[]>;
 
   constructor(
-    private tagsProxy: TagsProxy
+    private tagsProxy: ItemsProxy
   ) { }
 
-  getAllTags(): Observable<SimulatorTag[]> {
+  getAllTags(): Observable<SimulatorItem[]> {
     // tag array does not change, so cache it
     if (this.tags$ != null) {
       return this.tags$;
     } else {
-      return this.tagsProxy.getAllTags().pipe(mergeMap(tags => { 
+      return this.tagsProxy.getAllItems().pipe(mergeMap(tags => { 
         // sort alphabetically
         tags.sort((a, b) => a.name.localeCompare(b.name));
         this.tags$ = of(tags);

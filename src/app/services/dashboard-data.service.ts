@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TagId, VQT, DataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
+import { TagId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard.service';
 import { RequestType, TimePeriodType, RelativeTimeScale, TimePeriod } from '../proxies/dashboard-api';
@@ -31,7 +31,7 @@ export class DashboardDataService {
   dataRefreshed$ = this.dataRefreshedSource.asObservable();
 
   constructor(
-    private dataProxy: DataProxy,
+    private dataProxy: TagDataProxy,
     private activeDashboardService: ActiveDashboardService,
     private timeService: TimeService
   ) {

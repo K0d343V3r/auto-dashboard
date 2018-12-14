@@ -5,7 +5,7 @@ import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 import { Location } from '@angular/common';
 import { SimulatorTagService } from '../services/simulator-tag.service';
-import { SimulatorTag } from '../proxies/data-simulator-api';
+import { SimulatorItem } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
@@ -23,7 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private tileAddedSubscription: Subscription;
   private requestTypeSubscription: Subscription;
   private dataRefreshedSubscription: Subscription;
-  private tags: SimulatorTag[];
+  private tags: SimulatorItem[];
 
   subtitle: String;
   isEditing: boolean;
@@ -236,7 +236,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.navigate();
   }
 
-  getSimulatorTag(tagId: number): SimulatorTag {
+  getSimulatorTag(tagId: number): SimulatorItem {
     return this.tags.find(t => t.id === tagId);
   }
 }

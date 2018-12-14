@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { IDashboardControl } from '../i-dashboard-control';
+import { ITagControl } from '../i-dashboard-control';
 import { SimulatorTag, MajorQuality } from 'src/app/proxies/data-simulator-api';
 import { TagData } from 'src/app/services/dashboard-data.service';
 import { DefaultColorService } from 'src/app/services/default-color.service';
@@ -10,7 +10,7 @@ import { TimeService } from 'src/app/services/time.service';
   templateUrl: './label.component.html',
   styleUrls: ['./label.component.css']
 })
-export class LabelComponent implements OnInit, IDashboardControl {
+export class LabelComponent implements OnInit, ITagControl {
   @Input() tag: SimulatorTag;
   value: Date;
 

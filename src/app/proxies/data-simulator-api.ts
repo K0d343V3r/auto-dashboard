@@ -13,17 +13,14 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 
 export const API_BASE_URL_SIMULATOR = new InjectionToken<string>('API_BASE_URL_SIMULATOR');
 
-export interface IDataProxy {
-    getHistoryAbsolute(options: AbsoluteHistoryRequest): Observable<HistoryResponse | null>;
-    getHistoryRelative(request: RelativeHistoryRequest): Observable<HistoryResponse | null>;
-    getValueAtTime(request: ValueAtTimeRequest): Observable<TagValue[] | null>;
-    getLiveValue(tags: TagId[]): Observable<TagValue[] | null>;
+export interface IDocumentDataProxy {
+    getDocuments(documents: TagId[]): Observable<string[] | null>;
 }
 
 @Injectable({
     providedIn: 'root'
 })
-export class DataProxy implements IDataProxy {
+export class DocumentDataProxy implements IDocumentDataProxy {
     private http: HttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -33,11 +30,210 @@ export class DataProxy implements IDataProxy {
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
-    getHistoryAbsolute(options: AbsoluteHistoryRequest): Observable<HistoryResponse | null> {
-        let url_ = this.baseUrl + "/api/Data/history/absolute";
+    getDocuments(documents: TagId[]): Observable<string[] | null> {
+        let url_ = this.baseUrl + "/api/DocumentData";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(options);
+        const content_ = JSON.stringify(documents);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetDocuments(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetDocuments(<any>response_);
+                } catch (e) {
+                    return <Observable<string[] | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<string[] | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetDocuments(response: HttpResponseBase): Observable<string[] | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(item);
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<string[] | null>(<any>null);
+    }
+}
+
+export interface IItemsProxy {
+    getAllItems(): Observable<SimulatorItem[] | null>;
+    getItem(id: TagId): Observable<SimulatorItem | null>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ItemsProxy implements IItemsProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL_SIMULATOR) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    getAllItems(): Observable<SimulatorItem[] | null> {
+        let url_ = this.baseUrl + "/api/Items";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAllItems(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAllItems(<any>response_);
+                } catch (e) {
+                    return <Observable<SimulatorItem[] | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<SimulatorItem[] | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetAllItems(response: HttpResponseBase): Observable<SimulatorItem[] | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(SimulatorItem.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<SimulatorItem[] | null>(<any>null);
+    }
+
+    getItem(id: TagId): Observable<SimulatorItem | null> {
+        let url_ = this.baseUrl + "/api/Items/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetItem(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetItem(<any>response_);
+                } catch (e) {
+                    return <Observable<SimulatorItem | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<SimulatorItem | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetItem(response: HttpResponseBase): Observable<SimulatorItem | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? SimulatorItem.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<SimulatorItem | null>(<any>null);
+    }
+}
+
+export interface ITagDataProxy {
+    getHistoryAbsolute(request: AbsoluteHistoryRequest): Observable<HistoryResponse | null>;
+    getHistoryRelative(request: RelativeHistoryRequest): Observable<HistoryResponse | null>;
+    getValueAtTime(request: ValueAtTimeRequest): Observable<TagValue[] | null>;
+    getLiveValue(tags: TagId[]): Observable<TagValue[] | null>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class TagDataProxy implements ITagDataProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL_SIMULATOR) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    getHistoryAbsolute(request: AbsoluteHistoryRequest): Observable<HistoryResponse | null> {
+        let url_ = this.baseUrl + "/api/TagData/history/absolute";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
 
         let options_ : any = {
             body: content_,
@@ -86,7 +282,7 @@ export class DataProxy implements IDataProxy {
     }
 
     getHistoryRelative(request: RelativeHistoryRequest): Observable<HistoryResponse | null> {
-        let url_ = this.baseUrl + "/api/Data/history/relative";
+        let url_ = this.baseUrl + "/api/TagData/history/relative";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(request);
@@ -138,7 +334,7 @@ export class DataProxy implements IDataProxy {
     }
 
     getValueAtTime(request: ValueAtTimeRequest): Observable<TagValue[] | null> {
-        let url_ = this.baseUrl + "/api/Data/valueattime";
+        let url_ = this.baseUrl + "/api/TagData/valueattime";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(request);
@@ -194,7 +390,7 @@ export class DataProxy implements IDataProxy {
     }
 
     getLiveValue(tags: TagId[]): Observable<TagValue[] | null> {
-        let url_ = this.baseUrl + "/api/Data/livevalue";
+        let url_ = this.baseUrl + "/api/TagData/livevalue";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(tags);
@@ -250,126 +446,360 @@ export class DataProxy implements IDataProxy {
     }
 }
 
-export interface ITagsProxy {
-    getAllTags(): Observable<SimulatorTag[] | null>;
-    get(id: TagId): Observable<SimulatorTag | null>;
+export enum TagId {
+    SineWave = 0, 
+    TriangleWave = 1, 
+    SquareWave = 2, 
+    SawtoothWave = 3, 
+    WhiteNoise = 4, 
+    IncrementalCount = 5, 
+    PeriodicPulse = 6, 
+    ModulatedPulse = 7, 
+    TimeText = 8, 
+    PDFDocument = 9, 
 }
 
-@Injectable({
-    providedIn: 'root'
-})
-export class TagsProxy implements ITagsProxy {
-    private http: HttpClient;
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+export abstract class SimulatorItem implements ISimulatorItem {
+    id!: TagId;
+    name?: string | undefined;
 
-    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL_SIMULATOR) baseUrl?: string) {
-        this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "";
-    }
+    protected _discriminator: string;
 
-    getAllTags(): Observable<SimulatorTag[] | null> {
-        let url_ = this.baseUrl + "/api/Tags";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetAllTags(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetAllTags(<any>response_);
-                } catch (e) {
-                    return <Observable<SimulatorTag[] | null>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<SimulatorTag[] | null>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processGetAllTags(response: HttpResponseBase): Observable<SimulatorTag[] | null> {
-        const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200 && resultData200.constructor === Array) {
-                result200 = [];
-                for (let item of resultData200)
-                    result200.push(SimulatorTag.fromJS(item));
+    constructor(data?: ISimulatorItem) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
             }
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
         }
-        return _observableOf<SimulatorTag[] | null>(<any>null);
+        this._discriminator = "SimulatorItem";
     }
 
-    get(id: TagId): Observable<SimulatorTag | null> {
-        let url_ = this.baseUrl + "/api/Tags/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGet(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGet(<any>response_);
-                } catch (e) {
-                    return <Observable<SimulatorTag | null>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<SimulatorTag | null>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processGet(response: HttpResponseBase): Observable<SimulatorTag | null> {
-        const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? SimulatorTag.fromJS(resultData200) : <any>null;
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
+    init(data?: any) {
+        if (data) {
+            this.id = data["id"];
+            this.name = data["name"];
         }
-        return _observableOf<SimulatorTag | null>(<any>null);
     }
+
+    static fromJS(data: any): SimulatorItem {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "SimulatorTag") {
+            throw new Error("The abstract class 'SimulatorTag' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "NumericTag") {
+            let result = new NumericTag();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "BooleanTag") {
+            let result = new BooleanTag();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "StringTag") {
+            let result = new StringTag();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "SimulatorDocument") {
+            let result = new SimulatorDocument();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'SimulatorItem' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator; 
+        data["id"] = this.id;
+        data["name"] = this.name;
+        return data; 
+    }
+
+    clone(): SimulatorItem {
+        throw new Error("The abstract class 'SimulatorItem' cannot be instantiated.");
+    }
+}
+
+export interface ISimulatorItem {
+    id: TagId;
+    name?: string | undefined;
+}
+
+export abstract class SimulatorTag extends SimulatorItem implements ISimulatorTag {
+
+    protected _discriminator: string;
+
+    constructor(data?: ISimulatorTag) {
+        super(data);
+        this._discriminator = "SimulatorTag";
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+        }
+    }
+
+    static fromJS(data: any): SimulatorTag {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "NumericTag") {
+            let result = new NumericTag();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "BooleanTag") {
+            let result = new BooleanTag();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "StringTag") {
+            let result = new StringTag();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'SimulatorTag' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator; 
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): SimulatorTag {
+        throw new Error("The abstract class 'SimulatorTag' cannot be instantiated.");
+    }
+}
+
+export interface ISimulatorTag extends ISimulatorItem {
+}
+
+export class NumericTag extends SimulatorTag implements INumericTag {
+    type!: NumericType;
+    scale?: NumericScale | undefined;
+    engineeringUnits?: string | undefined;
+
+    constructor(data?: INumericTag) {
+        super(data);
+        this._discriminator = "NumericTag";
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.type = data["type"];
+            this.scale = data["scale"] ? NumericScale.fromJS(data["scale"]) : <any>undefined;
+            this.engineeringUnits = data["engineeringUnits"];
+        }
+    }
+
+    static fromJS(data: any): NumericTag {
+        data = typeof data === 'object' ? data : {};
+        let result = new NumericTag();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this.type;
+        data["scale"] = this.scale ? this.scale.toJSON() : <any>undefined;
+        data["engineeringUnits"] = this.engineeringUnits;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): NumericTag {
+        const json = this.toJSON();
+        let result = new NumericTag();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface INumericTag extends ISimulatorTag {
+    type: NumericType;
+    scale?: NumericScale | undefined;
+    engineeringUnits?: string | undefined;
+}
+
+export enum NumericType {
+    Float = 0, 
+    Integer = 1, 
+}
+
+export class NumericScale implements INumericScale {
+    min!: number;
+    max!: number;
+
+    constructor(data?: INumericScale) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.min = data["min"];
+            this.max = data["max"];
+        }
+    }
+
+    static fromJS(data: any): NumericScale {
+        data = typeof data === 'object' ? data : {};
+        let result = new NumericScale();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["min"] = this.min;
+        data["max"] = this.max;
+        return data; 
+    }
+
+    clone(): NumericScale {
+        const json = this.toJSON();
+        let result = new NumericScale();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface INumericScale {
+    min: number;
+    max: number;
+}
+
+export class BooleanTag extends SimulatorTag implements IBooleanTag {
+    trueLabel?: string | undefined;
+    falseLabel?: string | undefined;
+
+    constructor(data?: IBooleanTag) {
+        super(data);
+        this._discriminator = "BooleanTag";
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.trueLabel = data["trueLabel"];
+            this.falseLabel = data["falseLabel"];
+        }
+    }
+
+    static fromJS(data: any): BooleanTag {
+        data = typeof data === 'object' ? data : {};
+        let result = new BooleanTag();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["trueLabel"] = this.trueLabel;
+        data["falseLabel"] = this.falseLabel;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): BooleanTag {
+        const json = this.toJSON();
+        let result = new BooleanTag();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IBooleanTag extends ISimulatorTag {
+    trueLabel?: string | undefined;
+    falseLabel?: string | undefined;
+}
+
+export class StringTag extends SimulatorTag implements IStringTag {
+
+    constructor(data?: IStringTag) {
+        super(data);
+        this._discriminator = "StringTag";
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+        }
+    }
+
+    static fromJS(data: any): StringTag {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringTag();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): StringTag {
+        const json = this.toJSON();
+        let result = new StringTag();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IStringTag extends ISimulatorTag {
+}
+
+export class SimulatorDocument extends SimulatorItem implements ISimulatorDocument {
+    mediaType?: string | undefined;
+
+    constructor(data?: ISimulatorDocument) {
+        super(data);
+        this._discriminator = "SimulatorDocument";
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.mediaType = data["mediaType"];
+        }
+    }
+
+    static fromJS(data: any): SimulatorDocument {
+        data = typeof data === 'object' ? data : {};
+        let result = new SimulatorDocument();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["mediaType"] = this.mediaType;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): SimulatorDocument {
+        const json = this.toJSON();
+        let result = new SimulatorDocument();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISimulatorDocument extends ISimulatorItem {
+    mediaType?: string | undefined;
 }
 
 export class HistoryResponse implements IHistoryResponse {
@@ -484,18 +914,6 @@ export class TagValues implements ITagValues {
 export interface ITagValues {
     tag: TagId;
     values?: VQT[] | undefined;
-}
-
-export enum TagId {
-    SineWave = 0, 
-    TriangleWave = 1, 
-    SquareWave = 2, 
-    SawtoothWave = 3, 
-    WhiteNoise = 4, 
-    IncrementalCount = 5, 
-    PeriodicPulse = 6, 
-    ModulatedPulse = 7, 
-    TimeText = 8, 
 }
 
 export class VQT implements IVQT {
@@ -874,127 +1292,6 @@ export class ValueAtTimeRequest implements IValueAtTimeRequest {
 export interface IValueAtTimeRequest {
     tags?: TagId[] | undefined;
     targetTime: Date;
-}
-
-export class SimulatorTag implements ISimulatorTag {
-    id!: TagId;
-    name?: string | undefined;
-    type!: TagType;
-    scale?: NumericScale | undefined;
-    engineeringUnits?: string | undefined;
-    trueLabel?: string | undefined;
-    falseLabel?: string | undefined;
-
-    constructor(data?: ISimulatorTag) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.id = data["id"];
-            this.name = data["name"];
-            this.type = data["type"];
-            this.scale = data["scale"] ? NumericScale.fromJS(data["scale"]) : <any>undefined;
-            this.engineeringUnits = data["engineeringUnits"];
-            this.trueLabel = data["trueLabel"];
-            this.falseLabel = data["falseLabel"];
-        }
-    }
-
-    static fromJS(data: any): SimulatorTag {
-        data = typeof data === 'object' ? data : {};
-        let result = new SimulatorTag();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["type"] = this.type;
-        data["scale"] = this.scale ? this.scale.toJSON() : <any>undefined;
-        data["engineeringUnits"] = this.engineeringUnits;
-        data["trueLabel"] = this.trueLabel;
-        data["falseLabel"] = this.falseLabel;
-        return data; 
-    }
-
-    clone(): SimulatorTag {
-        const json = this.toJSON();
-        let result = new SimulatorTag();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface ISimulatorTag {
-    id: TagId;
-    name?: string | undefined;
-    type: TagType;
-    scale?: NumericScale | undefined;
-    engineeringUnits?: string | undefined;
-    trueLabel?: string | undefined;
-    falseLabel?: string | undefined;
-}
-
-export enum TagType {
-    Float = 0, 
-    Integer = 1, 
-    Boolean = 2, 
-    String = 3, 
-}
-
-export class NumericScale implements INumericScale {
-    min!: number;
-    max!: number;
-
-    constructor(data?: INumericScale) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.min = data["min"];
-            this.max = data["max"];
-        }
-    }
-
-    static fromJS(data: any): NumericScale {
-        data = typeof data === 'object' ? data : {};
-        let result = new NumericScale();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["min"] = this.min;
-        data["max"] = this.max;
-        return data; 
-    }
-
-    clone(): NumericScale {
-        const json = this.toJSON();
-        let result = new NumericScale();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface INumericScale {
-    min: number;
-    max: number;
 }
 
 export class SwaggerException extends Error {
