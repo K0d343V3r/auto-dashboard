@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, ComponentFactoryResolver, Type, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, ComponentFactoryResolver, Type, OnDestroy } from '@angular/core';
 import { SimulatorItem, SimulatorTag, BooleanTag, NumericTag, StringTag, SimulatorDocument, DocumentDataProxy } from 'src/app/proxies/data-simulator-api';
 import { ControlHostDirective } from './control-host.directive';
 import { LedComponent } from '../led/led.component';
@@ -23,6 +23,7 @@ export class ControlHostComponent implements OnInit, OnDestroy {
   private layoutChangedSubscription: Subscription;
   private dataChannelSubscription: Subscription;
   private requestTypeSubscription: Subscription;
+  private lastRequestType: RequestType;
 
   @Input() item: SimulatorItem;
 
@@ -47,7 +48,7 @@ export class ControlHostComponent implements OnInit, OnDestroy {
     }
 
     this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
-      this.createHostedControl();
+      this.switchHostedControl();
     })
   }
 
@@ -86,6 +87,17 @@ export class ControlHostComponent implements OnInit, OnDestroy {
       this.documentDataProxy.getDocuments([this.item.id]).subscribe(urls => {
         this.control.data = urls[0];
       });
+    }
+
+    this.lastRequestType = this.activeDashboardService.requestType;
+  }
+
+  private switchHostedControl() {
+    if (!(this.item instanceof SimulatorDocument) &&
+      (this.lastRequestType !== RequestType.History && this.activeDashboardService.requestType === RequestType.History) ||
+      (this.lastRequestType === RequestType.History && this.activeDashboardService.requestType !== RequestType.History)) {
+        // this is not a static document, and we have switched from single to multi value display (or viceversa)
+        this.createHostedControl();
     }
   }
 
