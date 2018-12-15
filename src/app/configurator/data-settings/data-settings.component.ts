@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SimulatorItem } from '../../proxies/data-simulator-api';
 import { ActiveDashboardService } from '../../services/active-dashboard.service';
 import { MatSelectionListChange } from '@angular/material';
-import { SimulatorTagService } from '../../services/simulator-tag.service';
+import { SimulatorItemService } from '../../services/simulator-item.service';
 import { Observable } from 'rxjs';
 import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
 
@@ -12,33 +12,33 @@ import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
   styleUrls: ['./data-settings.component.css']
 })
 export class DataSettingsComponent implements OnInit {
-  tags$: Observable<SimulatorItem[]>;
+  items$: Observable<SimulatorItem[]>;
 
   constructor(
     private activeDashboardService: ActiveDashboardService,
-    private simulatorTagService: SimulatorTagService,
+    private simulatorItemService: SimulatorItemService,
     private dashboardUndoService: DashboardUndoService
   ) { }
 
   ngOnInit() {
-    this.tags$ = this.simulatorTagService.getAllTags();
+    this.items$ = this.simulatorItemService.getAllItems();
   }
 
-  isTagSelected(tag: SimulatorItem): boolean {
-    return this.activeDashboardService.tiles.find(t => t.tagId === tag.id) != null;
+  isItemSelected(item: SimulatorItem): boolean {
+    return this.activeDashboardService.tiles.find(t => t.tagId === item.id) != null;
   }
 
-  isTagImportant(tag: SimulatorItem): boolean {
-    const tile = this.activeDashboardService.tiles.find(t => t.tagId === tag.id);
+  isItemImportant(item: SimulatorItem): boolean {
+    const tile = this.activeDashboardService.tiles.find(t => t.tagId === item.id);
     return tile != null && tile.important;
   }
 
-  toggleTagImportance(tag: SimulatorItem, event: MouseEvent) {
-    this.dashboardUndoService.toggleItemImportance(tag.id);
+  toggleItemImportance(item: SimulatorItem, event: MouseEvent) {
+    this.dashboardUndoService.toggleItemImportance(item.id);
     event.stopImmediatePropagation();
   }
 
-  onTagSelectionChange(event: MatSelectionListChange) {
+  onItemSelectionChange(event: MatSelectionListChange) {
     if (event.option.selected) {
       this.dashboardUndoService.addItem(event.option.value);
     } else {

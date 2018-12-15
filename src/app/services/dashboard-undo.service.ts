@@ -28,7 +28,7 @@ class TitleChange extends ReversibleChange {
   }
 }
 
-class TagChange extends ReversibleChange {
+class ItemChange extends ReversibleChange {
   constructor(activeDashboardService: ActiveDashboardService, private itemId: ItemId, private add: boolean) {
     super(activeDashboardService);
   }
@@ -122,11 +122,11 @@ export class DashboardUndoService implements IReversibleChanges {
   }
 
   addItem(itemId: ItemId) {
-    this.processChange(new TagChange(this.activeDashboardService, itemId, true));
+    this.processChange(new ItemChange(this.activeDashboardService, itemId, true));
   }
 
   removeItem(itemId: ItemId) {
-    this.processChange(new TagChange(this.activeDashboardService, itemId, false));
+    this.processChange(new ItemChange(this.activeDashboardService, itemId, false));
   }
 
   toggleItemImportance(itemId: ItemId) {

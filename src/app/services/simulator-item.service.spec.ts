@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SimulatorTagService } from './simulator-tag.service';
+import { SimulatorItemService } from './simulator-item.service';
 
-describe('SimulatorTagService', () => {
+describe('SimulatorItemService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: SimulatorTagService = TestBed.get(SimulatorTagService);
+    const service: SimulatorItemService = TestBed.get(SimulatorItemService);
     expect(service).toBeTruthy();
   });
 });

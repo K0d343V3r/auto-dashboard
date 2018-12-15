@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 import { Location } from '@angular/common';
-import { SimulatorTagService } from '../services/simulator-tag.service';
+import { SimulatorItemService } from '../services/simulator-item.service';
 import { SimulatorItem } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
@@ -36,7 +36,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
     private location: Location,
-    private simulatorTagService: SimulatorTagService,
+    private simulatorItemService: SimulatorItemService,
     private dashboardDataService: DashboardDataService,
     private timeService: TimeService
   ) {
@@ -47,7 +47,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isReadOnly = this.router.url.split("/")[1] === 'dashboard';
     this.changeSubtitle();
 
-    this.tagsSubscription = this.simulatorTagService.getAllTags().subscribe(tags => {
+    this.tagsSubscription = this.simulatorItemService.getAllItems().subscribe(tags => {
       this.tags = tags;
       this.activeDashboardService$ = of(this.activeDashboardService);
       this.refreshData();

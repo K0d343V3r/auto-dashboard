@@ -1,9 +1,9 @@
-<mat-selection-list (selectionChange)="onTagSelectionChange($event)">
-  <mat-list-option *ngFor="let tag of tags$ | async" [value]="tag.id" [selected]="isTagSelected(tag)" checkboxPosition="before">
-    <span>{{tag.name}}</span>
+<mat-selection-list (selectionChange)="onItemSelectionChange($event)">
+  <mat-list-option *ngFor="let item of items$ | async" [value]="item.id" [selected]="isItemSelected(item)" checkboxPosition="before">
+    <span>{{item.name}}</span>
     <span matLine class="fill-remaining-space"></span>
-    <button color="primary" mat-icon-button matListIcon [disabled]="!isTagSelected(tag)" (click)="toggleTagImportance(tag, $event)">
-      <mat-icon matLine>{{isTagImportant(tag) ? 'star' : 'star_border'}}</mat-icon>
+    <button color="primary" mat-icon-button matListIcon [disabled]="!isItemSelected(item)" (click)="toggleItemImportance(item, $event)">
+      <mat-icon matLine>{{isItemImportant(item) ? 'star' : 'star_border'}}</mat-icon>
     </button>
   </mat-list-option>
 </mat-selection-list>
