@@ -5,8 +5,6 @@
   <mat-tab label="Time">
     <app-time-settings></app-time-settings>
   </mat-tab>
-  <mat-tab label="Display">
-  </mat-tab>
 </mat-tab-group>
 <mat-toolbar color="primary">
   <button mat-icon-button [disabled]="!dashboardUndoService.canUndo()" (click)="dashboardUndoService.undo()">
