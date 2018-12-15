@@ -5,7 +5,7 @@ import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 import { Location } from '@angular/common';
 import { SimulatorItemService } from '../services/simulator-item.service';
-import { SimulatorItem } from '../proxies/data-simulator-api';
+import { SimulatorItem, SimulatorTag } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
@@ -138,7 +138,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private refreshData() {
-    if (this.activeDashboardService.tiles.length) {
+    if (this.hasTags()) {
       if (this.isEditing) {
         // we do not auto-refresh in edit mode
         window.setTimeout(() => {
@@ -154,6 +154,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  private hasTags(): boolean {
+    for (let tile of this.activeDashboardService.tiles) {
+      if (this.getSimulatorItem(tile.tagId) instanceof SimulatorTag) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**  

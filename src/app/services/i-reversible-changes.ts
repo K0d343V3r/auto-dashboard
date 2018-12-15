@@ -7,8 +7,8 @@ export class RequestTimeFrame {
 
 export interface IReversibleChanges {
   title: string;
-  addItem(itemId: ItemId);
-  removeItem(itemId: ItemId);
-  toggleItemImportance(itemId: ItemId);
-  changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame);
+  addItem(itemId: ItemId): void;
+  removeItem(itemId: ItemId): void;
+  toggleItemImportance(itemId: ItemId): void;
+  changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame): void;
 }

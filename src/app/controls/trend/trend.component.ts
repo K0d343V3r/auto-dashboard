@@ -91,7 +91,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
         <any>{                                  // using "any" - step not in type definition  
           name: `${this.item.name}`,
           data: [],
-          step: this.item instanceof NumericTag && (<NumericTag>this.item).type !== NumericType.Float
+          step: !(this.item instanceof NumericTag && (<NumericTag>this.item).type === NumericType.Float)
         }
       ]
     });

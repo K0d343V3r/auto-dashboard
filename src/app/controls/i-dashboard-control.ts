@@ -4,13 +4,13 @@ import { TagData } from "../services/dashboard-data.service";
 export interface IDashboardControl {
   item: SimulatorItem;
   data: TagData | string;
-  resize();
-  getContentWidth();
+  resize(): void;
 }
 
 export interface ITagControl extends IDashboardControl {
   item: SimulatorTag;
   data: TagData;
+  getContentWidth(): number;
 }
 
 export interface IDocumentControl extends IDashboardControl {
