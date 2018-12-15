@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
 import { ActiveDashboardService } from './active-dashboard.service';
-import { TagId } from '../proxies/data-simulator-api';
+import { ItemId } from '../proxies/data-simulator-api';
 import { RequestType } from '../proxies/dashboard-api';
 
 abstract class ReversibleChange {
@@ -29,38 +29,38 @@ class TitleChange extends ReversibleChange {
 }
 
 class TagChange extends ReversibleChange {
-  constructor(activeDashboardService: ActiveDashboardService, private tagId: TagId, private add: boolean) {
+  constructor(activeDashboardService: ActiveDashboardService, private itemId: ItemId, private add: boolean) {
     super(activeDashboardService);
   }
 
   commit() {
     if (this.add) {
-      this.activeDashboardService.addTag(this.tagId);
+      this.activeDashboardService.addItem(this.itemId);
     } else {
-      this.activeDashboardService.removeTag(this.tagId);
+      this.activeDashboardService.removeItem(this.itemId);
     }
   }
 
   revert() {
     if (this.add) {
-      this.activeDashboardService.removeTag(this.tagId);
+      this.activeDashboardService.removeItem(this.itemId);
     } else {
-      this.activeDashboardService.addTag(this.tagId);
+      this.activeDashboardService.addItem(this.itemId);
     }
   }
 }
 
 class ImportanceChange extends ReversibleChange {
-  constructor(activeDashboardService: ActiveDashboardService, private tagId: TagId) {
+  constructor(activeDashboardService: ActiveDashboardService, private itemId: ItemId) {
     super(activeDashboardService);
   }
 
   commit() {
-    this.activeDashboardService.toggleTagImportance(this.tagId);
+    this.activeDashboardService.toggleItemImportance(this.itemId);
   }
 
   revert() {
-    this.activeDashboardService.toggleTagImportance(this.tagId);
+    this.activeDashboardService.toggleItemImportance(this.itemId);
   }
 }
 
@@ -121,16 +121,16 @@ export class DashboardUndoService implements IReversibleChanges {
     this.restorePoint = this.changes.push(change) - 1;
   }
 
-  addTag(tagId: TagId) {
-    this.processChange(new TagChange(this.activeDashboardService, tagId, true));
+  addItem(itemId: ItemId) {
+    this.processChange(new TagChange(this.activeDashboardService, itemId, true));
   }
 
-  removeTag(tagId: TagId) {
-    this.processChange(new TagChange(this.activeDashboardService, tagId, false));
+  removeItem(itemId: ItemId) {
+    this.processChange(new TagChange(this.activeDashboardService, itemId, false));
   }
 
-  toggleTagImportance(tagId: TagId) {
-    this.processChange(new ImportanceChange(this.activeDashboardService, tagId));
+  toggleItemImportance(itemId: ItemId) {
+    this.processChange(new ImportanceChange(this.activeDashboardService, itemId));
   }
 
   changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {

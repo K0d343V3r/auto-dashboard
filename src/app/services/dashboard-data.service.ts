@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TagId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
+import { ItemId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard.service';
 import { RequestType, TimePeriodType, RelativeTimeScale, TimePeriod } from '../proxies/dashboard-api';
@@ -22,7 +22,7 @@ class Channel {
 })
 export class DashboardDataService {
   private intervalID?: number = null;
-  private channels: Map<TagId, Channel> = new Map<TagId, Channel>();
+  private channels: Map<ItemId, Channel> = new Map<ItemId, Channel>();
   private readonly interval: number = 2;
   private lastRefreshTime: Date = null;
   private dataRequestSubscription: Subscription;
@@ -37,7 +37,7 @@ export class DashboardDataService {
   ) {
   }
 
-  openChannel(tagId: TagId): Observable<TagData> {
+  openChannel(tagId: ItemId): Observable<TagData> {
     let channel = this.channels.get(tagId);
     if (channel == null) {
       channel = new Channel(1, new Subject<TagData>());
@@ -49,7 +49,7 @@ export class DashboardDataService {
     return channel.data.asObservable();
   }
 
-  closeChannel(tagId: TagId) {
+  closeChannel(tagId: ItemId) {
     const channel = this.channels.get(tagId);
     if (channel != null) {
       channel.connections--;

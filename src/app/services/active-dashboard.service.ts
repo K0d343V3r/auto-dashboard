@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType, TimePeriod } from '../proxies/dashboard-api';
 import { Subject } from 'rxjs';
-import { TagId } from '../proxies/data-simulator-api';
+import { ItemId } from '../proxies/data-simulator-api';
 import { LayoutSchemeService, LayoutItem } from './layout-scheme.service';
 import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
@@ -103,10 +103,10 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
   }
 
-  addTag(tagId: TagId) {
-    if (this.definition.tiles.find(t => t.tagId == tagId) == null) {
+  addItem(itemId: ItemId) {
+    if (this.definition.tiles.find(t => t.tagId == itemId) == null) {
       const dashboardTile = new DashboardTile();
-      dashboardTile.tagId = tagId;
+      dashboardTile.tagId = itemId;
       this.definition.tiles.push(dashboardTile);
       this.isDirty = true;
       this.layout();
@@ -146,8 +146,8 @@ export class ActiveDashboardService implements IReversibleChanges {
     this.definition.tiles = tiles;
   }
 
-  removeTag(tagId: TagId) {
-    const index = this.definition.tiles.findIndex(t => t.tagId == tagId);
+  removeItem(itemId: ItemId) {
+    const index = this.definition.tiles.findIndex(t => t.tagId == itemId);
     if (index >= 0) {
       this.definition.tiles.splice(index, 1);
       this.isDirty = true;
@@ -156,8 +156,8 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
   }
 
-  toggleTagImportance(tagId: TagId) {
-    const index = this.definition.tiles.findIndex(t => t.tagId == tagId);
+  toggleItemImportance(itemId: ItemId) {
+    const index = this.definition.tiles.findIndex(t => t.tagId == itemId);
     if (index >= 0) {
       this.definition.tiles[index].important = !this.definition.tiles[index].important;
       this.isDirty = true;

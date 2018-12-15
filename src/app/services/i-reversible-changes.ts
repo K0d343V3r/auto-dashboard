@@ -1,4 +1,4 @@
-import { TagId } from "../proxies/data-simulator-api";
+import { ItemId } from "../proxies/data-simulator-api";
 import { RequestType, TimePeriod } from '../proxies/dashboard-api';
 
 export class RequestTimeFrame {
@@ -7,8 +7,8 @@ export class RequestTimeFrame {
 
 export interface IReversibleChanges {
   title: string;
-  addTag(tagId: TagId);
-  removeTag(tagId: TagId);
-  toggleTagImportance(tagId: TagId);
+  addItem(itemId: ItemId);
+  removeItem(itemId: ItemId);
+  toggleItemImportance(itemId: ItemId);
   changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame);
 }

@@ -14,7 +14,7 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 export const API_BASE_URL_SIMULATOR = new InjectionToken<string>('API_BASE_URL_SIMULATOR');
 
 export interface IDocumentDataProxy {
-    getDocuments(documents: TagId[]): Observable<string[] | null>;
+    getDocuments(documents: ItemId[]): Observable<string[] | null>;
 }
 
 @Injectable({
@@ -30,7 +30,7 @@ export class DocumentDataProxy implements IDocumentDataProxy {
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
-    getDocuments(documents: TagId[]): Observable<string[] | null> {
+    getDocuments(documents: ItemId[]): Observable<string[] | null> {
         let url_ = this.baseUrl + "/api/DocumentData";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -89,7 +89,7 @@ export class DocumentDataProxy implements IDocumentDataProxy {
 
 export interface IItemsProxy {
     getAllItems(): Observable<SimulatorItem[] | null>;
-    getItem(id: TagId): Observable<SimulatorItem | null>;
+    getItem(id: ItemId): Observable<SimulatorItem | null>;
 }
 
 @Injectable({
@@ -157,7 +157,7 @@ export class ItemsProxy implements IItemsProxy {
         return _observableOf<SimulatorItem[] | null>(<any>null);
     }
 
-    getItem(id: TagId): Observable<SimulatorItem | null> {
+    getItem(id: ItemId): Observable<SimulatorItem | null> {
         let url_ = this.baseUrl + "/api/Items/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -213,7 +213,7 @@ export interface ITagDataProxy {
     getHistoryAbsolute(request: AbsoluteHistoryRequest): Observable<HistoryResponse | null>;
     getHistoryRelative(request: RelativeHistoryRequest): Observable<HistoryResponse | null>;
     getValueAtTime(request: ValueAtTimeRequest): Observable<TagValue[] | null>;
-    getLiveValue(tags: TagId[]): Observable<TagValue[] | null>;
+    getLiveValue(tags: ItemId[]): Observable<TagValue[] | null>;
 }
 
 @Injectable({
@@ -389,7 +389,7 @@ export class TagDataProxy implements ITagDataProxy {
         return _observableOf<TagValue[] | null>(<any>null);
     }
 
-    getLiveValue(tags: TagId[]): Observable<TagValue[] | null> {
+    getLiveValue(tags: ItemId[]): Observable<TagValue[] | null> {
         let url_ = this.baseUrl + "/api/TagData/livevalue";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -446,7 +446,7 @@ export class TagDataProxy implements ITagDataProxy {
     }
 }
 
-export enum TagId {
+export enum ItemId {
     SineWave = 0, 
     TriangleWave = 1, 
     SquareWave = 2, 
@@ -460,7 +460,7 @@ export enum TagId {
 }
 
 export abstract class SimulatorItem implements ISimulatorItem {
-    id!: TagId;
+    id!: ItemId;
     name?: string | undefined;
 
     protected _discriminator: string;
@@ -524,7 +524,7 @@ export abstract class SimulatorItem implements ISimulatorItem {
 }
 
 export interface ISimulatorItem {
-    id: TagId;
+    id: ItemId;
     name?: string | undefined;
 }
 
@@ -862,7 +862,7 @@ export interface IHistoryResponse {
 }
 
 export class TagValues implements ITagValues {
-    tag!: TagId;
+    tag!: ItemId;
     values?: VQT[] | undefined;
 
     constructor(data?: ITagValues) {
@@ -912,7 +912,7 @@ export class TagValues implements ITagValues {
 }
 
 export interface ITagValues {
-    tag: TagId;
+    tag: ItemId;
     values?: VQT[] | undefined;
 }
 
@@ -1034,7 +1034,7 @@ export enum HDAQuality {
 }
 
 export abstract class HistoryRequestBase implements IHistoryRequestBase {
-    tags?: TagId[] | undefined;
+    tags?: ItemId[] | undefined;
     initialValue!: InitialValue;
     maxCount!: number;
 
@@ -1082,7 +1082,7 @@ export abstract class HistoryRequestBase implements IHistoryRequestBase {
 }
 
 export interface IHistoryRequestBase {
-    tags?: TagId[] | undefined;
+    tags?: ItemId[] | undefined;
     initialValue: InitialValue;
     maxCount: number;
 }
@@ -1193,7 +1193,7 @@ export enum TimeScale {
 }
 
 export class TagValue implements ITagValue {
-    tag!: TagId;
+    tag!: ItemId;
     value?: VQT | undefined;
 
     constructor(data?: ITagValue) {
@@ -1235,12 +1235,12 @@ export class TagValue implements ITagValue {
 }
 
 export interface ITagValue {
-    tag: TagId;
+    tag: ItemId;
     value?: VQT | undefined;
 }
 
 export class ValueAtTimeRequest implements IValueAtTimeRequest {
-    tags?: TagId[] | undefined;
+    tags?: ItemId[] | undefined;
     targetTime!: Date;
 
     constructor(data?: IValueAtTimeRequest) {
@@ -1290,7 +1290,7 @@ export class ValueAtTimeRequest implements IValueAtTimeRequest {
 }
 
 export interface IValueAtTimeRequest {
-    tags?: TagId[] | undefined;
+    tags?: ItemId[] | undefined;
     targetTime: Date;
 }
 

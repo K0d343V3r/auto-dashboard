@@ -34,15 +34,15 @@ export class DataSettingsComponent implements OnInit {
   }
 
   toggleTagImportance(tag: SimulatorItem, event: MouseEvent) {
-    this.dashboardUndoService.toggleTagImportance(tag.id);
+    this.dashboardUndoService.toggleItemImportance(tag.id);
     event.stopImmediatePropagation();
   }
 
   onTagSelectionChange(event: MatSelectionListChange) {
     if (event.option.selected) {
-      this.dashboardUndoService.addTag(event.option.value);
+      this.dashboardUndoService.addItem(event.option.value);
     } else {
-      this.dashboardUndoService.removeTag(event.option.value);
+      this.dashboardUndoService.removeItem(event.option.value);
     }
   }
 }
