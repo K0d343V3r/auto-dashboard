@@ -10,7 +10,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 })
 export class DocumentComponent implements OnInit, IDocumentControl {
   @Input() item: SimulatorDocument;
-  value: SafeResourceUrl;
+  value: SafeResourceUrl = null;
 
   constructor(
     private sanitizer: DomSanitizer
@@ -23,6 +23,9 @@ export class DocumentComponent implements OnInit, IDocumentControl {
   }
 
   set data(value: string) {
-    this.value = this.sanitizer.bypassSecurityTrustResourceUrl(value);
+    // load external content async
+    window.setTimeout(() => {
+      this.value = this.sanitizer.bypassSecurityTrustResourceUrl(value);
+    });
   }
 }

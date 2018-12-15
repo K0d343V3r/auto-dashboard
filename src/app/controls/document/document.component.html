@@ -1,2 +1,3 @@
-<iframe [src]="value" class="container" frameborder="0">
+<!-- do not load iframe until we have a value, it will load the site by default -->
+<iframe *ngIf="value != null" [src]="value" class="container" frameborder="0">
 </iframe>

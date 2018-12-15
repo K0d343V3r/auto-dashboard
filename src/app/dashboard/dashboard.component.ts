@@ -138,7 +138,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private refreshData() {
-    if (this.hasTags()) {
+    if (this.activeDashboardService.tiles.length > 0) {
       if (this.isEditing) {
         // we do not auto-refresh in edit mode
         window.setTimeout(() => {
@@ -154,15 +154,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
       }
     }
-  }
-
-  private hasTags(): boolean {
-    for (let tile of this.activeDashboardService.tiles) {
-      if (this.getSimulatorItem(tile.tagId) instanceof SimulatorTag) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**  

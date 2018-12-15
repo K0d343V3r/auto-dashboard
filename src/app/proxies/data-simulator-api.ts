@@ -14,7 +14,7 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 export const API_BASE_URL_SIMULATOR = new InjectionToken<string>('API_BASE_URL_SIMULATOR');
 
 export interface IDocumentDataProxy {
-    getDocuments(documents: ItemId[]): Observable<string[] | null>;
+    getDocumentValues(documents: ItemId[]): Observable<DocumentValue[] | null>;
 }
 
 @Injectable({
@@ -30,7 +30,7 @@ export class DocumentDataProxy implements IDocumentDataProxy {
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
-    getDocuments(documents: ItemId[]): Observable<string[] | null> {
+    getDocumentValues(documents: ItemId[]): Observable<DocumentValue[] | null> {
         let url_ = this.baseUrl + "/api/DocumentData";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -47,20 +47,20 @@ export class DocumentDataProxy implements IDocumentDataProxy {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetDocuments(response_);
+            return this.processGetDocumentValues(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetDocuments(<any>response_);
+                    return this.processGetDocumentValues(<any>response_);
                 } catch (e) {
-                    return <Observable<string[] | null>><any>_observableThrow(e);
+                    return <Observable<DocumentValue[] | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<string[] | null>><any>_observableThrow(response_);
+                return <Observable<DocumentValue[] | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetDocuments(response: HttpResponseBase): Observable<string[] | null> {
+    protected processGetDocumentValues(response: HttpResponseBase): Observable<DocumentValue[] | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -74,7 +74,7 @@ export class DocumentDataProxy implements IDocumentDataProxy {
             if (resultData200 && resultData200.constructor === Array) {
                 result200 = [];
                 for (let item of resultData200)
-                    result200.push(item);
+                    result200.push(DocumentValue.fromJS(item));
             }
             return _observableOf(result200);
             }));
@@ -83,7 +83,7 @@ export class DocumentDataProxy implements IDocumentDataProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<string[] | null>(<any>null);
+        return _observableOf<DocumentValue[] | null>(<any>null);
     }
 }
 
@@ -444,6 +444,53 @@ export class TagDataProxy implements ITagDataProxy {
         }
         return _observableOf<TagValue[] | null>(<any>null);
     }
+}
+
+export class DocumentValue implements IDocumentValue {
+    document!: ItemId;
+    url?: string | undefined;
+
+    constructor(data?: IDocumentValue) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.document = data["document"];
+            this.url = data["url"];
+        }
+    }
+
+    static fromJS(data: any): DocumentValue {
+        data = typeof data === 'object' ? data : {};
+        let result = new DocumentValue();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["document"] = this.document;
+        data["url"] = this.url;
+        return data; 
+    }
+
+    clone(): DocumentValue {
+        const json = this.toJSON();
+        let result = new DocumentValue();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDocumentValue {
+    document: ItemId;
+    url?: string | undefined;
 }
 
 export enum ItemId {

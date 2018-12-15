@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ItemId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
+import { ItemId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale, SimulatorItem, SimulatorTag, DocumentDataProxy } from '../proxies/data-simulator-api';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard.service';
 import { RequestType, TimePeriodType, RelativeTimeScale } from '../proxies/dashboard-api';
@@ -13,8 +13,17 @@ export class ResponseTimeFrame {
   constructor(public targetTime: Date, public startTime: Date, public endTime: Date) { }
 }
 
-class Channel {
-  constructor(public connections: number, public data: Subject<TagData>) { }
+interface IChannel {
+  connections: number;
+  broadcast: Subject<TagData | string>
+}
+
+class TagChannel implements IChannel {
+  constructor(public connections: number, public broadcast: Subject<TagData>) { }
+}
+
+class DocumentChannel implements IChannel {
+  constructor(public connections: number, public broadcast: Subject<string>) { }
 }
 
 @Injectable({
@@ -22,7 +31,7 @@ class Channel {
 })
 export class DashboardDataService {
   private intervalID?: number = null;
-  private channels: Map<ItemId, Channel> = new Map<ItemId, Channel>();
+  private channels: Map<ItemId, IChannel> = new Map<ItemId, IChannel>();
   private readonly interval: number = 2;
   private lastRefreshTime: Date = null;
   private dataRequestSubscription: Subscription;
@@ -33,80 +42,129 @@ export class DashboardDataService {
   constructor(
     private tagDataProxy: TagDataProxy,
     private activeDashboardService: ActiveDashboardService,
-    private timeService: TimeService
+    private timeService: TimeService,
+    private documentDataProxy: DocumentDataProxy
   ) {
   }
 
-  openChannel(tagId: ItemId): Observable<TagData> {
-    let channel = this.channels.get(tagId);
-    if (channel == null) {
-      channel = new Channel(1, new Subject<TagData>());
-      this.channels.set(tagId, channel);
-    } else {
+  openChannel(item: SimulatorItem): Observable<TagData | string> {
+    let channel = this.channels.get(item.id);
+    if (channel != null) {
       channel.connections++;
+    } else {
+      if (item instanceof SimulatorTag) {
+        channel = new TagChannel(1, new Subject<TagData>());
+      } else {
+        channel = new DocumentChannel(1, new Subject<string>());
+      }
+      this.channels.set(item.id, channel);
     }
 
-    return channel.data.asObservable();
+    return channel.broadcast.asObservable();
   }
 
-  closeChannel(tagId: ItemId) {
-    const channel = this.channels.get(tagId);
+  closeChannel(item: SimulatorItem) {
+    const channel = this.channels.get(item.id);
     if (channel != null) {
       channel.connections--;
       if (channel.connections === 0) {
-        this.channels.delete(tagId);
+        this.channels.delete(item.id);
       }
     }
   }
 
   refresh(maxValueCount: number = 0) {
-    const tags = Array.from(this.channels.keys());
+    // are we auto-refreshing?
+    const wasRefreshing = this.isRefreshing;
+
+    // refresh all dashboard items
+    this.refreshItems(maxValueCount);
+
+    if (wasRefreshing) {
+      // and re-start refresh pump
+      this.startRefreshPump(this.getDataItemIds(true), maxValueCount);
+    }
+  }
+
+  private refreshItems(maxValueCount: number) {
+    // stop any ongoing auto-refresh
+    this.stopRefresh();
+
+    // refresh tags
+    const tags = this.getDataItemIds(true);
     if (tags.length > 0) {
-      if (this.activeDashboardService.requestType === RequestType.Live) {
-        this.dataRequestSubscription = this.tagDataProxy.getLiveValue(tags).subscribe(values => {
+      this.refreshTags(tags, maxValueCount);
+    }
+
+    // refresh documents
+    const documents = this.getDataItemIds(false);
+    if (documents.length > 0) {
+      this.refreshDocuments(documents);
+    }
+  }
+
+  private refreshDocuments(documents: ItemId[]) {
+    this.documentDataProxy.getDocumentValues(documents).subscribe(values => {
+      for (let value of values) {
+        const channel = this.channels.get(value.document);
+        if (channel != null) {
+          channel.broadcast.next(value.url);
+        }
+      }
+    });
+  }
+
+  private getDataItemIds(tags: boolean): ItemId[] {
+    const channels = Array.from(this.channels.entries());
+    const items = channels.filter(c => tags ? c[1] instanceof TagChannel : c[1] instanceof DocumentChannel);
+    return items.map(c => c[0]);
+  }
+
+  private refreshTags(tags: ItemId[], maxValueCount: number) {
+    if (this.activeDashboardService.requestType === RequestType.Live) {
+      this.dataRequestSubscription = this.tagDataProxy.getLiveValue(tags).subscribe(values => {
+        this.broadcastSingleValue(values);
+      });
+    } else {
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+      if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
+        const request = new ValueAtTimeRequest();
+        request.targetTime = timeFrame.targetTime;
+        request.tags = tags;
+        this.dataRequestSubscription = this.tagDataProxy.getValueAtTime(request).subscribe(values => {
           this.broadcastSingleValue(values);
         });
       } else {
-        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-        if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-          const request = new ValueAtTimeRequest();
-          request.targetTime = timeFrame.targetTime;
+        if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
+          const request = new AbsoluteHistoryRequest();
           request.tags = tags;
-          this.dataRequestSubscription = this.tagDataProxy.getValueAtTime(request).subscribe(values => {
-            this.broadcastSingleValue(values);
+          request.startTime = timeFrame.timePeriod.startTime;
+          request.endTime = timeFrame.timePeriod.endTime;
+          request.initialValue = InitialValue.Linear;
+          request.maxCount = maxValueCount;
+          this.dataRequestSubscription = this.tagDataProxy.getHistoryAbsolute(request).subscribe(response => {
+            this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
           });
         } else {
-          if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
-            const request = new AbsoluteHistoryRequest();
-            request.tags = tags;
-            request.startTime = timeFrame.timePeriod.startTime;
-            request.endTime = timeFrame.timePeriod.endTime;
+          const request = new RelativeHistoryRequest();
+          request.tags = tags;
+          request.maxCount = maxValueCount;
+          if (!this.isRefreshing || this.lastRefreshTime === null) {
+            // not auto refreshing or not doing partial updates yet (first pass)
+            request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
+            request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
             request.initialValue = InitialValue.Linear;
-            request.maxCount = maxValueCount;
-            this.dataRequestSubscription = this.tagDataProxy.getHistoryAbsolute(request).subscribe(response => {
-              this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
-            });
           } else {
-            const request = new RelativeHistoryRequest();
-            request.tags = tags;
-            request.maxCount = maxValueCount;
-            if (!this.isRefreshing || this.lastRefreshTime === null) {
-              // not auto refreshing or not doing partial updates yet (first pass)
-              request.offsetFromNow = timeFrame.timePeriod.offsetFromNow;
-              request.timeScale = this.toTimeScale(timeFrame.timePeriod.timeScale);
-              request.initialValue = InitialValue.Linear;
-            } else {
-              // subsequent (partial) auto-refresh pass, only ask for delta (from last end time to now)
-              request.anchorTime = this.lastRefreshTime;
-            }
-            this.dataRequestSubscription = this.tagDataProxy.getHistoryRelative(request).subscribe(response => {
-              // work backwards from resolved end time to get full time period
-              const startTime = this.timeService.resolveRelativeTime(
-                response.endTime, timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale);
-              this.broadcastMultipleValues(startTime, response.endTime, response.values);
-              this.lastRefreshTime = response.endTime;
-            });
+            // subsequent (partial) auto-refresh pass, only ask for delta (from last end time to now)
+            request.anchorTime = this.lastRefreshTime;
           }
+          this.dataRequestSubscription = this.tagDataProxy.getHistoryRelative(request).subscribe(response => {
+            // work backwards from resolved end time to get full time period
+            const startTime = this.timeService.resolveRelativeTime(
+              response.endTime, timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale);
+            this.broadcastMultipleValues(startTime, response.endTime, response.values);
+            this.lastRefreshTime = response.endTime;
+          });
         }
       }
     }
@@ -135,7 +193,7 @@ export class DashboardDataService {
     for (let value of values) {
       const channel = this.channels.get(value.tag);
       if (channel != null) {
-        channel.data.next({ startTime: startTime, endTime: endTime, values: value.values });
+        channel.broadcast.next({ startTime: startTime, endTime: endTime, values: value.values });
       }
     }
 
@@ -146,7 +204,7 @@ export class DashboardDataService {
     for (let value of values) {
       const channel = this.channels.get(value.tag);
       if (channel != null) {
-        channel.data.next({ startTime: value.value.time, endTime: value.value.time, values: [value.value] });
+        channel.broadcast.next({ startTime: value.value.time, endTime: value.value.time, values: [value.value] });
       }
     }
 
@@ -159,22 +217,29 @@ export class DashboardDataService {
   }
 
   startRefresh(maxValueCount: number = 0) {
-    // stop any ongoing auto refresh
-    this.stopRefresh();
-
     // do a full refresh once
-    this.refresh(maxValueCount);
+    this.refreshItems(maxValueCount);
 
-    const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-    if (this.activeDashboardService.requestType === RequestType.Live ||
-      (this.activeDashboardService.requestType === RequestType.History && timeFrame.timePeriod.type === TimePeriodType.Relative)) {
-      // we only auto-fresh for live data or relative requests for historical data
-      this.intervalID = window.setInterval(() => { this.refresh(maxValueCount); }, this.interval * 1000);
+    // and start refresh pump if needed
+    const tags = this.getDataItemIds(true);
+    if (tags.length > 0) {
+      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+      if (this.activeDashboardService.requestType === RequestType.Live ||
+        (this.activeDashboardService.requestType === RequestType.History &&
+          timeFrame.timePeriod.type === TimePeriodType.Relative)) {
+        this.startRefreshPump(tags, maxValueCount);
+      }
     }
   }
 
+  private startRefreshPump(tags: ItemId[], maxValueCount: number) {
+    this.intervalID = window.setInterval(() => {
+      this.refreshTags(tags, maxValueCount);
+    }, this.interval * 1000);
+  }
+
   stopRefresh() {
-    if (this.intervalID !== null) {
+    if (this.isRefreshing) {
       // stop our data pump
       window.clearInterval(this.intervalID);
 

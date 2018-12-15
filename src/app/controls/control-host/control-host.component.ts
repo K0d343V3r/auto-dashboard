@@ -30,8 +30,7 @@ export class ControlHostComponent implements OnInit, OnDestroy {
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,
     private activeDashboardService: ActiveDashboardService,
-    private dashboardDataService: DashboardDataService,
-    private documentDataProxy: DocumentDataProxy
+    private dashboardDataService: DashboardDataService
   ) { }
 
   ngOnInit() {
@@ -41,11 +40,9 @@ export class ControlHostComponent implements OnInit, OnDestroy {
       this.control.resize();
     });
 
-    if (this.item instanceof SimulatorTag) {
-      this.dataChannelSubscription = this.dashboardDataService.openChannel(this.item.id).subscribe(values => {
-        this.control.data = values;
-      });
-    }
+    this.dataChannelSubscription = this.dashboardDataService.openChannel(this.item).subscribe(values => {
+      this.control.data = values;
+    });
 
     this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
       this.switchHostedControl();
@@ -54,10 +51,8 @@ export class ControlHostComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.layoutChangedSubscription.unsubscribe();
-    if (this.item instanceof SimulatorTag) {
-      this.dashboardDataService.closeChannel(this.item.id);
-      this.dataChannelSubscription.unsubscribe();
-    }
+    this.dashboardDataService.closeChannel(this.item);
+    this.dataChannelSubscription.unsubscribe();
     this.requestTypeSubscription.unsubscribe();
   }
 
@@ -82,13 +77,7 @@ export class ControlHostComponent implements OnInit, OnDestroy {
     this.control = <IDashboardControl>componentRef.instance;
     this.control.item = this.item;
 
-    if (this.item instanceof SimulatorDocument) {
-      // and content
-      this.documentDataProxy.getDocuments([this.item.id]).subscribe(urls => {
-        this.control.data = urls[0];
-      });
-    }
-
+    // and save last request type to optimize control switching
     this.lastRequestType = this.activeDashboardService.requestType;
   }
 
@@ -96,8 +85,8 @@ export class ControlHostComponent implements OnInit, OnDestroy {
     if (!(this.item instanceof SimulatorDocument) &&
       (this.lastRequestType !== RequestType.History && this.activeDashboardService.requestType === RequestType.History) ||
       (this.lastRequestType === RequestType.History && this.activeDashboardService.requestType !== RequestType.History)) {
-        // this is not a static document, and we have switched from single to multi value display (or viceversa)
-        this.createHostedControl();
+      // this is not a static document, and we have switched from single to multi value display (or viceversa)
+      this.createHostedControl();
     }
   }
 
