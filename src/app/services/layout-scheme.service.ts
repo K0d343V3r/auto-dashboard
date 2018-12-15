@@ -366,17 +366,17 @@ export class LayoutSchemeService {
       new LayoutItem(2),
       new LayoutItem(2)
     ]),
-    new LayoutScheme(20, [             // 4 primary, 6 secondary
-      new LayoutItem(8, 1, true),
-      new LayoutItem(8, 1, true),
-      new LayoutItem(4),
-      new LayoutItem(8, 1, true),
-      new LayoutItem(8, 1, true),
-      new LayoutItem(4),
-      new LayoutItem(4),
-      new LayoutItem(4),
-      new LayoutItem(4),
-      new LayoutItem(4)
+    new LayoutScheme(6, [             // 4 primary, 6 secondary
+      new LayoutItem(1, 2),
+      new LayoutItem(2, 3, true),
+      new LayoutItem(2, 3, true),
+      new LayoutItem(1, 2),
+      new LayoutItem(1, 2),
+      new LayoutItem(1, 2),
+      new LayoutItem(2, 3, true),
+      new LayoutItem(2, 3, true),
+      new LayoutItem(1, 2),
+      new LayoutItem(1, 2)
     ])
   ];
 
