@@ -23,7 +23,7 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
   private dataChannelSubscription: Subscription;
   private requestTypeSubscription: Subscription;
 
-  @Input() tag: SimulatorItem;
+  @Input() item: SimulatorItem;
 
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,
@@ -38,8 +38,8 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
       this.control.resize();
     });
 
-    if (this.tag instanceof SimulatorTag) {
-      this.dataChannelSubscription = this.dashboardDataService.openChannel(this.tag.id).subscribe(values => {
+    if (this.item instanceof SimulatorTag) {
+      this.dataChannelSubscription = this.dashboardDataService.openChannel(this.item.id).subscribe(values => {
         this.control.data = values;
       });
     }
@@ -51,8 +51,8 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.layoutChangedSubscription.unsubscribe();
-    if (this.tag instanceof SimulatorTag) {
-      this.dashboardDataService.closeChannel(this.tag.id);
+    if (this.item instanceof SimulatorTag) {
+      this.dashboardDataService.closeChannel(this.item.id);
       this.dataChannelSubscription.unsubscribe();
     }
     this.requestTypeSubscription.unsubscribe();
@@ -78,20 +78,20 @@ export class ControlHostComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // and initialize its inputs
     this.control = <IDashboardControl>componentRef.instance;
-    this.control.tag = this.tag;
+    this.control.item = this.item;
   }
 
   private getControlType(): Type<any> {
-    if (this.tag instanceof SimulatorDocument) {
+    if (this.item instanceof SimulatorDocument) {
       // TODO
     } else if (this.activeDashboardService.requestType === RequestType.History) {
       // all tags render as trend charts
       return TrendComponent;
-    } else if (this.tag instanceof BooleanTag) {
+    } else if (this.item instanceof BooleanTag) {
       return LedComponent;
-    } else if (this.tag instanceof NumericTag) {
+    } else if (this.item instanceof NumericTag) {
       return GaugeComponent;
-    } else if (this.tag instanceof StringTag) {
+    } else if (this.item instanceof StringTag) {
       return LabelComponent;
     }
   }

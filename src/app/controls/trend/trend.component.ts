@@ -15,7 +15,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
   private internalChart: Highcharts.ChartObject;
   private color: string;
 
-  @Input() tag: SimulatorTag;
+  @Input() item: SimulatorTag;
   chart: Chart;
 
   constructor(
@@ -49,7 +49,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
       plotOptions: {
         line: {
           marker: {
-            enabled: this.tag instanceof StringTag
+            enabled: this.item instanceof StringTag
           }
         },
         series: {
@@ -72,9 +72,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
         },
         maxPadding: 0,
         minPadding: 0,
-        tickInterval: this.tag instanceof BooleanTag ? 1 : undefined,
+        tickInterval: this.item instanceof BooleanTag ? 1 : undefined,
         labels: {
-          enabled: !(this.tag instanceof StringTag),
+          enabled: !(this.item instanceof StringTag),
           formatter: ((context: Highcharts.AxisLabelFormatterOptions): string => {
             return this.getAxisLabel(context.value);
           })
@@ -89,16 +89,16 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
       },
       series: [
         <any>{                                  // using "any" - step not in type definition  
-          name: `${this.tag.name}`,
+          name: `${this.item.name}`,
           data: [],
-          step: this.tag instanceof NumericTag && (<NumericTag>this.tag).type !== NumericType.Float
+          step: this.item instanceof NumericTag && (<NumericTag>this.item).type !== NumericType.Float
         }
       ]
     });
   }
 
   private getTooltipToken(): string {
-    if (this.tag instanceof NumericTag) {
+    if (this.item instanceof NumericTag) {
       return "{point.y}";
     } else {
       return "{point.tooltipValue}";
@@ -106,7 +106,7 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
   }
 
   private getAxisLabel(value: number): string {
-    if (this.tag instanceof BooleanTag) {
+    if (this.item instanceof BooleanTag) {
       return this.getBooleanLabel(value === 1);
     } else {
       return value.toString();
@@ -115,9 +115,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
 
   private getBooleanLabel(value: boolean): string {
     if (value) {
-      return (<BooleanTag>this.tag).trueLabel != null ? (<BooleanTag>this.tag).trueLabel : "True";
+      return (<BooleanTag>this.item).trueLabel != null ? (<BooleanTag>this.item).trueLabel : "True";
     } else {
-      return (<BooleanTag>this.tag).falseLabel != null ? (<BooleanTag>this.tag).falseLabel : "False";
+      return (<BooleanTag>this.item).falseLabel != null ? (<BooleanTag>this.item).falseLabel : "False";
     }
   }
 
@@ -170,9 +170,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
   }
 
   private getTooltipValue(value: any): string {
-    if (this.tag instanceof BooleanTag) {
+    if (this.item instanceof BooleanTag) {
       return this.getBooleanLabel(value);
-    } else if (this.tag instanceof StringTag) {
+    } else if (this.item instanceof StringTag) {
       return this.timeService.toDateString(new Date(value));
     } else {
       return null;
@@ -180,9 +180,9 @@ export class TrendComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
   }
 
   private getCharttingValue(value: any): number {
-    if (this.tag instanceof BooleanTag) {
+    if (this.item instanceof BooleanTag) {
       return value ? 1 : 0;
-    } else if (this.tag instanceof StringTag) {
+    } else if (this.item instanceof StringTag) {
       return 1;
     } else {
       return value;

@@ -11,7 +11,7 @@ import { TimeService } from 'src/app/services/time.service';
   styleUrls: ['./label.component.css']
 })
 export class LabelComponent implements OnInit, ITagControl {
-  @Input() tag: SimulatorTag;
+  @Input() item: SimulatorTag;
   value: Date;
 
   constructor(

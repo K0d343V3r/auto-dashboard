@@ -14,7 +14,7 @@ import { DefaultColorService } from 'src/app/services/default-color.service';
 export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, ITagControl {
   private internalChart: Highcharts.ChartObject;
 
-  @Input() tag: SimulatorTag;
+  @Input() item: SimulatorTag;
   chart: Chart;
 
   constructor(
@@ -62,8 +62,8 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
         labels: {
           y: 16
         },
-        min: (<NumericTag>this.tag).scale.min,
-        max: (<NumericTag>this.tag).scale.max
+        min: (<NumericTag>this.item).scale.min,
+        max: (<NumericTag>this.item).scale.max
       },
       plotOptions: {
         solidgauge: {
@@ -78,7 +78,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
         enabled: false
       },
       series: [{
-        name: this.tag.name,
+        name: this.item.name,
         data: [],
         dataLabels: {
           crop: false,
@@ -86,7 +86,7 @@ export class GaugeComponent implements OnInit, OnDestroy, AfterViewInit, ITagCon
           format:
             `<div style = "text-align: center; vertical-align: bottom; color: '${((<any>Highcharts).theme && (<any>Highcharts).theme.contrastTextColor) || 'black'}'">
                <span style = "font-size: 25px">{y:.2f}</span>
-               <span style = "font-size: 12px">${(<NumericTag>this.tag).engineeringUnits == null ? "" : "&nbsp" + (<NumericTag>this.tag).engineeringUnits}</span>
+               <span style = "font-size: 12px">${(<NumericTag>this.item).engineeringUnits == null ? "" : "&nbsp" + (<NumericTag>this.item).engineeringUnits}</span>
              </div>`
         }
       }]

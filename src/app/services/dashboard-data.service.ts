@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ItemId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale } from '../proxies/data-simulator-api';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard.service';
-import { RequestType, TimePeriodType, RelativeTimeScale, TimePeriod } from '../proxies/dashboard-api';
+import { RequestType, TimePeriodType, RelativeTimeScale } from '../proxies/dashboard-api';
 import { TimeService } from './time.service';
 
 export class TagData {
@@ -31,7 +31,7 @@ export class DashboardDataService {
   dataRefreshed$ = this.dataRefreshedSource.asObservable();
 
   constructor(
-    private dataProxy: TagDataProxy,
+    private tagDataProxy: TagDataProxy,
     private activeDashboardService: ActiveDashboardService,
     private timeService: TimeService
   ) {
@@ -63,7 +63,7 @@ export class DashboardDataService {
     const tags = Array.from(this.channels.keys());
     if (tags.length > 0) {
       if (this.activeDashboardService.requestType === RequestType.Live) {
-        this.dataRequestSubscription = this.dataProxy.getLiveValue(tags).subscribe(values => {
+        this.dataRequestSubscription = this.tagDataProxy.getLiveValue(tags).subscribe(values => {
           this.broadcastSingleValue(values);
         });
       } else {
@@ -72,7 +72,7 @@ export class DashboardDataService {
           const request = new ValueAtTimeRequest();
           request.targetTime = timeFrame.targetTime;
           request.tags = tags;
-          this.dataRequestSubscription = this.dataProxy.getValueAtTime(request).subscribe(values => {
+          this.dataRequestSubscription = this.tagDataProxy.getValueAtTime(request).subscribe(values => {
             this.broadcastSingleValue(values);
           });
         } else {
@@ -83,7 +83,7 @@ export class DashboardDataService {
             request.endTime = timeFrame.timePeriod.endTime;
             request.initialValue = InitialValue.Linear;
             request.maxCount = maxValueCount;
-            this.dataRequestSubscription = this.dataProxy.getHistoryAbsolute(request).subscribe(response => {
+            this.dataRequestSubscription = this.tagDataProxy.getHistoryAbsolute(request).subscribe(response => {
               this.broadcastMultipleValues(response.startTime, response.endTime, response.values);
             });
           } else {
@@ -99,7 +99,7 @@ export class DashboardDataService {
               // subsequent (partial) auto-refresh pass, only ask for delta (from last end time to now)
               request.anchorTime = this.lastRefreshTime;
             }
-            this.dataRequestSubscription = this.dataProxy.getHistoryRelative(request).subscribe(response => {
+            this.dataRequestSubscription = this.tagDataProxy.getHistoryRelative(request).subscribe(response => {
               // work backwards from resolved end time to get full time period
               const startTime = this.timeService.resolveRelativeTime(
                 response.endTime, timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale);
@@ -166,7 +166,7 @@ export class DashboardDataService {
     this.refresh(maxValueCount);
 
     const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-    if (this.activeDashboardService.requestType === RequestType.Live || 
+    if (this.activeDashboardService.requestType === RequestType.Live ||
       (this.activeDashboardService.requestType === RequestType.History && timeFrame.timePeriod.type === TimePeriodType.Relative)) {
       // we only auto-fresh for live data or relative requests for historical data
       this.intervalID = window.setInterval(() => { this.refresh(maxValueCount); }, this.interval * 1000);

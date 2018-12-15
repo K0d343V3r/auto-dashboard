@@ -10,7 +10,7 @@ import { DefaultColorService } from 'src/app/services/default-color.service';
   styleUrls: ['./led.component.css']
 })
 export class LedComponent implements OnInit, ITagControl {
-  @Input() tag: SimulatorTag;
+  @Input() item: SimulatorTag;
   value: boolean = false;
 
   constructor(

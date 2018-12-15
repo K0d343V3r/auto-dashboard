@@ -2,18 +2,18 @@ import { SimulatorTag, SimulatorItem, SimulatorDocument } from "../proxies/data-
 import { TagData } from "../services/dashboard-data.service";
 
 export interface IDashboardControl {
-  tag: SimulatorItem;
+  item: SimulatorItem;
   data: TagData | string;
   resize();
   getContentWidth();
 }
 
 export interface ITagControl extends IDashboardControl {
-  tag: SimulatorTag;
+  item: SimulatorTag;
   data: TagData;
 }
 
 export interface IDocumentControl extends IDashboardControl {
-  tag: SimulatorDocument;
+  item: SimulatorDocument;
   data: string;
 }

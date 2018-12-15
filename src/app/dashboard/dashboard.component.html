@@ -21,7 +21,7 @@
     <mat-card class="dashboard-card">
       <mat-card-header>
         <mat-card-title>
-          {{getSimulatorTag(tile.tagId).name}}
+          {{getSimulatorItem(tile.tagId).name}}
           <!-- <button mat-icon-button class="more-button" [matMenuTriggerFor]="menu" aria-label="Toggle menu">
               <mat-icon>more_vert</mat-icon>
             </button>
@@ -32,7 +32,7 @@
         </mat-card-title>
       </mat-card-header>
       <div class="dashboard-card-content">
-        <app-control-host [tag]="getSimulatorTag(tile.tagId)"></app-control-host>
+        <app-control-host [item]="getSimulatorItem(tile.tagId)"></app-control-host>
       </div>
     </mat-card>
   </mat-grid-tile>

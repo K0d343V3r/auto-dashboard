@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/core';
 import { ActiveDashboardService } from '../services/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
@@ -9,7 +9,7 @@ import { SimulatorItem } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
-import { RequestType, TimePeriodType, TimePeriod, RelativeTimeScale } from '../proxies/dashboard-api';
+import { RequestType, TimePeriodType } from '../proxies/dashboard-api';
 import { TimeService } from '../services/time.service';
 
 @Component({
@@ -18,12 +18,12 @@ import { TimeService } from '../services/time.service';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  private tagsSubscription: Subscription;
+  private itemsSubscription: Subscription;
   private definitionChangedSubscription: Subscription;
   private tileAddedSubscription: Subscription;
   private requestTypeSubscription: Subscription;
   private dataRefreshedSubscription: Subscription;
-  private tags: SimulatorItem[];
+  private items: SimulatorItem[];
 
   subtitle: String;
   isEditing: boolean;
@@ -47,8 +47,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isReadOnly = this.router.url.split("/")[1] === 'dashboard';
     this.changeSubtitle();
 
-    this.tagsSubscription = this.simulatorItemService.getAllItems().subscribe(tags => {
-      this.tags = tags;
+    this.itemsSubscription = this.simulatorItemService.getAllItems().subscribe(items => {
+      this.items = items;
       this.activeDashboardService$ = of(this.activeDashboardService);
       this.refreshData();
     });
@@ -181,7 +181,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.dashboardDataService.stopRefresh();
-    this.tagsSubscription.unsubscribe();
+    this.itemsSubscription.unsubscribe();
     this.tileAddedSubscription.unsubscribe();
     this.definitionChangedSubscription.unsubscribe();
     this.requestTypeSubscription.unsubscribe();
@@ -236,7 +236,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.navigate();
   }
 
-  getSimulatorTag(tagId: number): SimulatorItem {
-    return this.tags.find(t => t.id === tagId);
+  getSimulatorItem(itemId: number): SimulatorItem {
+    return this.items.find(t => t.id === itemId);
   }
 }
