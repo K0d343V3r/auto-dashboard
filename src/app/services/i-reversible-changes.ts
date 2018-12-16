@@ -6,7 +6,6 @@ export class RequestTimeFrame {
 }
 
 export interface IReversibleChanges {
-  title: string;
   addItem(itemId: ItemId): void;
   removeItem(itemId: ItemId): void;
   toggleItemImportance(itemId: ItemId): void;

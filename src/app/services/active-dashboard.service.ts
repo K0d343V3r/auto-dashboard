@@ -7,6 +7,11 @@ import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
 
+export interface ITileReference {
+  index: number;
+  tile: DashboardTile;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -77,21 +82,6 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
   }
 
-  get title(): string {
-    if (this.definition.title != null) {
-      return this.definition.title;
-    } else {
-      return this.definition.name;
-    }
-  }
-
-  set title(value: string) {
-    if (this.definition.title !== value) {
-      this.definition.title = value;
-      this.isDirty = true;
-    }
-  }
-
   get position(): number {
     return this.definition.position;
   }
@@ -103,15 +93,22 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
   }
 
-  addItem(itemId: ItemId) {
-    if (this.definition.tiles.find(t => t.tagId == itemId) == null) {
-      const dashboardTile = new DashboardTile();
-      dashboardTile.tagId = itemId;
-      this.definition.tiles.push(dashboardTile);
-      this.isDirty = true;
-      this.layout();
-      this.tileAddedSource.next();
+  addItem(itemId: ItemId): ITileReference {
+    if (this.definition.tiles.find(t => t.sourceId == itemId) == null) {
+      const tile = new DashboardTile();
+      tile.sourceId = itemId;
+      this.insertTile(this.definition.tiles.length, tile);
+      return { index: this.definition.tiles.length, tile: tile };
     }
+
+    return null;
+  }
+
+  insertTile(index: number, tile: DashboardTile) {
+    this.definition.tiles.splice(index, 0, tile);
+    this.isDirty = true;
+    this.layout();
+    this.tileAddedSource.next();
   }
 
   private layout() {
@@ -146,18 +143,21 @@ export class ActiveDashboardService implements IReversibleChanges {
     this.definition.tiles = tiles;
   }
 
-  removeItem(itemId: ItemId) {
-    const index = this.definition.tiles.findIndex(t => t.tagId == itemId);
+  removeItem(itemId: ItemId): ITileReference {
+    const index = this.definition.tiles.findIndex(t => t.sourceId == itemId);
     if (index >= 0) {
-      this.definition.tiles.splice(index, 1);
+      const tile = this.definition.tiles.splice(index, 1)[0];
       this.isDirty = true;
       this.layout();
       this.tileRemovedSource.next();
+      return { index: index, tile: tile };
     }
+
+    return null;
   }
 
   toggleItemImportance(itemId: ItemId) {
-    const index = this.definition.tiles.findIndex(t => t.tagId == itemId);
+    const index = this.definition.tiles.findIndex(t => t.sourceId == itemId);
     if (index >= 0) {
       this.definition.tiles[index].important = !this.definition.tiles[index].important;
       this.isDirty = true;

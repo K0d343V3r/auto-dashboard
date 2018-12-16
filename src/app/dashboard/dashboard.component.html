@@ -1,7 +1,7 @@
 <mat-toolbar color="primary" class="content-toolbar">
   <mat-toolbar-row>
     <div class="toolbar-content">
-      <span>{{(activeDashboardService$ | async)?.title}}</span>
+      <span>{{(activeDashboardService$ | async)?.name}}</span>
       <span class="subtitle">{{subtitle}}</span>
     </div>
     <span class="fill-remaining-space"></span>
@@ -21,7 +21,7 @@
     <mat-card class="dashboard-card">
       <mat-card-header>
         <mat-card-title>
-          {{getSimulatorItem(tile.tagId).name}}
+          {{getSimulatorItem(tile.sourceId).name}}
           <!-- <button mat-icon-button class="more-button" [matMenuTriggerFor]="menu" aria-label="Toggle menu">
               <mat-icon>more_vert</mat-icon>
             </button>
@@ -32,7 +32,7 @@
         </mat-card-title>
       </mat-card-header>
       <div class="dashboard-card-content">
-        <app-control-host [item]="getSimulatorItem(tile.tagId)"></app-control-host>
+        <app-control-host [item]="getSimulatorItem(tile.sourceId)"></app-control-host>
       </div>
     </mat-card>
   </mat-grid-tile>

@@ -1,34 +1,19 @@
 import { Injectable } from '@angular/core';
 import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
-import { ActiveDashboardService } from './active-dashboard.service';
+import { ActiveDashboardService, ITileReference } from './active-dashboard.service';
 import { ItemId } from '../proxies/data-simulator-api';
 import { RequestType } from '../proxies/dashboard-api';
 
 abstract class ReversibleChange {
   constructor(protected activeDashboardService: ActiveDashboardService) { }
 
-  abstract commit();
-  abstract revert();
-}
-
-class TitleChange extends ReversibleChange {
-  private previousTitle: string;
-
-  constructor(activeDashboardService: ActiveDashboardService, private title: string) {
-    super(activeDashboardService);
-  }
-
-  commit() {
-    this.previousTitle = this.activeDashboardService.title;
-    this.activeDashboardService.title = this.title;
-  }
-
-  revert() {
-    this.activeDashboardService.title = this.previousTitle;
-  }
+  abstract commit(): void;
+  abstract revert(): void;
 }
 
 class ItemChange extends ReversibleChange {
+  private removedTile: ITileReference;
+
   constructor(activeDashboardService: ActiveDashboardService, private itemId: ItemId, private add: boolean) {
     super(activeDashboardService);
   }
@@ -37,15 +22,15 @@ class ItemChange extends ReversibleChange {
     if (this.add) {
       this.activeDashboardService.addItem(this.itemId);
     } else {
-      this.activeDashboardService.removeItem(this.itemId);
+      this.removedTile = this.activeDashboardService.removeItem(this.itemId);
     }
   }
 
   revert() {
     if (this.add) {
       this.activeDashboardService.removeItem(this.itemId);
-    } else {
-      this.activeDashboardService.addItem(this.itemId);
+    } else if (this.removedTile !== null) {
+      this.activeDashboardService.insertTile(this.removedTile.index, this.removedTile.tile);
     }
   }
 }
@@ -98,14 +83,6 @@ export class DashboardUndoService implements IReversibleChanges {
       this.changes = [];
       this.restorePoint = -1;
     });
-  }
-
-  get title(): string {
-    return this.activeDashboardService.title;
-  }
-
-  set title(value: string) {
-    this.processChange(new TitleChange(this.activeDashboardService, value));
   }
 
   private processChange(change: ReversibleChange) {

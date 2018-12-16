@@ -581,7 +581,6 @@ export interface IDashboardElement extends IEntityBase {
 }
 
 export class DashboardDefinition extends DashboardElement implements IDashboardDefinition {
-    title?: string | undefined;
     columns!: number;
     requestType!: RequestType;
     valueAtTimeTarget?: Date | undefined;
@@ -595,7 +594,6 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.title = data["title"];
             this.columns = data["columns"];
             this.requestType = data["requestType"];
             this.valueAtTimeTarget = data["valueAtTimeTarget"] ? new Date(data["valueAtTimeTarget"].toString()) : <any>undefined;
@@ -617,7 +615,6 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["title"] = this.title;
         data["columns"] = this.columns;
         data["requestType"] = this.requestType;
         data["valueAtTimeTarget"] = this.valueAtTimeTarget ? this.valueAtTimeTarget.toISOString() : <any>undefined;
@@ -640,7 +637,6 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
 }
 
 export interface IDashboardDefinition extends IDashboardElement {
-    title?: string | undefined;
     columns: number;
     requestType: RequestType;
     valueAtTimeTarget?: Date | undefined;
@@ -727,7 +723,7 @@ export enum RelativeTimeScale {
 }
 
 export class DashboardTile extends EntityBase implements IDashboardTile {
-    tagId!: number;
+    sourceId!: number;
     important!: boolean;
     columnSpan!: number;
     rowSpan!: number;
@@ -741,7 +737,7 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
     init(data?: any) {
         super.init(data);
         if (data) {
-            this.tagId = data["tagId"];
+            this.sourceId = data["sourceId"];
             this.important = data["important"];
             this.columnSpan = data["columnSpan"];
             this.rowSpan = data["rowSpan"];
@@ -759,7 +755,7 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["tagId"] = this.tagId;
+        data["sourceId"] = this.sourceId;
         data["important"] = this.important;
         data["columnSpan"] = this.columnSpan;
         data["rowSpan"] = this.rowSpan;
@@ -778,7 +774,7 @@ export class DashboardTile extends EntityBase implements IDashboardTile {
 }
 
 export interface IDashboardTile extends IEntityBase {
-    tagId: number;
+    sourceId: number;
     important: boolean;
     columnSpan: number;
     rowSpan: number;

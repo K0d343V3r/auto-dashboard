@@ -25,11 +25,11 @@ export class DataSettingsComponent implements OnInit {
   }
 
   isItemSelected(item: SimulatorItem): boolean {
-    return this.activeDashboardService.tiles.find(t => t.tagId === item.id) != null;
+    return this.activeDashboardService.tiles.find(t => t.sourceId === item.id) != null;
   }
 
   isItemImportant(item: SimulatorItem): boolean {
-    const tile = this.activeDashboardService.tiles.find(t => t.tagId === item.id);
+    const tile = this.activeDashboardService.tiles.find(t => t.sourceId === item.id);
     return tile != null && tile.important;
   }
 
