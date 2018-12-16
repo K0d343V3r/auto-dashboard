@@ -5,7 +5,7 @@ import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 import { Location } from '@angular/common';
 import { SimulatorItemService } from '../services/simulator-item.service';
-import { SimulatorItem, SimulatorTag } from '../proxies/data-simulator-api';
+import { SimulatorItem, ItemId } from '../proxies/data-simulator-api';
 import { Observable, of, Subscription } from 'rxjs';
 import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-data.service';
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
@@ -58,8 +58,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.refreshData();
     });
 
-    this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(() => {
-      this.refreshData();
+    this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(tile => {
+      this.refreshData(tile.sourceId);
     });
 
     this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
@@ -137,22 +137,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private refreshData() {
+  private refreshData(item: ItemId = null) {
     if (this.activeDashboardService.tiles.length > 0) {
-      if (this.isEditing) {
-        // we do not auto-refresh in edit mode
-        window.setTimeout(() => {
-          // NOTE: must be called within setTimeout(), otherwise child components may not exist
-          this.dashboardDataService.refresh(this.getMaxValueCount());
-        });
-      } else {
-        // stop any ongoing auto-fresh, and start auto-refresh again
-        this.dashboardDataService.stopRefresh();
-        window.setTimeout(() => {
-          // NOTE: must be called within setTimeout(), otherwise child components may not exist
-          this.dashboardDataService.startRefresh(this.getMaxValueCount());
-        });
-      }
+      // NOTE: must be called within setTimeout(), otherwise child components may not exist
+      window.setTimeout(() => {
+        const count = this.getMaxValueCount();
+        if (!this.isEditing) {
+          // if not editing, we auto-refresh
+          this.dashboardDataService.startRefresh(count);
+        } else if (item !== null) {
+          // refresh single item
+          this.dashboardDataService.refreshItem(item, count);
+        } else {
+          // refresh all items
+          this.dashboardDataService.refresh(count);
+        }
+      });
     }
   }
 

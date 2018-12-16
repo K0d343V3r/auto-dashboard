@@ -74,30 +74,40 @@ export class DashboardDataService {
   }
 
   refresh(maxValueCount: number = 0) {
+    // refresh all items
+    this.refreshItems(Array.from(this.channels.keys()), maxValueCount);
+  }
+
+  private refreshItems(items: ItemId[], maxValueCount: number) {
     // are we auto-refreshing?
     const wasRefreshing = this.isRefreshing;
 
     // refresh all dashboard items
-    this.refreshItems(maxValueCount);
+    this.doRefresh(items, maxValueCount);
 
     if (wasRefreshing) {
       // and re-start refresh pump
-      this.startRefreshPump(this.getDataItemIds(true), maxValueCount);
+      this.startRefreshPump(maxValueCount);
     }
   }
 
-  private refreshItems(maxValueCount: number) {
+  refreshItem(item: ItemId, maxValueCount: number = 0) {
+    // refresh requested item
+    this.refreshItems([item], maxValueCount);
+  }
+
+  private doRefresh(items: ItemId[], maxValueCount: number) {
     // stop any ongoing auto-refresh
     this.stopRefresh();
 
     // refresh tags
-    const tags = this.getDataItemIds(true);
+    const tags = this.getDataItems(items, true);
     if (tags.length > 0) {
       this.refreshTags(tags, maxValueCount);
     }
 
     // refresh documents
-    const documents = this.getDataItemIds(false);
+    const documents = this.getDataItems(items, false);
     if (documents.length > 0) {
       this.refreshDocuments(documents);
     }
@@ -114,10 +124,11 @@ export class DashboardDataService {
     });
   }
 
-  private getDataItemIds(tags: boolean): ItemId[] {
-    const channels = Array.from(this.channels.entries());
-    const items = channels.filter(c => tags ? c[1] instanceof TagChannel : c[1] instanceof DocumentChannel);
-    return items.map(c => c[0]);
+  private getDataItems(items: ItemId[], tags: boolean): ItemId[] {
+    return items.filter(i => {
+      const channel = this.channels.get(i);
+      return tags ? channel instanceof TagChannel : channel instanceof DocumentChannel;
+    });
   }
 
   private refreshTags(tags: ItemId[], maxValueCount: number) {
@@ -218,23 +229,28 @@ export class DashboardDataService {
 
   startRefresh(maxValueCount: number = 0) {
     // do a full refresh once
-    this.refreshItems(maxValueCount);
+    this.doRefresh(Array.from(this.channels.keys()), maxValueCount);
 
-    // and start refresh pump if needed
-    const tags = this.getDataItemIds(true);
-    if (tags.length > 0) {
-      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      if (this.activeDashboardService.requestType === RequestType.Live ||
-        (this.activeDashboardService.requestType === RequestType.History &&
-          timeFrame.timePeriod.type === TimePeriodType.Relative)) {
-        this.startRefreshPump(tags, maxValueCount);
-      }
-    }
+    // and start refresh pump
+    this.startRefreshPump(maxValueCount);
   }
 
-  private startRefreshPump(tags: ItemId[], maxValueCount: number) {
+  private startRefreshPump(maxValueCount: number) {
     this.intervalID = window.setInterval(() => {
-      this.refreshTags(tags, maxValueCount);
+      const tags = this.getDataItems(Array.from(this.channels.keys()), true);
+      if (tags.length > 0) {
+        // we only auto-refresh tags
+        if (this.activeDashboardService.requestType === RequestType.Live) {
+          // requesting live values, update tags
+          this.refreshTags(tags, maxValueCount);
+        } else if (this.activeDashboardService.requestType === RequestType.History) {
+          const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+          if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
+            // requesting relative history, update tags
+            this.refreshTags(tags, maxValueCount);
+          }
+        }
+      }
     }, this.interval * 1000);
   }
 

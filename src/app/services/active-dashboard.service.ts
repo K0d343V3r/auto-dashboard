@@ -20,8 +20,8 @@ export class ActiveDashboardService implements IReversibleChanges {
   private definition: DashboardDefinition;
   private definitionLoadedSource = new Subject();
   private definitionChangedSource = new Subject();
-  private tileAddedSource = new Subject();
-  private tileRemovedSource = new Subject();
+  private tileAddedSource = new Subject<DashboardTile>();
+  private tileRemovedSource = new Subject<DashboardTile>();
   private layoutChangedSource = new Subject();
   private requestTypeChangedSource = new Subject();
 
@@ -108,7 +108,7 @@ export class ActiveDashboardService implements IReversibleChanges {
     this.definition.tiles.splice(index, 0, tile);
     this.isDirty = true;
     this.layout();
-    this.tileAddedSource.next();
+    this.tileAddedSource.next(tile);
   }
 
   private layout() {
@@ -149,7 +149,7 @@ export class ActiveDashboardService implements IReversibleChanges {
       const tile = this.definition.tiles.splice(index, 1)[0];
       this.isDirty = true;
       this.layout();
-      this.tileRemovedSource.next();
+      this.tileRemovedSource.next(tile);
       return { index: index, tile: tile };
     }
 
