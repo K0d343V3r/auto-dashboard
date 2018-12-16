@@ -15,6 +15,7 @@ An application to create, edit, and manage information dashboards.
   - For data requests over a period of time (time series), all data points render as line charts.
 - Unlimited undo/redo support during dashboard editing.
 - User can view static content (documents) along side time series data.
+- User can change order of dashboards in dashboard selection list.
 - Dashboard data refreshes at a user specified frequency (i.e. every X seconds) (future).
 
 ##### Implementation:
