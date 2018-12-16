@@ -249,9 +249,9 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
 
   getDatesErrorMessage(start: boolean): string {
     if (start) {
-      return "Must be before End.";
+      return "Must be before To.";
     } else {
-      return "Must be after Start.";
+      return "Must be after From.";
     }
   }
 }

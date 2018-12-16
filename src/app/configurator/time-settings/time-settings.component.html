@@ -24,7 +24,7 @@
   </mat-radio-button>
   <div class="radio-content">
     <mat-form-field class="calendar-date">
-      <mat-label>Start date</mat-label>
+      <mat-label>From date</mat-label>
       <input matInput [matDatepicker]="startPicker" [formControl]="startDate" />
       <mat-error *ngIf="startDate.invalid">{{getDatesErrorMessage(true)}}</mat-error>
       <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
@@ -34,7 +34,7 @@
       <input matInput type="time" step="1" [formControl]="startTime" />
     </mat-form-field>
     <mat-form-field class="calendar-date">
-      <mat-label>End date</mat-label>
+      <mat-label>To date</mat-label>
       <input matInput [matDatepicker]="endPicker" [formControl]="endDate" />
       <mat-error *ngIf="endDate.invalid">{{getDatesErrorMessage(false)}}</mat-error>
       <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
