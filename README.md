@@ -26,3 +26,10 @@ An application to create, edit, and manage information dashboards.
 - Custom routing with auxiliary outlets.
 - Data resolvers for pre-fetching component data.
 - Dynamically created child components.
+
+##### Screenshots:
+
+![Screenshot](last5minutesreport.png)
+![Screenshot](currentvaluesreport.png)
+![Screenshot](editordatasettings.png)
+![Screenshot](editortimesettings.png)
