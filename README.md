@@ -29,7 +29,7 @@ An application to create, edit, and manage information dashboards.
 
 ##### Screenshots:
 
-![Screenshot](last5minutesreport.png)
-![Screenshot](currentvaluesreport.png)
-![Screenshot](editordatasettings.png)
-![Screenshot](editortimesettings.png)
+![Screenshot](/screenshots/last5minutesreport.png)
+![Screenshot](/screenshots/currentvaluesreport.png)
+![Screenshot](/screenshots/editordatasettings.png)
+![Screenshot](/screenshots/editortimesettings.png)
