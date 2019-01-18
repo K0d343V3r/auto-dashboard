@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { DashboardDefinition, DefinitionsProxy } from '../proxies/dashboard-api';
 import { Observable, EMPTY, of } from 'rxjs';
-import { ActiveDashboardService } from './active-dashboard.service';
+import { ActiveDashboardService } from './active-dashboard/active-dashboard.service';
 import { mergeMap, catchError } from 'rxjs/operators';
 
 @Injectable({

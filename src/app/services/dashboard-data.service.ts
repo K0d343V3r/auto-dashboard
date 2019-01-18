@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ItemId, VQT, TagDataProxy, TagValue, ValueAtTimeRequest, AbsoluteHistoryRequest, TagValues, InitialValue, RelativeHistoryRequest, TimeScale, SimulatorItem, SimulatorTag, DocumentDataProxy } from '../proxies/data-simulator-api';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { ActiveDashboardService } from './active-dashboard.service';
+import { ActiveDashboardService } from './active-dashboard/active-dashboard.service';
 import { RequestType, TimePeriodType, RelativeTimeScale } from '../proxies/dashboard-api';
 import { TimeService } from './time.service';
 

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DefinitionsProxy, DashboardElement, ElementsProxy } from '../proxies/dashboard-api';
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ActiveDashboardService } from '../services/active-dashboard.service';
+import { ActiveDashboardService } from '../services/active-dashboard/active-dashboard.service';
 import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 

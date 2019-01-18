@@ -5,7 +5,7 @@ import { LedComponent } from '../led/led.component';
 import { GaugeComponent } from '../gauge/gauge.component';
 import { LabelComponent } from '../label/label.component';
 import { IDashboardControl, ITagControl } from '../i-dashboard-control';
-import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
+import { ActiveDashboardService } from 'src/app/services/active-dashboard/active-dashboard.service';
 import { Subscription } from 'rxjs';
 import { DashboardDataService } from 'src/app/services/dashboard-data.service';
 import { RequestType } from 'src/app/proxies/dashboard-api';

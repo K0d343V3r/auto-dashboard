@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/core';
-import { ActiveDashboardService } from '../services/active-dashboard.service';
+import { ActiveDashboardService } from '../services/active-dashboard/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';

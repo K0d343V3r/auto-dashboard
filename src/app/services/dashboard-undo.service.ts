@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
-import { ActiveDashboardService, ITileReference } from './active-dashboard.service';
+import { ActiveDashboardService, ITileReference } from './active-dashboard/active-dashboard.service';
 import { ItemId } from '../proxies/data-simulator-api';
 import { RequestType } from '../proxies/dashboard-api';
 

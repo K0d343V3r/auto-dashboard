@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SimulatorItem } from '../../proxies/data-simulator-api';
-import { ActiveDashboardService } from '../../services/active-dashboard.service';
+import { ActiveDashboardService } from '../../services/active-dashboard/active-dashboard.service';
 import { MatSelectionListChange } from '@angular/material';
 import { SimulatorItemService } from '../../services/simulator-item.service';
 import { Observable } from 'rxjs';

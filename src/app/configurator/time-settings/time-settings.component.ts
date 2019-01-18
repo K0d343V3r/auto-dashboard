@@ -3,7 +3,7 @@ import { FormControl, Validators, AbstractControl, ValidatorFn } from '@angular/
 import { RelativeTimeScale, RequestType, TimePeriodType, TimePeriod } from '../../proxies/dashboard-api';
 import { DashboardUndoService } from 'src/app/services/dashboard-undo.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ActiveDashboardService } from 'src/app/services/active-dashboard.service';
+import { ActiveDashboardService } from 'src/app/services/active-dashboard/active-dashboard.service';
 import { Subscription, merge } from 'rxjs';
 import { RequestTimeFrame } from 'src/app/services/i-reversible-changes';
 import { TimeService } from 'src/app/services/time.service';

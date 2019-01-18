@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType, TimePeriod } from '../proxies/dashboard-api';
+import { DashboardDefinition, DashboardTile, DefinitionsProxy, RequestType, TimePeriod } from '../../proxies/dashboard-api';
 import { Subject } from 'rxjs';
-import { ItemId } from '../proxies/data-simulator-api';
-import { LayoutSchemeService, LayoutItem } from './layout-scheme.service';
+import { ItemId } from '../../proxies/data-simulator-api';
+import { LayoutSchemeService, LayoutItem } from '../layout-scheme.service';
 import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
+import { IReversibleChanges, RequestTimeFrame } from '../i-reversible-changes';
+import { DashboardDisplaySettings } from './dashboard-display-settings';
 
 export interface ITileReference {
   index: number;
@@ -17,7 +18,9 @@ export interface ITileReference {
 })
 export class ActiveDashboardService implements IReversibleChanges {
   private readonly defaultDefinition: DashboardDefinition;
-  private definition: DashboardDefinition;
+  private _definition: DashboardDefinition;
+  displaySettings: DashboardDisplaySettings;
+
   private definitionLoadedSource = new Subject();
   private definitionChangedSource = new Subject();
   private tileAddedSource = new Subject<DashboardTile>();
@@ -40,11 +43,20 @@ export class ActiveDashboardService implements IReversibleChanges {
     // initialize default definition
     this.defaultDefinition = new DashboardDefinition({
       // position = -1, appends to end of collection
-      id: 0, position: -1, name: 'New Dashboard', columns: 0, requestType: RequestType.Live, tiles: []
+      id: 0, position: -1, name: 'New Dashboard', columns: 0, requestType: RequestType.Live, tiles: [], settings: []
     });
 
     // start with default definition
     this.definition = this.defaultDefinition.clone();
+  }
+
+  private get definition(): DashboardDefinition {
+    return this._definition;
+  }
+
+  private set definition(value: DashboardDefinition) {
+    this._definition = value;
+    this.displaySettings = new DashboardDisplaySettings(value, () => { this.isDirty = true });
   }
 
   get id(): number {

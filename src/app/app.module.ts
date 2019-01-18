@@ -26,6 +26,7 @@ import { DataSettingsComponent } from './configurator/data-settings/data-setting
 import { TimeSettingsComponent } from './configurator/time-settings/time-settings.component';
 import { TrendComponent } from './controls/trend/trend.component';
 import { DocumentComponent } from './controls/document/document.component';
+import { DisplaySettingsComponent } from './configurator/display-settings/display-settings.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { DocumentComponent } from './controls/document/document.component';
     DataSettingsComponent,
     TimeSettingsComponent,
     TrendComponent,
-    DocumentComponent
+    DocumentComponent,
+    DisplaySettingsComponent
   ],
   imports: [
     BrowserModule,
