@@ -4,6 +4,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard/active-dashboard.service';
 import { RequestType, TimePeriodType, RelativeTimeScale } from '../proxies/dashboard-api';
 import { TimeService } from './time.service';
+import { RefreshScale } from './active-dashboard/dashboard-display-settings';
 
 export class TagData {
   constructor(public startTime: Date, public endTime: Date, public values: VQT[]) { }
@@ -32,7 +33,6 @@ class DocumentChannel implements IChannel {
 export class DashboardDataService {
   private intervalID?: number = null;
   private channels: Map<ItemId, IChannel> = new Map<ItemId, IChannel>();
-  private readonly interval: number = 2;
   private lastRefreshTime: Date = null;
   private dataRequestSubscription: Subscription;
   private dataRefreshedSource = new Subject<ResponseTimeFrame>();
@@ -251,7 +251,23 @@ export class DashboardDataService {
           }
         }
       }
-    }, this.interval * 1000);
+    }, this.getInterval() * 1000);
+  }
+
+  private getInterval(): number {
+    switch (this.activeDashboardService.displaySettings.refreshScale) {
+      case RefreshScale.Seconds:
+        return this.activeDashboardService.displaySettings.refreshRate;
+
+      case RefreshScale.Minutes:
+        return this.activeDashboardService.displaySettings.refreshRate * 60;
+
+      case RefreshScale.Hours:
+        return this.activeDashboardService.displaySettings.refreshScale * 60 * 60;
+
+      default:
+        throw "Invalid refresh scale.";
+    }
   }
 
   stopRefresh() {

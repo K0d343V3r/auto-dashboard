@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { RelativeTimeScale } from '../proxies/dashboard-api';
+import { RefreshScale } from './active-dashboard/dashboard-display-settings';
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +52,33 @@ export class TimeService {
       `${offsetFromNow < 0 ? 'last' : 'next'} ${this.toTimeScaleString(timeScale, true)}` :
       `${offsetFromNow < 0 ? 'last' : 'next'} ${offset} ${this.toTimeScaleString(timeScale, false)}`;
     return capitalize ? this.capitalize(text) : text;
+  }
+
+  toRefreshRateString(refreshRate: number, refreshScale: RefreshScale, capitalize: boolean = false): string {
+    const scale = this.toRelativeTimeScale(refreshScale);
+    let text;
+    if (refreshRate === 1) {
+      text = `every ${this.toTimeScaleString(scale, true)}`;
+    } else {
+      text = `every ${refreshRate} ${this.toTimeScaleString(scale)}`;
+    }
+    return capitalize ? this.capitalize(text) : text;
+  }
+
+  private toRelativeTimeScale(refreshScale: RefreshScale): RelativeTimeScale {
+    switch (refreshScale) {
+      case RefreshScale.Hours:
+        return RelativeTimeScale.Hours;
+
+      case RefreshScale.Minutes:
+        return RelativeTimeScale.Minutes;
+
+      case RefreshScale.Seconds:
+        return RelativeTimeScale.Seconds;
+
+      default:
+        throw "Invalid refresh scale.";
+    }
   }
 
   private capitalize(text: string): string {

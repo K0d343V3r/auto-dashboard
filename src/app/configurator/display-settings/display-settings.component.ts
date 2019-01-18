@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { RefreshScale } from 'src/app/services/active-dashboard/dashboard-display-settings';
 import { ActiveDashboardService } from 'src/app/services/active-dashboard/active-dashboard.service';
 import { TimeService } from 'src/app/services/time.service';
@@ -40,7 +40,7 @@ export class DisplaySettingsComponent implements OnInit, OnDestroy {
   private CreateFormGroup(): FormGroup {
     return this.formBuilder.group({
       title: [this.activeDashboardService.displaySettings.title],
-      refreshRate: [this.activeDashboardService.displaySettings.refreshRate],
+      refreshRate: [this.activeDashboardService.displaySettings.refreshRate, [Validators.min(1), Validators.pattern('^[0-9]*$')]],
       refreshScale: [this.activeDashboardService.displaySettings.refreshScale]
     });
   }
@@ -50,7 +50,9 @@ export class DisplaySettingsComponent implements OnInit, OnDestroy {
       this.displayForm.controls.title.valueChanges.pipe(debounceTime(1000), distinctUntilChanged()),
       this.displayForm.controls.refreshRate.valueChanges.pipe(debounceTime(1000), distinctUntilChanged()),
       this.displayForm.controls.refreshScale.valueChanges).subscribe(() => {
-        this.updateModel();
+        if (this.displayForm.valid) {
+          this.updateModel();
+        }
       });
   }
 
@@ -62,5 +64,9 @@ export class DisplaySettingsComponent implements OnInit, OnDestroy {
     this.activeDashboardService.displaySettings.title = this.displayForm.controls.title.value;
     this.activeDashboardService.displaySettings.refreshRate = this.displayForm.controls.refreshRate.value;
     this.activeDashboardService.displaySettings.refreshScale = this.displayForm.controls.refreshScale.value;
+  }
+
+  getRefreshErrorMessage(): string {
+    return "Must be greater than 1.";
   }
 }

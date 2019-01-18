@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private dataRefreshedSubscription: Subscription;
   private items: SimulatorItem[];
 
-  subtitle: String;
+  subtitle: string;
   isEditing: boolean;
   isReadOnly: boolean;
   activeDashboardService$: Observable<ActiveDashboardService>;
@@ -84,7 +84,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private changeViewingSubtitle(responseTime: ResponseTimeFrame) {
     if (this.activeDashboardService.requestType === RequestType.Live) {
-      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)} (current)`;
+      const rate = this.timeService.toRefreshRateString(
+        this.activeDashboardService.displaySettings.refreshRate, this.activeDashboardService.displaySettings.refreshScale);
+      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)} (${rate})`;
     } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
       this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)}`;
     } else if (this.activeDashboardService.requestType === RequestType.History) {
@@ -93,8 +95,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
         this.subtitle = `${text}`;
       } else {
-        this.subtitle = `${text} (${this.timeService.toRelativeTimeString(
-          timeFrame.timePeriod.offsetFromNow, timeFrame.timePeriod.timeScale)})`;
+        const rate = this.timeService.toRefreshRateString(
+          this.activeDashboardService.displaySettings.refreshRate, this.activeDashboardService.displaySettings.refreshScale);
+        this.subtitle = `${text} (${rate})`;
       }
     }
   }

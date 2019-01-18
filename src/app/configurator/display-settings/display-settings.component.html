@@ -7,7 +7,7 @@
     <mat-form-field class="refresh-rate-field" appearance="standard">
       <mat-label>Refresh rate</mat-label>
       <input matInput formControlName="refreshRate" />
-      <!-- <mat-error *ngIf="offset.invalid">{{getOffsetErrorMessage()}}</mat-error> -->
+      <mat-error>{{getRefreshErrorMessage()}}</mat-error>
     </mat-form-field>
     <mat-form-field class="refresh-scale-field" appearance="standard">
       <mat-select formControlName="refreshScale">

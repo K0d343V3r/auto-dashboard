@@ -17,10 +17,11 @@ export class DashboardDisplaySettings {
 
   get title(): string {
     const setting = this.definition.settings.find(d => d.settingId === <number>SettingId.Title);
-    if (setting != null) {
+    if (setting != null && setting.stringValue != "") {
       return setting.stringValue;
     } else {
-      return "";
+      // if there is no title, default to definition name
+      return this.definition.name;
     }
   }
 

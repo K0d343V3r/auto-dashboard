@@ -1,7 +1,7 @@
 <mat-toolbar color="primary" class="content-toolbar">
   <mat-toolbar-row>
     <div class="toolbar-content">
-      <span>{{(activeDashboardService$ | async)?.name}}</span>
+      <span>{{(activeDashboardService$ | async)?.displaySettings.title}}</span>
       <span class="subtitle">{{subtitle}}</span>
     </div>
     <span class="fill-remaining-space"></span>
