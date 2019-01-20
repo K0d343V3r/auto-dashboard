@@ -16,13 +16,14 @@ An application to create, edit, and manage information dashboards.
 - Unlimited undo/redo support during dashboard editing.
 - User can view static content (documents) along side time series data.
 - User can change order of dashboards in dashboard selection list.
-- Dashboard data refreshes at a user specified frequency (i.e. every X seconds) (future).
+- Dashboard data refreshes at a user specified frequency (i.e. every X seconds).
 
 ##### Implementation:
 
 - Angular and Angular Material 7.
 - Uses DataSimulator.Api and Dashboad.Api back-end services.
 - NSwagStudio generated proxies for back-end service access.
+- Uses Highcharts for trends and gauges.
 - Custom routing with auxiliary outlets.
 - Data resolvers for pre-fetching component data.
 - Dynamically created child components.

@@ -255,15 +255,15 @@ export class DashboardDataService {
   }
 
   private getInterval(): number {
-    switch (this.activeDashboardService.displaySettings.refreshScale) {
+    switch (this.activeDashboardService.refreshScale) {
       case RefreshScale.Seconds:
-        return this.activeDashboardService.displaySettings.refreshRate;
+        return this.activeDashboardService.refreshRate;
 
       case RefreshScale.Minutes:
-        return this.activeDashboardService.displaySettings.refreshRate * 60;
+        return this.activeDashboardService.refreshRate * 60;
 
       case RefreshScale.Hours:
-        return this.activeDashboardService.displaySettings.refreshScale * 60 * 60;
+        return this.activeDashboardService.refreshScale * 60 * 60;
 
       default:
         throw "Invalid refresh scale.";

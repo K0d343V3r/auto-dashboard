@@ -6,7 +6,7 @@ import { LayoutSchemeService, LayoutItem } from '../layout-scheme.service';
 import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { IReversibleChanges, RequestTimeFrame } from '../i-reversible-changes';
-import { DashboardDisplaySettings } from './dashboard-display-settings';
+import { DashboardDisplaySettings, RefreshScale } from './dashboard-display-settings';
 
 export interface ITileReference {
   index: number;
@@ -19,7 +19,7 @@ export interface ITileReference {
 export class ActiveDashboardService implements IReversibleChanges {
   private readonly defaultDefinition: DashboardDefinition;
   private _definition: DashboardDefinition;
-  displaySettings: DashboardDisplaySettings;
+  private displaySettings: DashboardDisplaySettings;
 
   private definitionLoadedSource = new Subject();
   private definitionChangedSource = new Subject();
@@ -27,6 +27,8 @@ export class ActiveDashboardService implements IReversibleChanges {
   private tileRemovedSource = new Subject<DashboardTile>();
   private layoutChangedSource = new Subject();
   private requestTypeChangedSource = new Subject();
+  private titleChangedSource = new Subject();
+  private refreshRateChangedSource = new Subject();
 
   isDirty: boolean = false;
   definitionLoaded$ = this.definitionLoadedSource.asObservable();
@@ -35,6 +37,8 @@ export class ActiveDashboardService implements IReversibleChanges {
   tileRemoved$ = this.tileRemovedSource.asObservable();
   layoutChanged$ = this.layoutChangedSource.asObservable();
   requestTypeChanged$ = this.requestTypeChangedSource.asObservable();
+  titleChanged$ = this.titleChangedSource.asObservable();
+  refreshRateChanged$ = this.refreshRateChangedSource.asObservable();
 
   constructor(
     private layoutSchemeService: LayoutSchemeService,
@@ -56,7 +60,7 @@ export class ActiveDashboardService implements IReversibleChanges {
 
   private set definition(value: DashboardDefinition) {
     this._definition = value;
-    this.displaySettings = new DashboardDisplaySettings(value, () => { this.isDirty = true });
+    this.displaySettings = new DashboardDisplaySettings(value);
   }
 
   get id(): number {
@@ -177,7 +181,7 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
   }
 
-  changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {
+  setRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {
     this.definition.requestType = requestType;
     if (timeFrame === null) {
       this.definition.historyTimePeriod = null;
@@ -188,6 +192,34 @@ export class ActiveDashboardService implements IReversibleChanges {
     }
     this.isDirty = true;
     this.requestTypeChangedSource.next();
+  }
+
+  get title(): string {
+    return this.displaySettings.title;
+  }
+
+  set title(title: string) {
+    if (this.displaySettings.setTitle(title)) {
+      this.isDirty = true;
+      this.titleChangedSource.next();
+    }
+  }
+  
+  get refreshRate(): number {
+    return this.displaySettings.refreshRate;
+  }
+
+  get refreshScale(): RefreshScale {
+    return this.displaySettings.refreshScale;
+  }
+
+  setRefreshRate(refreshRate: number, refreshScale: RefreshScale) {
+    const changed1 = this.displaySettings.setRefreshRate(refreshRate);
+    const changed2 = this.displaySettings.setRefreshScale(refreshScale);
+    if (changed1 || changed2) {
+      this.isDirty = true;
+      this.refreshRateChangedSource.next();
+    }
   }
 
   load(definition: DashboardDefinition) {

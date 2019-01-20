@@ -129,14 +129,14 @@ export class TimeSettingsComponent implements OnInit, OnDestroy {
   private updateModel() {
     // update dashboard model based on current user (valid) settings
     if (this.requestType.value === RequestTypeOption.Current) {
-      this.dashboardUndoService.changeRequestType(RequestType.Live);
+      this.dashboardUndoService.setRequestType(RequestType.Live);
     } else if (this.requestType.value === RequestTypeOption.HistoricalRelative && this.offset.valid && this.timeScale.valid) {
-      this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
+      this.dashboardUndoService.setRequestType(RequestType.History, this.createTimeFrame());
     } else if (this.requestType.value === RequestTypeOption.HistoricalAbsolute &&
       this.startDate.valid && this.startTime.valid && this.endDate.valid && this.endTime.valid) {
-      this.dashboardUndoService.changeRequestType(RequestType.History, this.createTimeFrame());
+      this.dashboardUndoService.setRequestType(RequestType.History, this.createTimeFrame());
     } else if (this.requestType.value === RequestTypeOption.ValueAtTime && this.atDate.valid && this.atTime.valid) {
-      this.dashboardUndoService.changeRequestType(RequestType.ValueAtTime, this.createTimeFrame());
+      this.dashboardUndoService.setRequestType(RequestType.ValueAtTime, this.createTimeFrame());
     }
   }
 

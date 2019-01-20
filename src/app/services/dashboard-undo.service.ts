@@ -3,6 +3,7 @@ import { IReversibleChanges, RequestTimeFrame } from './i-reversible-changes';
 import { ActiveDashboardService, ITileReference } from './active-dashboard/active-dashboard.service';
 import { ItemId } from '../proxies/data-simulator-api';
 import { RequestType } from '../proxies/dashboard-api';
+import { RefreshScale } from './active-dashboard/dashboard-display-settings';
 
 abstract class ReversibleChange {
   constructor(protected activeDashboardService: ActiveDashboardService) { }
@@ -60,11 +61,47 @@ class RequestTypeChange extends ReversibleChange {
   commit() {
     this.previousRequestType = this.activeDashboardService.requestType;
     this.previousTimeFrame = this.activeDashboardService.getRequestTimeFrame();
-    this.activeDashboardService.changeRequestType(this.requestType, this.timeFrame);
+    this.activeDashboardService.setRequestType(this.requestType, this.timeFrame);
   }
 
   revert() {
-    this.activeDashboardService.changeRequestType(this.previousRequestType, this.previousTimeFrame);
+    this.activeDashboardService.setRequestType(this.previousRequestType, this.previousTimeFrame);
+  }
+}
+
+class TitleChange extends ReversibleChange {
+  private previousTitle: string;
+
+  constructor(activeDashboardService: ActiveDashboardService, private title: string) {
+    super(activeDashboardService);
+  }
+
+  commit() {
+    this.previousTitle = this.activeDashboardService.title;
+    this.activeDashboardService.title = this.title;
+  }
+
+  revert() {
+    this.activeDashboardService.title = this.previousTitle;
+  }
+}
+
+class RefreshRateChange extends ReversibleChange {
+  private previousRate: number;
+  private previousScale: RefreshScale;
+
+  constructor(activeDashboardService: ActiveDashboardService, private refreshRate: number, private refreshScale: RefreshScale) {
+    super(activeDashboardService);
+  }
+
+  commit() {
+    this.previousRate = this.activeDashboardService.refreshRate;
+    this.previousScale = this.activeDashboardService.refreshScale;
+    this.activeDashboardService.setRefreshRate(this.refreshRate, this.refreshScale);
+  }
+
+  revert() {
+    this.activeDashboardService.setRefreshRate(this.previousRate, this.previousScale);
   }
 }
 
@@ -110,8 +147,16 @@ export class DashboardUndoService implements IReversibleChanges {
     this.processChange(new ImportanceChange(this.activeDashboardService, itemId));
   }
 
-  changeRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {
+  setRequestType(requestType: RequestType, timeFrame: RequestTimeFrame = null) {
     this.processChange(new RequestTypeChange(this.activeDashboardService, requestType, timeFrame));
+  }
+
+  set title(title: string) {
+    this.processChange(new TitleChange(this.activeDashboardService, title));
+  }
+
+  setRefreshRate(refreshRate: number, refreshScale: RefreshScale) {
+    this.processChange(new RefreshRateChange(this.activeDashboardService, refreshRate, refreshScale));
   }
 
   canUndo(): boolean {

@@ -13,24 +13,23 @@ export enum RefreshScale {
 }
 
 export class DashboardDisplaySettings {
-  constructor(private definition: DashboardDefinition, private setDirty: () => void) { }
+  constructor(private definition: DashboardDefinition) { }
 
   get title(): string {
     const setting = this.definition.settings.find(d => d.settingId === <number>SettingId.Title);
-    if (setting != null && setting.stringValue != "") {
+    if (setting != null) {
       return setting.stringValue;
     } else {
-      // if there is no title, default to definition name
-      return this.definition.name;
+      return "";
     }
   }
 
-  set title(value: string) {
+  setTitle(value: string): boolean {
     let setting = this.definition.settings.find(d => d.settingId === <number>SettingId.Title);
     if (setting != null) {
       if (setting.stringValue !== value) {
         setting.stringValue = value;
-        this.setDirty();
+        return true;
       }
     } else {
       setting = new DashboardSetting();
@@ -38,8 +37,9 @@ export class DashboardDisplaySettings {
       setting.stringValue = value;
       setting.dashboardDefinitionId = this.definition.id;
       this.definition.settings.push(setting);
-      this.setDirty();
+      return true;
     }
+    return false;
   }
 
   get refreshRate(): number {
@@ -52,12 +52,12 @@ export class DashboardDisplaySettings {
     }
   }
 
-  set refreshRate(value: number) {
+  setRefreshRate(value: number): boolean {
     let setting = this.definition.settings.find(d => d.settingId === <number>SettingId.RefreshRate);
     if (setting != null) {
       if (setting.numberValue !== value) {
         setting.numberValue = value;
-        this.setDirty();
+        return true;
       }
     } else {
       setting = new DashboardSetting();
@@ -65,8 +65,9 @@ export class DashboardDisplaySettings {
       setting.numberValue = value;
       setting.dashboardDefinitionId = this.definition.id;
       this.definition.settings.push(setting);
-      this.setDirty();
+      return true;
     }
+    return false;
   }
 
   get refreshScale(): RefreshScale {
@@ -79,12 +80,12 @@ export class DashboardDisplaySettings {
     }
   }
 
-  set refreshScale(value: RefreshScale) {
+  setRefreshScale(value: RefreshScale): boolean {
     let setting = this.definition.settings.find(d => d.settingId === <number>SettingId.RefreshScale);
     if (setting != null) {
       if (setting.numberValue !== <number>value) {
         setting.numberValue = value;
-        this.setDirty();
+        return true;
       }
     } else {
       setting = new DashboardSetting();
@@ -92,7 +93,8 @@ export class DashboardDisplaySettings {
       setting.numberValue = value;
       setting.dashboardDefinitionId = this.definition.id;
       this.definition.settings.push(setting);
-      this.setDirty();
+      return true;
     }
+    return false;
   }
 }

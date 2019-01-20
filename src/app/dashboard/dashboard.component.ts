@@ -85,7 +85,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private changeViewingSubtitle(responseTime: ResponseTimeFrame) {
     if (this.activeDashboardService.requestType === RequestType.Live) {
       const rate = this.timeService.toRefreshRateString(
-        this.activeDashboardService.displaySettings.refreshRate, this.activeDashboardService.displaySettings.refreshScale);
+        this.activeDashboardService.refreshRate, this.activeDashboardService.refreshScale);
       this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)} (${rate})`;
     } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
       this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)}`;
@@ -96,7 +96,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.subtitle = `${text}`;
       } else {
         const rate = this.timeService.toRefreshRateString(
-          this.activeDashboardService.displaySettings.refreshRate, this.activeDashboardService.displaySettings.refreshScale);
+          this.activeDashboardService.refreshRate, this.activeDashboardService.refreshScale);
         this.subtitle = `${text} (${rate})`;
       }
     }
