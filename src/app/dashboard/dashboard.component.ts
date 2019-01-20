@@ -45,17 +45,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.isEditing = this.router.url.split("/")[1] === 'editor';
     this.isReadOnly = this.router.url.split("/")[1] === 'dashboard';
-    this.changeSubtitle();
 
     this.itemsSubscription = this.simulatorItemService.getAllItems().subscribe(items => {
       this.items = items;
       this.activeDashboardService$ = of(this.activeDashboardService);
       this.refreshData();
+      this.changeSubtitle();
     });
 
     this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
-      this.changeSubtitle();
       this.refreshData();
+      this.changeSubtitle();
     });
 
     this.tileAddedSubscription = this.activeDashboardService.tileAdded$.subscribe(tile => {
@@ -63,8 +63,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
     this.requestTypeSubscription = this.activeDashboardService.requestTypeChanged$.subscribe(() => {
-      this.changeSubtitle();
       this.refreshData();
+      this.changeSubtitle();
     });
 
     this.dataRefreshedSubscription = this.dashboardDataService.dataRefreshed$.subscribe(timeFrame => {
@@ -83,22 +83,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private changeViewingSubtitle(responseTime: ResponseTimeFrame) {
-    if (this.activeDashboardService.requestType === RequestType.Live) {
+    if (this.activeDashboardService.requestType === RequestType.History) {
+      this.subtitle = `${this.timeService.toTimeSpanString(responseTime.startTime, responseTime.endTime, true)}`;
+    } else {
+      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)}`;
+    }
+
+    if (this.dashboardDataService.isRefreshing) {
       const rate = this.timeService.toRefreshRateString(
         this.activeDashboardService.refreshRate, this.activeDashboardService.refreshScale);
-      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)} (${rate})`;
-    } else if (this.activeDashboardService.requestType === RequestType.ValueAtTime) {
-      this.subtitle = `${this.timeService.toDateString(responseTime.targetTime)}`;
-    } else if (this.activeDashboardService.requestType === RequestType.History) {
-      const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-      const text = this.timeService.toTimeSpanString(responseTime.startTime, responseTime.endTime, true);
-      if (timeFrame.timePeriod.type === TimePeriodType.Absolute) {
-        this.subtitle = `${text}`;
-      } else {
-        const rate = this.timeService.toRefreshRateString(
-          this.activeDashboardService.refreshRate, this.activeDashboardService.refreshScale);
-        this.subtitle = `${text} (${rate})`;
-      }
+        this.subtitle = `${this.subtitle} (${rate})`;
     }
   }
 

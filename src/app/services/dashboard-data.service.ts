@@ -223,7 +223,7 @@ export class DashboardDataService {
     this.dataRefreshedSource.next(new ResponseTimeFrame(values[0].value.time, null, null));
   }
 
-  private get isRefreshing(): boolean {
+  get isRefreshing(): boolean {
     return this.intervalID !== null;
   }
 
@@ -236,21 +236,25 @@ export class DashboardDataService {
   }
 
   private startRefreshPump(maxValueCount: number) {
-    this.intervalID = window.setInterval(() => {
-      const tags = this.getDataItems(Array.from(this.channels.keys()), true);
-      if (tags.length > 0) {
-        // we only auto-refresh tags
-        if (this.activeDashboardService.requestType === RequestType.Live) {
-          // requesting live values, update tags
-          this.refreshTags(tags, maxValueCount);
-        } else if (this.activeDashboardService.requestType === RequestType.History) {
-          const timeFrame = this.activeDashboardService.getRequestTimeFrame();
-          if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
-            // requesting relative history, update tags
-            this.refreshTags(tags, maxValueCount);
-          }
+    const tags = this.getDataItems(Array.from(this.channels.keys()), true);
+    if (tags.length > 0) {
+      // we only auto-refresh tags
+      if (this.activeDashboardService.requestType === RequestType.Live) {
+        // requesting live values, update tags
+        this.pump(tags, maxValueCount);
+      } else if (this.activeDashboardService.requestType === RequestType.History) {
+        const timeFrame = this.activeDashboardService.getRequestTimeFrame();
+        if (timeFrame.timePeriod.type === TimePeriodType.Relative) {
+          // requesting relative history, update tags
+          this.pump(tags, maxValueCount);
         }
       }
+    }
+  }
+
+  private pump(tags: ItemId[], maxValueCount: number) {
+    this.intervalID = window.setInterval(() => {
+      this.refreshTags(tags, maxValueCount);
     }, this.getInterval() * 1000);
   }
 
