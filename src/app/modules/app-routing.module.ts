@@ -45,7 +45,7 @@ const routes: Routes = [
           definition: DefinitionResolverService
         }
       }, {
-        path: '',
+        path: 'new/:id',
         component: DashboardComponent,
         resolve: {
           definition: DefinitionResolverService

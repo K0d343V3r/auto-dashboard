@@ -47,7 +47,7 @@ export class ActiveDashboardService implements IReversibleChanges {
     // initialize default definition
     this.defaultDefinition = new DashboardDefinition({
       // position = -1, appends to end of collection
-      id: 0, position: -1, name: 'New Dashboard', columns: 0, requestType: RequestType.Live, tiles: [], settings: []
+      id: 0, position: -1, name: 'New Dashboard', columns: 0, requestType: RequestType.Live, tiles: [], settings: [], dashboardFolderId: 1
     });
 
     // start with default definition
@@ -107,6 +107,10 @@ export class ActiveDashboardService implements IReversibleChanges {
       this.definition.position = value;
       this.isDirty = true;
     }
+  }
+
+  get dashboardFolderId(): number {
+    return this.definition.dashboardFolderId;
   }
 
   addItem(itemId: ItemId): ITileReference {
@@ -226,8 +230,10 @@ export class ActiveDashboardService implements IReversibleChanges {
     this.loadDefinition(definition.clone());
   }
 
-  reset() {
-    this.loadDefinition(this.defaultDefinition.clone());
+  reset(folderId: number = 0) {
+    let definition = this.defaultDefinition.clone();
+    definition.dashboardFolderId = folderId;
+    this.loadDefinition(definition);
   }
 
   save(): Observable<void> {

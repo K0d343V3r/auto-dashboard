@@ -1,25 +1,36 @@
-<mat-nav-list>
-  <mat-list-item *ngFor="let element of elements" routerLinkActive="active" routerLink="/viewer/{{element.id}}">
-    <mat-icon matListIcon class="list-entry-icon">dashboard</mat-icon>
-    <a>{{element.name}}</a>
-  </mat-list-item>
-</mat-nav-list>
+<mat-tab-group #tabGroup>
+  <mat-tab label="Folders">
+    <mat-nav-list>
+      <mat-list-item *ngFor="let folder of folders; let i = index" [class.active]="i == selectedFolderIndex" routerLink="/viewer/{{folder.defaultDefinitionId}}">
+        <mat-icon matListIcon class="list-entry-icon">folder</mat-icon>
+        <a>{{folder.name}}</a>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-tab>
+  <mat-tab label="{{folders[selectedFolderIndex].name}}">
+    <mat-nav-list>
+      <mat-list-item *ngFor="let definition of (definitions$ | async)" routerLinkActive="active" routerLink="/viewer/{{definition.id}}">
+        <mat-icon matListIcon class="list-entry-icon">dashboard</mat-icon>
+        <a>{{definition.name}}</a>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-tab>
+</mat-tab-group>
 <mat-toolbar color="primary">
-  <button mat-icon-button (click)="addDefinition()">
+  <button mat-icon-button (click)="addElement()">
     <mat-icon>add</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedElementIndex < 0" (click)="removeDefinition()">
+  <button mat-icon-button [disabled]="selectedFolderIndex < 0" (click)="removeDefinition()">
     <mat-icon>remove</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedElementIndex <= 0" (click)="move(true)">
+  <button mat-icon-button [disabled]="selectedFolderIndex <= 0" (click)="move(true)">
     <mat-icon>arrow_upward</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedElementIndex < 0 || selectedElementIndex === elements.length - 1"
-    (click)="move(false)">
+  <button mat-icon-button [disabled]="selectedFolderIndex < 0 || selectedFolderIndex === folders.length - 1" (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
   <span class="fill-remaining-space"></span>
-  <button mat-icon-button [disabled]="0 === elements.length" (click)="showProperties()">
-  <mat-icon>info</mat-icon>
-</button>
+  <button mat-icon-button [disabled]="0 === folders.length" (click)="showProperties()">
+    <mat-icon>info</mat-icon>
+  </button>
 </mat-toolbar>

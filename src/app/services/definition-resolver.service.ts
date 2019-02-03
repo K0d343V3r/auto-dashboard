@@ -17,10 +17,16 @@ export class DefinitionResolverService implements Resolve<DashboardDefinition>  
   ) { }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<DashboardDefinition> | Observable<never> {
-    if (route.params.id == null) {
+    const parts = state.url.split('/');
+    if (parts.length === 2) {
+      // no dashboard specified (/viewer or /editor), reset
       this.activeDashboardService.reset();
       return of(null);
+    } else if (parts.length === 4) {
+      // new dashboard specified (/editor/new/{folder id})
+      this.activeDashboardService.reset(+route.params.id);
     } else {
+      // definition specified (/viewer/{definition id} or /editor/{defitinion id})
       return this.definitionsProxy.getDefinition(+route.params.id).pipe(
         mergeMap(definition => {
           this.activeDashboardService.load(definition);

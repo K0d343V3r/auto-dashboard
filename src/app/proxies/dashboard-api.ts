@@ -325,9 +325,12 @@ export class DefinitionsProxy implements IDefinitionsProxy {
 }
 
 export interface IElementsProxy {
-    getAllElements(): Observable<DashboardElement[] | null>;
-    getElement(id: number): Observable<DashboardElement | null>;
-    updateElement(id: number, element: DashboardElement): Observable<DashboardElement | null>;
+    getAllFolderElements(): Observable<FolderElement[] | null>;
+    getFolderElement(id: number): Observable<FolderElement | null>;
+    updateFolderElement(id: number, element: FolderElement): Observable<FolderElement | null>;
+    getDefinitionElement(id: number): Observable<DefinitionElement | null>;
+    updateDefinitionElement(id: number, element: DefinitionElement): Observable<DefinitionElement | null>;
+    getAllDefinitionElements(id: number): Observable<DefinitionElement[] | null>;
 }
 
 @Injectable({
@@ -343,8 +346,8 @@ export class ElementsProxy implements IElementsProxy {
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
-    getAllElements(): Observable<DashboardElement[] | null> {
-        let url_ = this.baseUrl + "/api/Elements";
+    getAllFolderElements(): Observable<FolderElement[] | null> {
+        let url_ = this.baseUrl + "/api/Elements/folders";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -356,20 +359,20 @@ export class ElementsProxy implements IElementsProxy {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetAllElements(response_);
+            return this.processGetAllFolderElements(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetAllElements(<any>response_);
+                    return this.processGetAllFolderElements(<any>response_);
                 } catch (e) {
-                    return <Observable<DashboardElement[] | null>><any>_observableThrow(e);
+                    return <Observable<FolderElement[] | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<DashboardElement[] | null>><any>_observableThrow(response_);
+                return <Observable<FolderElement[] | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetAllElements(response: HttpResponseBase): Observable<DashboardElement[] | null> {
+    protected processGetAllFolderElements(response: HttpResponseBase): Observable<FolderElement[] | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -383,7 +386,7 @@ export class ElementsProxy implements IElementsProxy {
             if (resultData200 && resultData200.constructor === Array) {
                 result200 = [];
                 for (let item of resultData200)
-                    result200.push(DashboardElement.fromJS(item));
+                    result200.push(FolderElement.fromJS(item));
             }
             return _observableOf(result200);
             }));
@@ -392,11 +395,11 @@ export class ElementsProxy implements IElementsProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<DashboardElement[] | null>(<any>null);
+        return _observableOf<FolderElement[] | null>(<any>null);
     }
 
-    getElement(id: number): Observable<DashboardElement | null> {
-        let url_ = this.baseUrl + "/api/Elements/{id}";
+    getFolderElement(id: number): Observable<FolderElement | null> {
+        let url_ = this.baseUrl + "/api/Elements/folders/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
@@ -411,20 +414,20 @@ export class ElementsProxy implements IElementsProxy {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetElement(response_);
+            return this.processGetFolderElement(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetElement(<any>response_);
+                    return this.processGetFolderElement(<any>response_);
                 } catch (e) {
-                    return <Observable<DashboardElement | null>><any>_observableThrow(e);
+                    return <Observable<FolderElement | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<DashboardElement | null>><any>_observableThrow(response_);
+                return <Observable<FolderElement | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetElement(response: HttpResponseBase): Observable<DashboardElement | null> {
+    protected processGetFolderElement(response: HttpResponseBase): Observable<FolderElement | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -435,7 +438,7 @@ export class ElementsProxy implements IElementsProxy {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? DashboardElement.fromJS(resultData200) : <any>null;
+            result200 = resultData200 ? FolderElement.fromJS(resultData200) : <any>null;
             return _observableOf(result200);
             }));
         } else if (status === 404) {
@@ -450,11 +453,11 @@ export class ElementsProxy implements IElementsProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<DashboardElement | null>(<any>null);
+        return _observableOf<FolderElement | null>(<any>null);
     }
 
-    updateElement(id: number, element: DashboardElement): Observable<DashboardElement | null> {
-        let url_ = this.baseUrl + "/api/Elements/{id}";
+    updateFolderElement(id: number, element: FolderElement): Observable<FolderElement | null> {
+        let url_ = this.baseUrl + "/api/Elements/folders/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
@@ -473,20 +476,20 @@ export class ElementsProxy implements IElementsProxy {
         };
 
         return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processUpdateElement(response_);
+            return this.processUpdateFolderElement(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processUpdateElement(<any>response_);
+                    return this.processUpdateFolderElement(<any>response_);
                 } catch (e) {
-                    return <Observable<DashboardElement | null>><any>_observableThrow(e);
+                    return <Observable<FolderElement | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<DashboardElement | null>><any>_observableThrow(response_);
+                return <Observable<FolderElement | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processUpdateElement(response: HttpResponseBase): Observable<DashboardElement | null> {
+    protected processUpdateFolderElement(response: HttpResponseBase): Observable<FolderElement | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -497,7 +500,7 @@ export class ElementsProxy implements IElementsProxy {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? DashboardElement.fromJS(resultData200) : <any>null;
+            result200 = resultData200 ? FolderElement.fromJS(resultData200) : <any>null;
             return _observableOf(result200);
             }));
         } else if (status === 404) {
@@ -512,7 +515,493 @@ export class ElementsProxy implements IElementsProxy {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<DashboardElement | null>(<any>null);
+        return _observableOf<FolderElement | null>(<any>null);
+    }
+
+    getDefinitionElement(id: number): Observable<DefinitionElement | null> {
+        let url_ = this.baseUrl + "/api/Elements/definitions/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetDefinitionElement(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetDefinitionElement(<any>response_);
+                } catch (e) {
+                    return <Observable<DefinitionElement | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DefinitionElement | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetDefinitionElement(response: HttpResponseBase): Observable<DefinitionElement | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DefinitionElement.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = resultData404 ? ProblemDetails.fromJS(resultData404) : <any>null;
+            return throwException("A server error occurred.", status, _responseText, _headers, result404);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DefinitionElement | null>(<any>null);
+    }
+
+    updateDefinitionElement(id: number, element: DefinitionElement): Observable<DefinitionElement | null> {
+        let url_ = this.baseUrl + "/api/Elements/definitions/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(element);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateDefinitionElement(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateDefinitionElement(<any>response_);
+                } catch (e) {
+                    return <Observable<DefinitionElement | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DefinitionElement | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdateDefinitionElement(response: HttpResponseBase): Observable<DefinitionElement | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DefinitionElement.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = resultData404 ? ProblemDetails.fromJS(resultData404) : <any>null;
+            return throwException("A server error occurred.", status, _responseText, _headers, result404);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DefinitionElement | null>(<any>null);
+    }
+
+    getAllDefinitionElements(id: number): Observable<DefinitionElement[] | null> {
+        let url_ = this.baseUrl + "/api/Elements/folders/{id}/definitions";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAllDefinitionElements(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAllDefinitionElements(<any>response_);
+                } catch (e) {
+                    return <Observable<DefinitionElement[] | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DefinitionElement[] | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetAllDefinitionElements(response: HttpResponseBase): Observable<DefinitionElement[] | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(DefinitionElement.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DefinitionElement[] | null>(<any>null);
+    }
+}
+
+export interface IFoldersProxy {
+    getAllFolders(): Observable<DashboardFolder[] | null>;
+    createFolder(folder: DashboardFolder): Observable<DashboardFolder | null>;
+    getFolder(id: number): Observable<DashboardFolder | null>;
+    updateFolder(id: number, folder: DashboardFolder): Observable<DashboardFolder | null>;
+    deleteFolder(id: number): Observable<number>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class FoldersProxy implements IFoldersProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL_DASHBOARD) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    getAllFolders(): Observable<DashboardFolder[] | null> {
+        let url_ = this.baseUrl + "/api/Folders";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAllFolders(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAllFolders(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardFolder[] | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardFolder[] | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetAllFolders(response: HttpResponseBase): Observable<DashboardFolder[] | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(DashboardFolder.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardFolder[] | null>(<any>null);
+    }
+
+    createFolder(folder: DashboardFolder): Observable<DashboardFolder | null> {
+        let url_ = this.baseUrl + "/api/Folders";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(folder);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreateFolder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreateFolder(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardFolder | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardFolder | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreateFolder(response: HttpResponseBase): Observable<DashboardFolder | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 201) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result201: any = null;
+            let resultData201 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result201 = resultData201 ? DashboardFolder.fromJS(resultData201) : <any>null;
+            return _observableOf(result201);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardFolder | null>(<any>null);
+    }
+
+    getFolder(id: number): Observable<DashboardFolder | null> {
+        let url_ = this.baseUrl + "/api/Folders/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetFolder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetFolder(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardFolder | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardFolder | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetFolder(response: HttpResponseBase): Observable<DashboardFolder | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DashboardFolder.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = resultData404 ? ProblemDetails.fromJS(resultData404) : <any>null;
+            return throwException("A server error occurred.", status, _responseText, _headers, result404);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardFolder | null>(<any>null);
+    }
+
+    updateFolder(id: number, folder: DashboardFolder): Observable<DashboardFolder | null> {
+        let url_ = this.baseUrl + "/api/Folders/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(folder);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateFolder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateFolder(<any>response_);
+                } catch (e) {
+                    return <Observable<DashboardFolder | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DashboardFolder | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdateFolder(response: HttpResponseBase): Observable<DashboardFolder | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DashboardFolder.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = resultData404 ? ProblemDetails.fromJS(resultData404) : <any>null;
+            return throwException("A server error occurred.", status, _responseText, _headers, result404);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DashboardFolder | null>(<any>null);
+    }
+
+    deleteFolder(id: number): Observable<number> {
+        let url_ = this.baseUrl + "/api/Folders/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeleteFolder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeleteFolder(<any>response_);
+                } catch (e) {
+                    return <Observable<number>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<number>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDeleteFolder(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = resultData404 ? ProblemDetails.fromJS(resultData404) : <any>null;
+            return throwException("A server error occurred.", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = resultData400 ? ProblemDetails.fromJS(resultData400) : <any>null;
+            return throwException("A server error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<number>(<any>null);
     }
 }
 
@@ -598,7 +1087,47 @@ export interface IDashboardElement extends IEntityBase {
     position: number;
 }
 
-export class DashboardDefinition extends DashboardElement implements IDashboardDefinition {
+export class DefinitionElement extends DashboardElement implements IDefinitionElement {
+    dashboardFolderId!: number;
+
+    constructor(data?: IDefinitionElement) {
+        super(data);
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.dashboardFolderId = data["dashboardFolderId"];
+        }
+    }
+
+    static fromJS(data: any): DefinitionElement {
+        data = typeof data === 'object' ? data : {};
+        let result = new DefinitionElement();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dashboardFolderId"] = this.dashboardFolderId;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): DefinitionElement {
+        const json = this.toJSON();
+        let result = new DefinitionElement();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDefinitionElement extends IDashboardElement {
+    dashboardFolderId: number;
+}
+
+export class DashboardDefinition extends DefinitionElement implements IDashboardDefinition {
     columns!: number;
     requestType!: RequestType;
     valueAtTimeTarget?: Date | undefined;
@@ -665,7 +1194,7 @@ export class DashboardDefinition extends DashboardElement implements IDashboardD
     }
 }
 
-export interface IDashboardDefinition extends IDashboardElement {
+export interface IDashboardDefinition extends IDefinitionElement {
     columns: number;
     requestType: RequestType;
     valueAtTimeTarget?: Date | undefined;
@@ -929,6 +1458,94 @@ export interface IProblemDetails {
     status?: number | undefined;
     detail?: string | undefined;
     instance?: string | undefined;
+}
+
+export class FolderElement extends DashboardElement implements IFolderElement {
+    defaultDefinitionId!: number;
+
+    constructor(data?: IFolderElement) {
+        super(data);
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.defaultDefinitionId = data["defaultDefinitionId"];
+        }
+    }
+
+    static fromJS(data: any): FolderElement {
+        data = typeof data === 'object' ? data : {};
+        let result = new FolderElement();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["defaultDefinitionId"] = this.defaultDefinitionId;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): FolderElement {
+        const json = this.toJSON();
+        let result = new FolderElement();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFolderElement extends IDashboardElement {
+    defaultDefinitionId: number;
+}
+
+export class DashboardFolder extends DashboardElement implements IDashboardFolder {
+    definitions?: DashboardDefinition[] | undefined;
+
+    constructor(data?: IDashboardFolder) {
+        super(data);
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            if (data["definitions"] && data["definitions"].constructor === Array) {
+                this.definitions = [];
+                for (let item of data["definitions"])
+                    this.definitions.push(DashboardDefinition.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DashboardFolder {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardFolder();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (this.definitions && this.definitions.constructor === Array) {
+            data["definitions"] = [];
+            for (let item of this.definitions)
+                data["definitions"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): DashboardFolder {
+        const json = this.toJSON();
+        let result = new DashboardFolder();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDashboardFolder extends IDashboardElement {
+    definitions?: DashboardDefinition[] | undefined;
 }
 
 export class SwaggerException extends Error {

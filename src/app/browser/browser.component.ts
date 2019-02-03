@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { DefinitionsProxy, DashboardElement, ElementsProxy } from '../proxies/dashboard-api';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { DefinitionsProxy, ElementsProxy, FolderElement, DefinitionElement } from '../proxies/dashboard-api';
+import { Subscription, Observable } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ActiveDashboardService } from '../services/active-dashboard/active-dashboard.service';
-import { MatDialog, MatDialogConfig } from "@angular/material";
+import { MatDialog, MatDialogConfig, MatTabGroup } from "@angular/material";
 import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
 
 @Component({
@@ -13,9 +13,15 @@ import { PropertiesComponent, PropertiesData } from '../properties/properties.co
 })
 export class BrowserComponent implements OnInit, OnDestroy {
   private definitionChangedSubscription: Subscription;
+  private readonly foldersTabIndex: number = 0;
+  private readonly definitionsTabIndex: number = 1;
 
-  elements: DashboardElement[] = [];
-  selectedElementIndex: number = -1;
+  @ViewChild("tabGroup") private tabGroup: MatTabGroup;
+
+  folders: FolderElement[] = [];
+  definitions$: Observable<DefinitionElement[]>;
+  selectedFolderIndex: number = -1;
+  selectedDefinitionIndex: number = -1;
 
   constructor(
     private router: Router,
@@ -28,8 +34,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // initialize with resolved definitions
-    this.elements = this.activatedRoute.snapshot.data.elements;
+    // initialize with resolved folders
+    this.folders = this.activatedRoute.snapshot.data.elements;
     this.onDefinitionChanged();
 
     this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
@@ -38,37 +44,45 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   private onDefinitionChanged() {
-    if (this.activeDashboardService.id == 0) {
-      this.selectedElementIndex = -1
+    if (this.activeDashboardService.id === 0) {
+      // no active dashboard, select first folder
+      this.selectedFolderIndex = 0;
     } else {
-      this.selectedElementIndex = this.elements.findIndex(d => d.id == this.activeDashboardService.id);
+      // we have an active dashboard, select its folder
+      this.selectedFolderIndex = this.folders.findIndex(d => d.id == this.activeDashboardService.dashboardFolderId);
+
+      // and load folder's dashboards
+      this.definitions$ = this.elementsProxy.getAllDefinitionElements(this.activeDashboardService.dashboardFolderId);
     }
+
+    // and activate it
+    this.tabGroup.selectedIndex = this.definitionsTabIndex;
   }
 
   ngOnDestroy() {
     this.definitionChangedSubscription.unsubscribe();
   }
 
-  addDefinition() {
+  addElement() {
     // open editor with no id (new dashboard mode)
-    this.router.navigate(['editor']);
+    this.router.navigate([`editor/new/${this.folders[this.selectedFolderIndex].id}`]);
   }
 
   removeDefinition() {
-    const removedElement = this.elements.splice(this.selectedElementIndex, 1)[0];
-    if (this.elements.length == 0) {
+    const removedElement = this.folders.splice(this.selectedFolderIndex, 1)[0];
+    if (this.folders.length == 0) {
       // list is empty, let's go home
       this.router.navigate(['viewer']);
     }
     else {
       // navigate to next in line dashboard
       let index;
-      if (this.selectedElementIndex == this.elements.length) {
-        index = this.selectedElementIndex - 1;
+      if (this.selectedFolderIndex == this.folders.length) {
+        index = this.selectedFolderIndex - 1;
       } else {
-        index = this.selectedElementIndex;
+        index = this.selectedFolderIndex;
       }
-      this.router.navigate([`viewer/${this.elements[index].id}`]);
+      this.router.navigate([`viewer/${this.folders[index].id}`]);
     }
 
     // remove from server
@@ -76,34 +90,34 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   move(up: boolean) {
-    const elementToMove = this.elements.splice(this.selectedElementIndex, 1)[0];
-    elementToMove.position = up ? this.selectedElementIndex - 1 : this.selectedElementIndex + 1;
-    this.elements.splice(elementToMove.position, 0, elementToMove);
-    this.selectedElementIndex = elementToMove.position;
+    const elementToMove = this.folders.splice(this.selectedFolderIndex, 1)[0];
+    elementToMove.position = up ? this.selectedFolderIndex - 1 : this.selectedFolderIndex + 1;
+    this.folders.splice(elementToMove.position, 0, elementToMove);
+    this.selectedFolderIndex = elementToMove.position;
 
     // update in server
-    this.elementsProxy.updateElement(elementToMove.id, elementToMove).subscribe();
+    // this.elementsProxy.updateElement(elementToMove.id, elementToMove).subscribe();
   }
 
   showProperties() {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.disableClose = true;
     dialogConfig.autoFocus = true;
-    dialogConfig.data = new PropertiesData(this.elements[this.selectedElementIndex].name);
+    dialogConfig.data = new PropertiesData(this.folders[this.selectedFolderIndex].name);
 
     const dialogRef = this.dialog.open(PropertiesComponent, dialogConfig);
     dialogRef.afterClosed().subscribe((data: PropertiesData) => {
       if (data != null) {
         // update name in list
-        const element = this.elements[this.selectedElementIndex];
+        const element = this.folders[this.selectedFolderIndex];
         element.name = data.name;
 
         // update active dashboard name (this also sets dirty flag, but that's OK at this time)
         this.activeDashboardService.name = data.name;
 
         // and update server
-        this.elementsProxy.updateElement(element.id, element).subscribe();
+        // this.elementsProxy.updateElement(element.id, element).subscribe();
       }
-    });   
+    });
   }
 }
