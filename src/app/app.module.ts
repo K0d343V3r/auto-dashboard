@@ -12,7 +12,7 @@ import { API_BASE_URL_DASHBOARD } from './proxies/dashboard-api';
 import { API_BASE_URL_SIMULATOR } from './proxies/data-simulator-api';
 import { HttpClientModule } from '@angular/common/http';
 import { OverviewComponent } from './overview/overview.component';
-import { PropertiesComponent } from './properties/properties.component';
+import { DashboardPropertiesComponent } from './properties/dashboard-properties/dashboard-properties.component';
 import { ReactiveFormsModule } from "@angular/forms";
 import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
 import * as More from 'highcharts/highcharts-more.src';
@@ -27,6 +27,7 @@ import { TimeSettingsComponent } from './configurator/time-settings/time-setting
 import { TrendComponent } from './controls/trend/trend.component';
 import { DocumentComponent } from './controls/document/document.component';
 import { DisplaySettingsComponent } from './configurator/display-settings/display-settings.component';
+import { FolderPropertiesComponent } from './properties/folder-properties/folder-properties.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,7 @@ import { DisplaySettingsComponent } from './configurator/display-settings/displa
     BrowserComponent,
     DashboardComponent,
     OverviewComponent,
-    PropertiesComponent,
+    DashboardPropertiesComponent,
     GaugeComponent,
     LedComponent,
     LabelComponent,
@@ -46,7 +47,8 @@ import { DisplaySettingsComponent } from './configurator/display-settings/displa
     TimeSettingsComponent,
     TrendComponent,
     DocumentComponent,
-    DisplaySettingsComponent
+    DisplaySettingsComponent,
+    FolderPropertiesComponent
   ],
   imports: [
     BrowserModule,
@@ -67,6 +69,6 @@ import { DisplaySettingsComponent } from './configurator/display-settings/displa
     }
   ],
   bootstrap: [AppComponent],
-  entryComponents: [PropertiesComponent, GaugeComponent, LedComponent, LabelComponent, TrendComponent, DocumentComponent]
+  entryComponents: [DashboardPropertiesComponent, FolderPropertiesComponent, GaugeComponent, LedComponent, LabelComponent, TrendComponent, DocumentComponent]
 })
 export class AppModule { }

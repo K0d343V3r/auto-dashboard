@@ -1,20 +1,21 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { ElementsResolverService } from '../services/elements-resolver.service';
+import { DefinitionResolverService } from '../services/definition-resolver.service';
+import { RouterModule, Routes } from '@angular/router';
+import { NavigationService } from '../services/navigation.service';
 import { WorkspaceComponent } from '../workspace/workspace.component';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { BrowserComponent } from '../browser/browser.component';
 import { ConfiguratorComponent } from '../configurator/configurator.component';
-import { ElementsResolverService } from '../services/elements-resolver.service';
-import { DefinitionResolverService } from '../services/definition-resolver.service';
 import { OverviewComponent } from '../overview/overview.component';
 
 const routes: Routes = [
   {
-    path: 'viewer',
+    path: NavigationService.viewerPath,
     component: WorkspaceComponent,
     children: [
       {
-        path: ':id',
+        path: `:${NavigationService.definitionParamName}`,
         component: DashboardComponent,
         resolve: {
           definition: DefinitionResolverService
@@ -26,26 +27,33 @@ const routes: Routes = [
           definition: DefinitionResolverService
         }
       }, {
+        path: `:${NavigationService.folderParamName}`,
+        component: BrowserComponent,
+        outlet: NavigationService.outletName,
+        resolve: {
+          elements: ElementsResolverService
+        }
+      }, {
         path: '',
         component: BrowserComponent,
-        outlet: 'sidenav',
+        outlet: NavigationService.outletName,
         resolve: {
           elements: ElementsResolverService
         }
       }
     ]
   }, {
-    path: 'editor',
+    path: NavigationService.editorPath,
     component: WorkspaceComponent,
     children: [
       {
-        path: ':id',
+        path: `:${NavigationService.definitionParamName}`,
         component: DashboardComponent,
         resolve: {
           definition: DefinitionResolverService
         }
       }, {
-        path: 'new/:id',
+        path: `${NavigationService.editorFolderPath}/:${NavigationService.folderParamName}`,
         component: DashboardComponent,
         resolve: {
           definition: DefinitionResolverService
@@ -53,22 +61,16 @@ const routes: Routes = [
       }, {
         path: '',
         component: ConfiguratorComponent,
-        outlet: 'sidenav'
+        outlet: NavigationService.outletName
       }
     ]
   }, {
-    path: 'dashboard/:id',
-    component: DashboardComponent,
-    resolve: {
-      definition: DefinitionResolverService
-    }
-  }, {
     path: '',
-    redirectTo: 'viewer',
+    redirectTo: NavigationService.viewerPath,
     pathMatch: 'full'
   }, {
     path: '**',
-    redirectTo: 'viewer',
+    redirectTo: NavigationService.viewerPath,
     pathMatch: 'full'
   }
 ];

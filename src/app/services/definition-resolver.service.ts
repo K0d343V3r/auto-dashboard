@@ -4,6 +4,8 @@ import { DashboardDefinition, DefinitionsProxy } from '../proxies/dashboard-api'
 import { Observable, EMPTY, of } from 'rxjs';
 import { ActiveDashboardService } from './active-dashboard/active-dashboard.service';
 import { mergeMap, catchError } from 'rxjs/operators';
+import { routerNgProbeToken } from '@angular/router/src/router_module';
+import { NavigationService } from './navigation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,17 +19,18 @@ export class DefinitionResolverService implements Resolve<DashboardDefinition>  
   ) { }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<DashboardDefinition> | Observable<never> {
-    const parts = state.url.split('/');
-    if (parts.length === 2) {
-      // no dashboard specified (/viewer or /editor), reset
-      this.activeDashboardService.reset();
+    if (route.params[NavigationService.definitionParamName] == null) {
+      // no definition specified, reset active dashboard
+      if (route.params[NavigationService.folderParamName] == null) {
+        this.activeDashboardService.reset();
+      } else {
+        // a folder was spefied, seed active dashboard with it
+        this.activeDashboardService.reset(+route.params[NavigationService.folderParamName]);
+      }
       return of(null);
-    } else if (parts.length === 4) {
-      // new dashboard specified (/editor/new/{folder id})
-      this.activeDashboardService.reset(+route.params.id);
     } else {
-      // definition specified (/viewer/{definition id} or /editor/{defitinion id})
-      return this.definitionsProxy.getDefinition(+route.params.id).pipe(
+      // definition specified, load it
+      return this.definitionsProxy.getDefinition(+route.params[NavigationService.definitionParamName]).pipe(
         mergeMap(definition => {
           this.activeDashboardService.load(definition);
           return of(null);

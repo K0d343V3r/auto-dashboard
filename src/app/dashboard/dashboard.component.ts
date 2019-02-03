@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/
 import { ActiveDashboardService } from '../services/active-dashboard/active-dashboard.service';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from "@angular/material";
-import { PropertiesComponent, PropertiesData } from '../properties/properties.component';
+import { DashboardPropertiesComponent, DashboardPropertiesData } from '../properties/dashboard-properties/dashboard-properties.component';
 import { Location } from '@angular/common';
 import { SimulatorItemService } from '../services/simulator-item.service';
 import { SimulatorItem, ItemId } from '../proxies/data-simulator-api';
@@ -11,6 +11,7 @@ import { DashboardDataService, ResponseTimeFrame } from '../services/dashboard-d
 import { ControlHostComponent } from '../controls/control-host/control-host.component';
 import { RequestType, TimePeriodType } from '../proxies/dashboard-api';
 import { TimeService } from '../services/time.service';
+import { NavigationService } from '../services/navigation.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -38,7 +39,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private location: Location,
     private simulatorItemService: SimulatorItemService,
     private dashboardDataService: DashboardDataService,
-    private timeService: TimeService
+    private timeService: TimeService,
+    private navigationService: NavigationService
   ) {
   }
 
@@ -92,7 +94,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.dashboardDataService.isRefreshing) {
       const rate = this.timeService.toRefreshRateString(
         this.activeDashboardService.refreshRate, this.activeDashboardService.refreshScale);
-        this.subtitle = `${this.subtitle} (${rate})`;
+      this.subtitle = `${this.subtitle} (${rate})`;
     }
   }
 
@@ -187,15 +189,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   edit() {
     // open editor for this dashboard
-    this.router.navigate([`editor/${this.activeDashboardService.id}`]);
+    this.navigationService.editDashboard(this.activeDashboardService.id);
   }
 
   done() {
     if (this.activeDashboardService.id > 0) {
       // dashboard exists, update it
       this.activeDashboardService.save().subscribe(() => {
-        // and go back to where we opened editor
-        this.navigate();
+        this.goBack();
       });
     } else {
       // dashboard does not exist, get a new name for it
@@ -203,34 +204,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
       dialogConfig.disableClose = true;
       dialogConfig.autoFocus = true;
 
-      const dialogRef = this.dialog.open(PropertiesComponent, dialogConfig);
-      dialogRef.afterClosed().subscribe((data: PropertiesData) => {
+      const dialogRef = this.dialog.open(DashboardPropertiesComponent, dialogConfig);
+      dialogRef.afterClosed().subscribe((data: DashboardPropertiesData) => {
         if (data != null) {
           this.activeDashboardService.name = data.name;
           this.activeDashboardService.save().subscribe(() => {
             // dashboard successfully created, now view it
-            this.navigate(`viewer/${this.activeDashboardService.id}`);
+            this.viewDashboard(this.activeDashboardService.dashboardFolderId, this.activeDashboardService.id);
           });
         }
       });
     }
   }
 
-  private navigate(url: string = null) {
+  private goBack() {
     // stop any new template rebinding since we are on our way out
     this.activeDashboardService$ = null;
+    this.navigationService.goBack();
+  }
 
-    // and navigate away from editor
-    if (url === null) {
-      this.location.back();
-    } else {
-      this.router.navigate([url]);
-    }
+  private viewDashboard(folderId: number, definitionId: number) {
+    // stop any new template rebinding since we are on our way out
+    this.activeDashboardService$ = null;
+    this.navigationService.viewDashboard(folderId, definitionId);
   }
 
   cancel() {
-    // go back to where we opened editor
-    this.navigate();
+    this.goBack();
   }
 
   getSimulatorItem(itemId: number): SimulatorItem {

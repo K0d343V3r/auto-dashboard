@@ -1,15 +1,16 @@
 <mat-tab-group #tabGroup>
   <mat-tab label="Folders">
     <mat-nav-list>
-      <mat-list-item *ngFor="let folder of folders; let i = index" [class.active]="i == selectedFolderIndex" routerLink="/viewer/{{folder.defaultDefinitionId}}">
+      <mat-list-item *ngFor="let folder of elements.folders; let i = index" [class.active]="i == selectedFolderIndex"
+        (click)="onFolderClick(folder)">
         <mat-icon matListIcon class="list-entry-icon">folder</mat-icon>
         <a>{{folder.name}}</a>
       </mat-list-item>
     </mat-nav-list>
   </mat-tab>
-  <mat-tab label="{{folders[selectedFolderIndex].name}}">
+  <mat-tab label="{{elements.folders[selectedFolderIndex].name}}">
     <mat-nav-list>
-      <mat-list-item *ngFor="let definition of (definitions$ | async)" routerLinkActive="active" routerLink="/viewer/{{definition.id}}">
+      <mat-list-item *ngFor="let definition of elements.definitions" routerLinkActive="active" [routerLink]="navigationService.getDefinitionLink(definition.id)">
         <mat-icon matListIcon class="list-entry-icon">dashboard</mat-icon>
         <a>{{definition.name}}</a>
       </mat-list-item>
@@ -26,11 +27,12 @@
   <button mat-icon-button [disabled]="selectedFolderIndex <= 0" (click)="move(true)">
     <mat-icon>arrow_upward</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="selectedFolderIndex < 0 || selectedFolderIndex === folders.length - 1" (click)="move(false)">
+  <button mat-icon-button [disabled]="selectedFolderIndex < 0 || selectedFolderIndex === elements.folders.length - 1"
+    (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
   <span class="fill-remaining-space"></span>
-  <button mat-icon-button [disabled]="0 === folders.length" (click)="showProperties()">
+  <button mat-icon-button [disabled]="0 === elements.folders.length" (click)="showProperties()">
     <mat-icon>info</mat-icon>
   </button>
 </mat-toolbar>
