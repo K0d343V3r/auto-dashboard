@@ -35,9 +35,9 @@ export class ElementsResolverService implements Resolve<DahsboardElements> {
               element.name = folder.name;
               element.position = folder.position;
 
-             // navigate to default folder
-             this.navigationService.viewFolder(folder.id);
-             return EMPTY;
+              // navigate to default folder
+              this.navigationService.viewFolder(folder.id, true, true, true);
+              return EMPTY;
             }),
             catchError(() => {
               // on error, go back to original location
@@ -57,13 +57,15 @@ export class ElementsResolverService implements Resolve<DahsboardElements> {
               return EMPTY;
             })
           );
-        } else if (folders[0].defaultDefinitionId > 0) {
-          // no folder specified and we have a default dashboard, route to it
-          this.navigationService.viewDashboard(folders[0].id, folders[0].defaultDefinitionId);
-          return EMPTY;
         } else {
-          // no default dashboard (empty folder), just route to folder
-          this.navigationService.viewFolder(folders[0].id);
+          if (folders[0].defaultDefinitionId > 0) {
+            // no folder specified and we have a default dashboard, route to it
+            this.navigationService.viewDashboard(folders[0].id, folders[0].defaultDefinitionId, true, true, true);
+          } else {
+            // no default dashboard (empty folder), just route to folder
+            this.navigationService.viewFolder(folders[0].id, true, true, true);
+          }
+          return EMPTY;
         }
       }),
       catchError(() => {

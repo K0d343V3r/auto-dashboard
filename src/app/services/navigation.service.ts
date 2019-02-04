@@ -12,6 +12,9 @@ export class NavigationService {
   static readonly editorFolderPath = "folder";
   static readonly definitionParamName = "definitionId";
   static readonly folderParamName = "folderId";
+  static readonly tabParamName = "tab";
+  static readonly dashboardsTab = "dashboards";
+  static readonly foldersTab = "folders";
 
   constructor(private router: Router, private location: Location) { }
 
@@ -27,20 +30,30 @@ export class NavigationService {
     this.location.back();
   }
 
-  viewDashboard(folderId: number, definitionId: number) {
-    this.router.navigateByUrl(`${NavigationService.viewerPath}/(${definitionId}//${NavigationService.outletName}:${folderId})`);
+  viewDashboard(folderId: number, definitionId: number, dashboardsTab: boolean = true, navigate: boolean = true, replaceUrl: boolean = false) {
+    const url = `${NavigationService.viewerPath}/(${definitionId}//${NavigationService.outletName}:${folderId};${NavigationService.tabParamName}=${dashboardsTab ? NavigationService.dashboardsTab : NavigationService.foldersTab})`;
+    if (navigate) {
+      this.router.navigateByUrl(url, { replaceUrl: replaceUrl });
+    } else {
+      this.location.replaceState(url);
+    }
   }
 
-  viewFolder(folderId: number) {
-    this.router.navigateByUrl(`${NavigationService.viewerPath}/(${NavigationService.outletName}:${folderId})`);  
+  viewFolder(folderId: number, dashboardsTab: boolean = true, navigate: boolean = true, replaceUrl: boolean = false) {
+    const url = `${NavigationService.viewerPath}/(${NavigationService.outletName}:${folderId};${NavigationService.tabParamName}=${dashboardsTab ? NavigationService.dashboardsTab : NavigationService.foldersTab})`;
+    if (navigate) {
+      this.router.navigateByUrl(url, { replaceUrl: replaceUrl });
+    } else {
+      this.location.replaceState(url);
+    }
   }
 
   editDashboard(definitionId: number) {
-    this.router.navigateByUrl(`${NavigationService.editorPath}/${definitionId}`); 
+    this.router.navigateByUrl(`${NavigationService.editorPath}/${definitionId}`);
   }
 
   createDashboard(folderId: number) {
-    this.router.navigateByUrl(`${NavigationService.editorPath}/${NavigationService.editorFolderPath}/${folderId}`); 
+    this.router.navigateByUrl(`${NavigationService.editorPath}/${NavigationService.editorFolderPath}/${folderId}`);
   }
 
   getDefinitionLink(definitionId: number): string {
