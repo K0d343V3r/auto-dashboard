@@ -176,7 +176,12 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
       // remove from server (must be done before navigation since it reloads all folders)
       this.foldersProxy.deleteFolder(removedFolder.id).subscribe(() => {
         // navigate to currently selected folder
-        this.navigationService.viewFolder(this.elements.folders[this.selectedFolderIndex].id, false);
+        const folder = this.elements.folders[this.selectedFolderIndex];
+        if (folder.defaultDefinitionId > 0) {
+          this.navigationService.viewDashboard(folder.id, folder.defaultDefinitionId, false);
+        } else {
+          this.navigationService.viewFolder(folder.id, false);
+        }
       });
     } else {
       // remove from list
@@ -187,7 +192,10 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
 
       // remove from server (must be done before navigation since it reloads all folders)
       this.definitionsProxy.deleteDefinition(removedDefinition.id).subscribe(() => {
-        if (this.elements.definitions.length > 0) {
+        if (this.elements.definitions.length === 0) {
+          // navigate to parent folder
+          this.navigationService.viewFolder(this.elements.folders[this.selectedFolderIndex].id);
+        } else {
           // navigate to currently selected definition
           this.navigationService.viewDashboard(
             this.elements.folders[this.selectedFolderIndex].id, this.elements.definitions[this.selectedDefinitionIndex].id);
