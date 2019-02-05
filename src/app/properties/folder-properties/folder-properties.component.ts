@@ -41,9 +41,7 @@ export class FolderPropertiesComponent {
   }
 
   cancel() {
-    if (this.form.valid) {
-      this.dialogRef.close();
-    }
+    this.dialogRef.close();
   }
 
   getNameErrorMessage(): string {
