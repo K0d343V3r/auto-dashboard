@@ -1,4 +1,4 @@
-<mat-tab-group #tabGroup (selectedIndexChange)="onTabChanged($event)">
+<mat-tab-group #tabGroup (selectedIndexChange)="onTabChanged($event)" class="tab-group">
   <mat-tab label="Folders">
     <mat-nav-list>
       <mat-list-item *ngFor="let folder of elements.folders; let i = index" [class.active]="i == selectedFolderIndex"
@@ -10,14 +10,15 @@
   </mat-tab>
   <mat-tab label="{{elements.folders[selectedFolderIndex].name}}">
     <mat-nav-list>
-      <mat-list-item *ngFor="let definition of elements.definitions; let i = index" [class.active]="i == selectedDefinitionIndex" (click)="onDefinitionClick(definition)">
+      <mat-list-item *ngFor="let definition of elements.definitions; let i = index" [class.active]="i == selectedDefinitionIndex"
+        (click)="onDefinitionClick(definition)">
         <mat-icon matListIcon class="list-entry-icon">dashboard</mat-icon>
         <a>{{definition?.name}}</a>
       </mat-list-item>
     </mat-nav-list>
   </mat-tab>
 </mat-tab-group>
-<mat-toolbar color="primary">
+<mat-toolbar color="primary" class="sidenav-toolbar">
   <button mat-icon-button (click)="addElement()">
     <mat-icon>add</mat-icon>
   </button>

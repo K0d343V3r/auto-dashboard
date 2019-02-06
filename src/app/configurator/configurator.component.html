@@ -1,4 +1,4 @@
-<mat-tab-group>
+<mat-tab-group class="tab-group">
   <mat-tab label="Data">
     <app-data-settings></app-data-settings>
   </mat-tab>
@@ -9,7 +9,7 @@
     <app-display-settings></app-display-settings>
   </mat-tab>
 </mat-tab-group>
-<mat-toolbar color="primary">
+<mat-toolbar color="primary" class="sidenav-toolbar">
   <button mat-icon-button [disabled]="!dashboardUndoService.canUndo()" (click)="dashboardUndoService.undo()">
     <mat-icon>undo</mat-icon>
   </button>
