@@ -203,11 +203,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const dialogConfig = new MatDialogConfig();
       dialogConfig.disableClose = true;
       dialogConfig.autoFocus = true;
+      dialogConfig.data = new DashboardPropertiesData("", this.activeDashboardService.dashboardFolderId);
 
       const dialogRef = this.dialog.open(DashboardPropertiesComponent, dialogConfig);
       dialogRef.afterClosed().subscribe((data: DashboardPropertiesData) => {
         if (data != null) {
           this.activeDashboardService.name = data.name;
+          this.activeDashboardService.dashboardFolderId = data.folderId;
           this.activeDashboardService.save().subscribe(() => {
             // dashboard successfully created, now view it
             this.viewDashboard(this.activeDashboardService.dashboardFolderId, this.activeDashboardService.id);

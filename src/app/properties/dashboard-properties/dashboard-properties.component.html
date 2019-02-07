@@ -1,8 +1,17 @@
 <span mat-dialog-title>{{title}}</span>
 <mat-dialog-content [formGroup]="form">
   <mat-form-field>
-    <input matInput placeholder="Dashboard name" formControlName="name">
+    <mat-label>Dashboard name</mat-label>
+    <input matInput formControlName="name">
     <mat-error>{{getNameErrorMessage()}}</mat-error>
+  </mat-form-field>
+  <mat-form-field class="folder-field" appearance="standard">
+    <mat-label>Folder</mat-label>
+    <mat-select formControlName="folder">
+      <mat-option *ngFor="let folder of folders" [value]="folder.id">
+        {{folder.name}}
+      </mat-option>
+    </mat-select>
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

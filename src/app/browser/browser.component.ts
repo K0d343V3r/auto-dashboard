@@ -221,7 +221,7 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
       this.elements.definitions.splice(definitionToMove.position, 0, definitionToMove);
       this.selectedDefinitionIndex = definitionToMove.position;
 
-      // update server
+      // and update server
       this.elementsProxy.updateDefinitionElement(definitionToMove.id, definitionToMove).subscribe();
     }
   }
@@ -244,19 +244,28 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
         }
       });
     } else {
-      dialogConfig.data = new DashboardPropertiesData(this.elements.definitions[this.selectedDefinitionIndex].name);
+      const definition = this.elements.definitions[this.selectedDefinitionIndex];
+      dialogConfig.data = new DashboardPropertiesData(definition.name, definition.dashboardFolderId);
       const dialogRef = this.dialog.open(DashboardPropertiesComponent, dialogConfig);
       dialogRef.afterClosed().subscribe((data: DashboardPropertiesData) => {
         if (data != null) {
-          // update name in list
+          // update list and active dashboard
           const element = this.elements.definitions[this.selectedDefinitionIndex];
           element.name = data.name;
-
-          // update active dashboard name (this also sets dirty flag, but that's OK at this time)
           this.activeDashboardService.name = data.name;
 
-          // and update server
-          this.elementsProxy.updateDefinitionElement(element.id, element).subscribe();
+          if (element.dashboardFolderId === data.folderId) {
+            // dashboard not moved to another folder, update server
+            this.elementsProxy.updateDefinitionElement(element.id, element).subscribe();
+          } else {
+            // dashboard moved to another folder, update server
+            element.dashboardFolderId = data.folderId;
+            element.position = -1;    // puts moved dashboard at the end
+            this.elementsProxy.updateDefinitionElement(element.id, element).subscribe(element => {
+              // and navigate to new location
+              this.navigationService.viewDashboard(element.dashboardFolderId, element.id);
+            });
+          }
         }
       });
     }

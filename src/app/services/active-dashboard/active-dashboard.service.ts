@@ -113,6 +113,13 @@ export class ActiveDashboardService implements IReversibleChanges {
     return this.definition.dashboardFolderId;
   }
 
+  set dashboardFolderId(value: number) {
+    if (this.definition.dashboardFolderId !== value) {
+      this.definition.dashboardFolderId = value;
+      this.isDirty = true;
+    }  
+  }
+
   addItem(itemId: ItemId): ITileReference {
     if (this.definition.tiles.find(t => t.sourceId == itemId) == null) {
       const tile = new DashboardTile();
