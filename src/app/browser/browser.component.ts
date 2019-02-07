@@ -262,8 +262,8 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
             element.dashboardFolderId = data.folderId;
             element.position = -1;    // puts moved dashboard at the end
             this.elementsProxy.updateDefinitionElement(element.id, element).subscribe(element => {
-              // and navigate to new location
-              this.navigationService.viewDashboard(element.dashboardFolderId, element.id);
+              // and navigate to new location (replace current url since it is no longer valid)
+              this.navigationService.viewDashboard(element.dashboardFolderId, element.id, true, true, true);
             });
           }
         }
