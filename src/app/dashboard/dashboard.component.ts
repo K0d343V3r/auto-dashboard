@@ -36,7 +36,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private activeDashboardService: ActiveDashboardService,
     private router: Router,
     private dialog: MatDialog,
-    private location: Location,
     private simulatorItemService: SimulatorItemService,
     private dashboardDataService: DashboardDataService,
     private timeService: TimeService,

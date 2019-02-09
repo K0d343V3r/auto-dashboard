@@ -18,7 +18,7 @@ import {
   MatSelectModule,
   MatDatepickerModule,
   MatNativeDateModule,
-  // MatSlideToggleModule,
+  MatSlideToggleModule,
   MatToolbarModule
 } from '@angular/material';
 
@@ -42,7 +42,7 @@ import {
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    // MatSlideToggleModule,
+    MatSlideToggleModule,
     MatListModule
   ],
   exports: [
@@ -64,7 +64,7 @@ import {
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    // MatSlideToggleModule,
+    MatSlideToggleModule,
     MatListModule
   ]
 })

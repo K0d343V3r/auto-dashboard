@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ChangeDetectorRef, AfterContentChecked } from '@angular/core';
-import { DefinitionsProxy, ElementsProxy, FolderElement, DefinitionElement, FoldersProxy, DashboardFolder } from '../proxies/dashboard-api';
+import { DefinitionsProxy, ElementsProxy, FolderElement, DefinitionElement, FoldersProxy, DashboardFolder, KioskTimeScale } from '../proxies/dashboard-api';
 import { Subscription, Observable } from 'rxjs';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { ActiveDashboardService } from '../services/active-dashboard/active-dashboard.service';
@@ -21,6 +21,8 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
 
   private readonly foldersTabIndex: number = 0;
   private readonly dashboardsTabIndex: number = 1;
+  private readonly defaultKioskInterval: number = 1;
+  private readonly defaultKioskTimeScale: KioskTimeScale = KioskTimeScale.Minutes;
   @ViewChild("tabGroup") private tabGroup: MatTabGroup;
 
   elements: DahsboardElements = new DahsboardElements([]);
@@ -94,6 +96,7 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
       const dialogConfig = new MatDialogConfig();
       dialogConfig.disableClose = true;
       dialogConfig.autoFocus = true;
+      dialogConfig.data = new FolderPropertiesData("", false, this.defaultKioskInterval, this.defaultKioskTimeScale);
 
       const dialogRef = this.dialog.open(FolderPropertiesComponent, dialogConfig);
       dialogRef.afterClosed().subscribe((data: FolderPropertiesData) => {
@@ -101,6 +104,8 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
           const folder = new DashboardFolder();
           folder.name = data.name;
           folder.position = -1;
+          folder.kioskInterval = data.kioskMode ? data.kioskInterval : 0;
+          folder.kioskTimeScale = data.kioskTimeScale;
           this.foldersProxy.createFolder(folder).subscribe(folder2 => {
             // strange, but I have to add it to list before navigating...
             const element = new FolderElement();
@@ -231,16 +236,20 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
     dialogConfig.disableClose = true;
     dialogConfig.autoFocus = true;
     if (this.tabGroup.selectedIndex === this.foldersTabIndex) {
-      dialogConfig.data = new FolderPropertiesData(this.elements.folders[this.selectedFolderIndex].name);
+      const folder = this.elements.folders[this.selectedFolderIndex];
+      dialogConfig.data = folder.kioskInterval === 0 ?
+        new FolderPropertiesData(folder.name, false, this.defaultKioskInterval, this.defaultKioskTimeScale) :
+        new FolderPropertiesData(folder.name, true, folder.kioskInterval, folder.kioskTimeScale);
       const dialogRef = this.dialog.open(FolderPropertiesComponent, dialogConfig);
       dialogRef.afterClosed().subscribe((data: FolderPropertiesData) => {
         if (data != null) {
           // update name in list
-          const element = this.elements.folders[this.selectedFolderIndex];
-          element.name = data.name;
+          folder.name = data.name;
+          folder.kioskInterval = data.kioskMode ? data.kioskInterval : 0;
+          folder.kioskTimeScale = data.kioskTimeScale;
 
-          // and update server
-          this.elementsProxy.updateFolderElement(element.id, element).subscribe();
+          // and server
+          this.elementsProxy.updateFolderElement(folder.id, folder).subscribe();
         }
       });
     } else {
@@ -269,5 +278,9 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
         }
       });
     }
+  }
+
+  startKioskMode() {
+    
   }
 }

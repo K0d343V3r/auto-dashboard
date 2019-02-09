@@ -31,6 +31,10 @@
   <button mat-icon-button [disabled]="!canMove(false)" (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
+  <button mat-icon-button [disabled]="elements.folders[selectedFolderIndex].kioskInterval === 0" (click)="startKioskMode()"
+    *ngIf="tabGroup.selectedIndex === 0">
+    <mat-icon>play_circle_outline</mat-icon>
+  </button>
   <span class="fill-remaining-space"></span>
   <button mat-icon-button [disabled]="!canShowProperties()" (click)="showProperties()">
     <mat-icon>info</mat-icon>

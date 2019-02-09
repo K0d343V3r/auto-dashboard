@@ -4,6 +4,18 @@
     <input matInput placeholder="Folder name" formControlName="name">
     <mat-error>{{getNameErrorMessage()}}</mat-error>
   </mat-form-field>
+  <mat-slide-toggle formControlName="kioskMode">Kiosk mode</mat-slide-toggle>
+  <mat-form-field *ngIf="form.value.kioskMode">
+    <input matInput placeholder="Switch dashboards every" formControlName="kioskInterval">
+    <mat-error>{{getKioskErrorMessage()}}</mat-error>
+  </mat-form-field>
+  <mat-form-field class="kiosk-scale-field" appearance="standard" *ngIf="form.value.kioskMode">
+    <mat-select formControlName="kioskTimeScale">
+      <mat-option *ngFor="let option of kioskScaleOptions" [value]="option.value">
+        {{option.viewValue}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button class="mat-raised-button" (click)="cancel()">Cancel</button>

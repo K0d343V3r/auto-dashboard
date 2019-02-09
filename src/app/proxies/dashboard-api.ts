@@ -1467,7 +1467,51 @@ export interface IProblemDetails {
     instance?: string | undefined;
 }
 
-export class FolderElement extends DashboardElement implements IFolderElement {
+export class FolderBase extends DashboardElement implements IFolderBase {
+    kioskInterval!: number;
+    kioskTimeScale!: KioskTimeScale;
+
+    constructor(data?: IFolderBase) {
+        super(data);
+    }
+
+    init(data?: any) {
+        super.init(data);
+        if (data) {
+            this.kioskInterval = data["kioskInterval"];
+            this.kioskTimeScale = data["kioskTimeScale"];
+        }
+    }
+
+    static fromJS(data: any): FolderBase {
+        data = typeof data === 'object' ? data : {};
+        let result = new FolderBase();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["kioskInterval"] = this.kioskInterval;
+        data["kioskTimeScale"] = this.kioskTimeScale;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): FolderBase {
+        const json = this.toJSON();
+        let result = new FolderBase();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFolderBase extends IDashboardElement {
+    kioskInterval: number;
+    kioskTimeScale: KioskTimeScale;
+}
+
+export class FolderElement extends FolderBase implements IFolderElement {
     defaultDefinitionId!: number;
 
     constructor(data?: IFolderElement) {
@@ -1503,11 +1547,17 @@ export class FolderElement extends DashboardElement implements IFolderElement {
     }
 }
 
-export interface IFolderElement extends IDashboardElement {
+export interface IFolderElement extends IFolderBase {
     defaultDefinitionId: number;
 }
 
-export class DashboardFolder extends DashboardElement implements IDashboardFolder {
+export enum KioskTimeScale {
+    Seconds = 0, 
+    Minutes = 1, 
+    Hours = 2, 
+}
+
+export class DashboardFolder extends FolderBase implements IDashboardFolder {
     definitions?: DashboardDefinition[] | undefined;
 
     constructor(data?: IDashboardFolder) {
@@ -1551,7 +1601,7 @@ export class DashboardFolder extends DashboardElement implements IDashboardFolde
     }
 }
 
-export interface IDashboardFolder extends IDashboardElement {
+export interface IDashboardFolder extends IFolderBase {
     definitions?: DashboardDefinition[] | undefined;
 }
 
