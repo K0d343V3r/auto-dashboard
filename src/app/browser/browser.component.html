@@ -34,7 +34,7 @@
     [disabled]="!canMove(false)" (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
-  <button mat-icon-button matTooltip="Start Kiosk Mode" [disabled]="elements.definitions.length > 0 && elements.folders[selectedFolderIndex].kioskInterval === 0"
+  <button mat-icon-button matTooltip="Start Kiosk Mode" [disabled]="elements.definitions.length === 0 || elements.folders[selectedFolderIndex].kioskInterval === 0"
     (click)="startKioskMode()" *ngIf="tabGroup.selectedIndex === 0">
     <mat-icon>play_arrow</mat-icon>
   </button>
