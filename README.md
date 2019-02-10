@@ -18,6 +18,7 @@ An application to create, edit, and manage information dashboards.
 - User can change order of dashboards in dashboard selection list.
 - Dashboard data refreshes at a user specified frequency (i.e. every X seconds).
 - User can organize dashboards in folders.  First dashboard in folder displayed by default.
+- Supports "Kiosk Mode" (full screen, automatic dashboard switching).
 
 ##### Implementation:
 

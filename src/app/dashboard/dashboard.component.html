@@ -1,13 +1,18 @@
 <mat-toolbar color="primary" class="content-toolbar">
   <mat-toolbar-row>
     <div class="toolbar-content">
-      <span *ngIf="(activeDashboardService$ | async)?.displaySettings.title != ''">{{(activeDashboardService$ | async)?.displaySettings.title}}</span>
-      <span *ngIf="(activeDashboardService$ | async)?.displaySettings.title == ''">{{(activeDashboardService$ | async)?.name}}</span>
+      <span *ngIf="(activeDashboardService$ | async)?.displaySettings.title != ''">{{(activeDashboardService$ |
+        async)?.displaySettings.title}}</span>
+      <span *ngIf="(activeDashboardService$ | async)?.displaySettings.title == ''">{{(activeDashboardService$ |
+        async)?.name}}</span>
       <span class="subtitle">{{subtitle}}</span>
     </div>
     <span class="fill-remaining-space"></span>
-    <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isReadOnly && !isEditing" (click)="edit()">
+    <button mat-icon-button matTooltip="Edit Dashboard" *ngIf="!isKiosk && !isEditing" (click)="edit()">
       <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Stop Kiosk Mode" *ngIf="isKiosk" (click)="stopKiosk()">
+      <mat-icon>stop</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Cancel Edits" *ngIf="isEditing" (click)="cancel()">
       <mat-icon>cancel</mat-icon>

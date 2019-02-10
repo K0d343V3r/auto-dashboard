@@ -65,6 +65,12 @@ const routes: Routes = [
       }
     ]
   }, {
+    path: `${NavigationService.kioskPath}/:${NavigationService.definitionParamName}`,
+    component: DashboardComponent,
+    resolve: {
+      definition: DefinitionResolverService
+    }
+  }, {
     path: '',
     redirectTo: NavigationService.viewerPath,
     pathMatch: 'full'

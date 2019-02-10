@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
+import { Location, DOCUMENT } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +9,7 @@ export class NavigationService {
   static readonly viewerPath = "viewer";
   static readonly outletName = "sidenav";
   static readonly editorPath = "editor";
+  static readonly kioskPath = "kiosk";
   static readonly editorFolderPath = "folder";
   static readonly definitionParamName = "definitionId";
   static readonly folderParamName = "folderId";
@@ -16,7 +17,11 @@ export class NavigationService {
   static readonly dashboardsTab = "dashboards";
   static readonly foldersTab = "folders";
 
-  constructor(private router: Router, private location: Location) { }
+  constructor(
+    private router: Router, 
+    private location: Location,
+    @Inject(DOCUMENT) private document: any
+    ) { }
 
   goTo(url: string) {
     this.router.navigateByUrl(url);
@@ -39,6 +44,10 @@ export class NavigationService {
     }
   }
 
+  kioskDashboard(definitionId: number, replaceUrl: boolean = false) {
+    this.router.navigateByUrl(`${NavigationService.kioskPath}/${definitionId}`, { replaceUrl: replaceUrl });
+  }
+
   viewFolder(folderId: number, dashboardsTab: boolean = true, navigate: boolean = true, replaceUrl: boolean = false) {
     const url = `${NavigationService.viewerPath}/(${NavigationService.outletName}:${folderId};${NavigationService.tabParamName}=${dashboardsTab ? NavigationService.dashboardsTab : NavigationService.foldersTab})`;
     if (navigate) {
@@ -58,5 +67,29 @@ export class NavigationService {
 
   getDefinitionLink(definitionId: number): string {
     return `/${NavigationService.viewerPath}/${definitionId}`;
+  }
+
+  openFullscreen() {
+    if (this.document.documentElement.requestFullscreen) {
+      this.document.documentElement.requestFullscreen();
+    } else if (this.document.documentElement.mozRequestFullScreen) {    /* Firefox */
+      this.document.documentElement.mozRequestFullScreen();
+    } else if (this.document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+      this.document.documentElement.webkitRequestFullscreen();
+    } else if (this.document.documentElement.msRequestFullscreen) {     /* IE/Edge */
+      this.document.documentElement.msRequestFullscreen();
+    }
+  }
+
+  closeFullscreen() {
+    if (this.document.exitFullscreen) {
+      this.document.exitFullscreen();
+    } else if (this.document.mozCancelFullScreen) {   /* Firefox */
+      this.document.mozCancelFullScreen();
+    } else if (this.document.webkitExitFullscreen) {  /* Chrome, Safari and Opera */
+      this.document.webkitExitFullscreen();
+    } else if (this.document.msExitFullscreen) {      /* IE/Edge */
+      this.document.msExitFullscreen();
+    }
   }
 }

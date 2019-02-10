@@ -19,24 +19,28 @@
   </mat-tab>
 </mat-tab-group>
 <mat-toolbar color="primary" class="sidenav-toolbar">
-  <button mat-icon-button (click)="addElement()">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Add Folder' : 'Add Dashboard'" (click)="addElement()">
     <mat-icon>add</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="!canRemove()" (click)="removeElement()">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Remove Folder' : 'Remove Dashboard'" [disabled]="!canRemove()"
+    (click)="removeElement()">
     <mat-icon>remove</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="!canMove(true)" (click)="move(true)">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Move Folder Up' : 'Move Dashboard Up'"
+    [disabled]="!canMove(true)" (click)="move(true)">
     <mat-icon>arrow_upward</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="!canMove(false)" (click)="move(false)">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Move Folder Down' : 'Move Dashboard Down'"
+    [disabled]="!canMove(false)" (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
-  <button mat-icon-button [disabled]="elements.folders[selectedFolderIndex].kioskInterval === 0" (click)="startKioskMode()"
-    *ngIf="tabGroup.selectedIndex === 0">
-    <mat-icon>play_circle_outline</mat-icon>
+  <button mat-icon-button matTooltip="Start Kiosk Mode" [disabled]="elements.definitions.length > 0 && elements.folders[selectedFolderIndex].kioskInterval === 0"
+    (click)="startKioskMode()" *ngIf="tabGroup.selectedIndex === 0">
+    <mat-icon>play_arrow</mat-icon>
   </button>
   <span class="fill-remaining-space"></span>
-  <button mat-icon-button [disabled]="!canShowProperties()" (click)="showProperties()">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Folder Properties' : 'Dashboard Properties'"
+    [disabled]="!canShowProperties()" (click)="showProperties()">
     <mat-icon>info</mat-icon>
   </button>
 </mat-toolbar>

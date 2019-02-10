@@ -12,6 +12,7 @@ import { ControlHostComponent } from '../controls/control-host/control-host.comp
 import { RequestType, TimePeriodType } from '../proxies/dashboard-api';
 import { TimeService } from '../services/time.service';
 import { NavigationService } from '../services/navigation.service';
+import { KioskService } from '../services/kiosk.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,7 +29,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   subtitle: string;
   isEditing: boolean;
-  isReadOnly: boolean;
+  isKiosk: boolean;
   activeDashboardService$: Observable<ActiveDashboardService>;
   @ViewChildren(ControlHostComponent) controls!: QueryList<ControlHostComponent>;
 
@@ -39,13 +40,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private simulatorItemService: SimulatorItemService,
     private dashboardDataService: DashboardDataService,
     private timeService: TimeService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private kioskService: KioskService
   ) {
   }
 
   ngOnInit() {
-    this.isEditing = this.router.url.split("/")[1] === 'editor';
-    this.isReadOnly = this.router.url.split("/")[1] === 'dashboard';
+    this.isEditing = this.router.url.split("/")[1] === NavigationService.editorPath;
+    this.isKiosk = this.router.url.split("/")[1] === NavigationService.kioskPath;
 
     this.itemsSubscription = this.simulatorItemService.getAllItems().subscribe(items => {
       this.items = items;
@@ -224,10 +226,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.navigationService.goBack();
   }
 
-  private viewDashboard(folderId: number, definitionId: number) {
+  private viewDashboard(folderId: number, definitionId: number, dashboardsTab: boolean = true, navigate: boolean = true, replaceUrl: boolean = false) {
     // stop any new template rebinding since we are on our way out
     this.activeDashboardService$ = null;
-    this.navigationService.viewDashboard(folderId, definitionId);
+    this.navigationService.viewDashboard(folderId, definitionId, dashboardsTab, navigate, replaceUrl);
   }
 
   cancel() {
@@ -236,5 +238,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getSimulatorItem(itemId: number): SimulatorItem {
     return this.items.find(t => t.id === itemId);
+  }
+
+  stopKiosk() {
+    this.kioskService.stopKiosk();
+
+    // navigate to current dashboard in viewer mode
+    this.viewDashboard(this.activeDashboardService.dashboardFolderId, this.activeDashboardService.id, true, true, true);
   }
 }

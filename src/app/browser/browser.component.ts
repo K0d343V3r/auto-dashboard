@@ -8,13 +8,14 @@ import { DashboardPropertiesComponent, DashboardPropertiesData } from '../proper
 import { FolderPropertiesData, FolderPropertiesComponent } from '../properties/folder-properties/folder-properties.component';
 import { NavigationService } from '../services/navigation.service';
 import { DahsboardElements } from '../services/elements-resolver.service';
+import { KioskService } from '../services/kiosk.service';
 
 @Component({
   selector: 'app-browser',
   templateUrl: './browser.component.html',
   styleUrls: ['./browser.component.css']
 })
-export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, AfterContentChecked {
+export class BrowserComponent implements OnInit, OnDestroy, AfterContentChecked {
   private definitionChangedSubscription: Subscription;
   private folderChangedSubscription: Subscription;
   private elementsChangedSubscription: Subscription;
@@ -37,7 +38,8 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
     private foldersProxy: FoldersProxy,
     private dialog: MatDialog,
     public navigationService: NavigationService,
-    private changeDetectionRef: ChangeDetectorRef
+    private changeDetectionRef: ChangeDetectorRef,
+    private kioskService: KioskService
   ) {
   }
 
@@ -61,10 +63,6 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
     this.definitionChangedSubscription = this.activeDashboardService.definitionChanged$.subscribe(() => {
       this.onDefinitionChanged();
     });
-  }
-
-  ngAfterViewInit() {
-
   }
 
   ngAfterContentChecked() {
@@ -281,6 +279,6 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterViewInit, After
   }
 
   startKioskMode() {
-    
+    this.kioskService.startKiosk(this.elements.folders[this.selectedFolderIndex], this.elements.definitions);
   }
 }
