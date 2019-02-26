@@ -2,14 +2,14 @@
   <span class="title">Easy Dashboard</span>
   <span class="fill-remaining-space"></span>
   <button mat-button [matMenuTriggerFor]="menu">
-    <mat-icon class="language">language</mat-icon>EN
+    <mat-icon class="language">language</mat-icon>{{translateService.currentLang === 'en' ? 'EN' : 'ES'}}
   </button>
   <mat-menu #menu="matMenu">
-    <button mat-menu-item disabled>
+    <button mat-menu-item [disabled]="translateService.currentLang === 'en'" (click)="translateService.use('en')">
       <mat-icon>language</mat-icon>
       <span>English (EN)</span>
     </button>
-    <button mat-menu-item>
+    <button mat-menu-item [disabled]="translateService.currentLang === 'es'" (click)="translateService.use('es')">
       <mat-icon>language</mat-icon>
       <span>Español (ES)</span>
     </button>
@@ -17,7 +17,7 @@
 </mat-toolbar>
 <mat-divider class="divider"></mat-divider>
 <mat-tab-group #tabGroup (selectedIndexChange)="onTabChanged($event)" class="tab-group">
-  <mat-tab label="Folders">
+  <mat-tab label="{{'browser.folders' | translate}}">
     <mat-nav-list>
       <mat-list-item *ngFor="let folder of elements.folders; let i = index" [class.active]="i == selectedFolderIndex"
         (click)="onFolderClick(folder)">
@@ -37,29 +37,29 @@
   </mat-tab>
 </mat-tab-group>
 <mat-toolbar color="primary" class="footer-toolbar">
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Add Folder' : 'Add Dashboard'"
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? ('browser.addFolder' | translate) : ('browser.addDashboard' | translate)"
     (click)="addElement()">
     <mat-icon>add</mat-icon>
   </button>
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Remove Folder' : 'Remove Dashboard'"
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? ('browser.removeFolder' | translate) : ('browser.removeDashboard' | translate)"
     [disabled]="!canRemove()" (click)="removeElement()">
     <mat-icon>remove</mat-icon>
   </button>
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Move Folder Up' : 'Move Dashboard Up'"
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? ('browser.moveFolderUp' | translate) : ('browser.moveDashboardUp' | translate)"
     [disabled]="!canMove(true)" (click)="move(true)">
     <mat-icon>arrow_upward</mat-icon>
   </button>
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Move Folder Down' : 'Move Dashboard Down'"
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? ('browser.moveFolderDown' | translate) : ('browser.moveDashboardDown' | translate)"
     [disabled]="!canMove(false)" (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
-  <button mat-icon-button matTooltip="Start Kiosk Mode"
+  <button mat-icon-button matTooltip="{{'browser.startKioskMode' | translate}}"
     [disabled]="elements.definitions.length === 0 || elements.folders[selectedFolderIndex].kioskInterval === 0"
     (click)="startKioskMode()" *ngIf="tabGroup.selectedIndex === 0">
     <mat-icon>play_arrow</mat-icon>
   </button>
   <span class="fill-remaining-space"></span>
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Folder Properties' : 'Dashboard Properties'"
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? ('browser.folderProperties' | translate) : ('browser.dashboardProperties' | translate)"
     [disabled]="!canShowProperties()" (click)="showProperties()">
     <mat-icon>info</mat-icon>
   </button>

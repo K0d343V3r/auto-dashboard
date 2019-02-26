@@ -1,0 +1,16 @@
+{
+	"browser": {
+		"addDashboard": "Add Dashboard",
+		"addFolder": "Add Folder",
+		"dashboardProperties": "Dashboard Properties",
+		"folderProperties": "Folder Properties",
+		"folders": "Folders",
+		"moveDashboard Up": "Move Dashboard Up",
+		"moveDashboardDown": "Move Dashboard Down",
+		"moveFolderDown": "Move Folder Down",
+		"moveFolderUp": "Move Folder Up",
+		"removeDashboard": "Remove Dashboard",
+		"removeFolder": "Remove Folder",
+		"startKioskMode": "Start Kiosk Mode"
+	}
+}

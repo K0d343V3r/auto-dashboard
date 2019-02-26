@@ -9,6 +9,7 @@ import { FolderPropertiesData, FolderPropertiesComponent } from '../properties/f
 import { NavigationService } from '../services/navigation.service';
 import { DahsboardElements } from '../services/elements-resolver.service';
 import { KioskService } from '../services/kiosk.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-browser',
@@ -39,11 +40,13 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterContentChecked 
     private dialog: MatDialog,
     public navigationService: NavigationService,
     private changeDetectionRef: ChangeDetectorRef,
-    private kioskService: KioskService
+    private kioskService: KioskService,
+    public translateService: TranslateService 
   ) {
   }
 
   ngOnInit() {
+    console.log(this.translateService.currentLang);
     this.elementsChangedSubscription = this.activatedRoute.data.subscribe(() => {
       this.elements = this.activatedRoute.snapshot.data.elements;
       this.onDefinitionChanged();

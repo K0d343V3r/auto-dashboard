@@ -1,0 +1,16 @@
+{
+	"browser": {
+		"addDashboard": "Agregar Tablero",
+		"addFolder": "Agregar Carpeta",
+		"dashboardProperties": "Propiedades del Tablero",
+		"folderProperties": "Propiedades de la Carpeta",
+		"folders": "Carpetas",
+		"moveDashboard Up": "Mover Tablero Hacia Arriba",
+		"moveDashboardDown": "Mover Tablero Hacia Abajo",
+		"moveFolderDown": "Mover Carpeta Hacia Abajo",
+		"moveFolderUp": "Mover Carpeta Hacia Arriba",
+		"removeDashboard": "Quitar Tablero",
+		"removeFolder": "Quitar Carpeta",
+		"startKioskMode": "Iniciar el Modo Quiosco"
+	}
+}

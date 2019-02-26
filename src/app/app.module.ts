@@ -10,7 +10,7 @@ import { BrowserComponent } from './browser/browser.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { API_BASE_URL_DASHBOARD } from './proxies/dashboard-api';
 import { API_BASE_URL_SIMULATOR } from './proxies/data-simulator-api';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { OverviewComponent } from './overview/overview.component';
 import { DashboardPropertiesComponent } from './properties/dashboard-properties/dashboard-properties.component';
 import { ReactiveFormsModule } from "@angular/forms";
@@ -28,6 +28,8 @@ import { TrendComponent } from './controls/trend/trend.component';
 import { DocumentComponent } from './controls/document/document.component';
 import { DisplaySettingsComponent } from './configurator/display-settings/display-settings.component';
 import { FolderPropertiesComponent } from './properties/folder-properties/folder-properties.component';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 
 @NgModule({
   declarations: [
@@ -57,7 +59,15 @@ import { FolderPropertiesComponent } from './properties/folder-properties/folder
     ReactiveFormsModule,
     AppRoutingModule,
     MaterialModule,
-    ChartModule
+    ChartModule,
+    HttpClientModule,
+    TranslateModule.forRoot({
+        loader: {
+            provide: TranslateLoader,
+            useFactory: HttpLoaderFactory,
+            deps: [HttpClient]
+        }
+    })
   ],
   providers: [
     {
@@ -72,3 +82,8 @@ import { FolderPropertiesComponent } from './properties/folder-properties/folder
   entryComponents: [DashboardPropertiesComponent, FolderPropertiesComponent, GaugeComponent, LedComponent, LabelComponent, TrendComponent, DocumentComponent]
 })
 export class AppModule { }
+
+// required for AOT compilation
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http);
+}
