@@ -1,7 +1,23 @@
 .tab-group {
   position: fixed !important;
-  height: 100%;
+  top: 63px;
+  height: calc(100% - 45px);
   width: 290px;
+}
+
+.divider {
+  position: fixed;
+  top: 61px;
+  width: 290px;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.language {
+  margin-right: 4px;
+  margin-top: -4px !important;
 }
 
 mat-nav-list {
@@ -12,7 +28,16 @@ mat-nav-list {
   background: #CFD8DC;
 }
 
-.sidenav-toolbar {
+.header-toolbar {
+  position: fixed !important;
+  z-index: 2;
+  top: 0px;
+  height: 60px !important;
+  width: 290px;
+  background: white;
+}
+
+.footer-toolbar {
   position: fixed !important;
   z-index: 2;
   bottom: 0px;

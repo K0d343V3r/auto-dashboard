@@ -1,3 +1,21 @@
+<mat-toolbar class="header-toolbar">
+  <span class="title">Easy Dashboard</span>
+  <span class="fill-remaining-space"></span>
+  <button mat-button [matMenuTriggerFor]="menu">
+    <mat-icon class="language">language</mat-icon>EN
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item disabled>
+      <mat-icon>language</mat-icon>
+      <span>English (EN)</span>
+    </button>
+    <button mat-menu-item>
+      <mat-icon>language</mat-icon>
+      <span>Español (ES)</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+<mat-divider class="divider"></mat-divider>
 <mat-tab-group #tabGroup (selectedIndexChange)="onTabChanged($event)" class="tab-group">
   <mat-tab label="Folders">
     <mat-nav-list>
@@ -10,20 +28,21 @@
   </mat-tab>
   <mat-tab label="{{elements.folders[selectedFolderIndex].name}}">
     <mat-nav-list>
-      <mat-list-item *ngFor="let definition of elements.definitions; let i = index" [class.active]="i == selectedDefinitionIndex"
-        (click)="onDefinitionClick(definition)">
+      <mat-list-item *ngFor="let definition of elements.definitions; let i = index"
+        [class.active]="i == selectedDefinitionIndex" (click)="onDefinitionClick(definition)">
         <mat-icon matListIcon class="list-entry-icon">dashboard</mat-icon>
         <a>{{definition?.name}}</a>
       </mat-list-item>
     </mat-nav-list>
   </mat-tab>
 </mat-tab-group>
-<mat-toolbar color="primary" class="sidenav-toolbar">
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Add Folder' : 'Add Dashboard'" (click)="addElement()">
+<mat-toolbar color="primary" class="footer-toolbar">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Add Folder' : 'Add Dashboard'"
+    (click)="addElement()">
     <mat-icon>add</mat-icon>
   </button>
-  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Remove Folder' : 'Remove Dashboard'" [disabled]="!canRemove()"
-    (click)="removeElement()">
+  <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Remove Folder' : 'Remove Dashboard'"
+    [disabled]="!canRemove()" (click)="removeElement()">
     <mat-icon>remove</mat-icon>
   </button>
   <button mat-icon-button [matTooltip]="tabGroup.selectedIndex === 0 ? 'Move Folder Up' : 'Move Dashboard Up'"
@@ -34,7 +53,8 @@
     [disabled]="!canMove(false)" (click)="move(false)">
     <mat-icon>arrow_downward</mat-icon>
   </button>
-  <button mat-icon-button matTooltip="Start Kiosk Mode" [disabled]="elements.definitions.length === 0 || elements.folders[selectedFolderIndex].kioskInterval === 0"
+  <button mat-icon-button matTooltip="Start Kiosk Mode"
+    [disabled]="elements.definitions.length === 0 || elements.folders[selectedFolderIndex].kioskInterval === 0"
     (click)="startKioskMode()" *ngIf="tabGroup.selectedIndex === 0">
     <mat-icon>play_arrow</mat-icon>
   </button>

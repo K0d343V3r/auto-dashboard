@@ -1,4 +1,4 @@
-# Auto Dashboard
+# Easy Dashboard
 
 An application to create, edit, and manage information dashboards.
 
