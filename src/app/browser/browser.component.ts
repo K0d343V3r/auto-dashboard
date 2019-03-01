@@ -46,7 +46,6 @@ export class BrowserComponent implements OnInit, OnDestroy, AfterContentChecked 
   }
 
   ngOnInit() {
-    console.log(this.translateService.currentLang);
     this.elementsChangedSubscription = this.activatedRoute.data.subscribe(() => {
       this.elements = this.activatedRoute.snapshot.data.elements;
       this.onDefinitionChanged();
